@@ -38,6 +38,9 @@ out/
 ### VS Code ###
 .vscode/
 
+# vim
+*.swp
+
 ### MacOS ###
 .DS_Store
 
