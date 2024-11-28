@@ -15,3 +15,15 @@ module "flux_terraform_controller" {
   wait                       = true
   wait_for_jobs              = true
 }
+
+resource "kubernetes_secret" "tf_deployer_aws_credentials" {
+    metadata {
+        name      = "aws-credentials"
+        namespace = "flux-system"
+    }
+    type = "Opaque"
+    data = {
+        AWS_ACCESS_KEY_ID     = var.tf_deployer_aws_access_key
+        AWS_SECRET_ACCESS_KEY = var.tf_deployer_aws_secret_key
+    }
+}

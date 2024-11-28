@@ -52,6 +52,10 @@ resource "github_repository_deploy_key" "this" {
 resource "flux_bootstrap_git" "this" {
   depends_on = [github_repository_deploy_key.this]
 
+  components_extra = [
+    "image-reflector-controller",
+    "image-automation-controller"
+  ]
   embedded_manifests = true
   path               = "clusters/${var.cluster_name}"
 }
