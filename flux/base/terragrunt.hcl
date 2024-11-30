@@ -6,29 +6,6 @@ dependency "eks" {
   config_path = "${dirname(find_in_parent_folders())}/eks/cluster"
 }
 
-generate "providers" {
-  path = "providers.tf"
-  if_exists = "overwrite_terragrunt"
-  contents = <<EOF
-  terraform {
-    required_providers {
-      flux = {
-        source  = "fluxcd/flux"
-        version = ">= 1.4"
-      }
-      github = {
-        source  = "integrations/github"
-        version = ">= 6.3"
-      }
-      tls = {
-        source  = "hashicorp/tls"
-        version = ">= 4.0"
-      }
-    }
-  }
-  EOF
-}
-
 terraform {
   source = ".//terraform"
 
