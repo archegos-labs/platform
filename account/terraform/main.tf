@@ -9,6 +9,9 @@ data "aws_availability_zones" "available" {
   }
 }
 
+# Required by Holori
+resource "aws_costoptimizationhub_enrollment_status" "optimizer" { }
+
 module "utils" {
   source  = "cloudposse/utils/aws"
   version     = "1.4.0"
