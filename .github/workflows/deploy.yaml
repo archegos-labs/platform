@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  tofu_version: '1.9.8'
+  tf_version: '1.9.8'
   tg_version: '0.68.6'
   working_dir: '.'
 
