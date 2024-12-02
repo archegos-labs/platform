@@ -31,10 +31,6 @@ resource "github_repository" "fluxcd" {
   license_template = "mit"
   gitignore_template = "Terraform"
   has_issues = true
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "tls_private_key" "flux" {
