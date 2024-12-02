@@ -28,9 +28,9 @@ locals {
 }
 
 inputs = {
-  cluster_name = dependency.eks.outputs.cluster_name
-  cluster_endpoint = dependency.eks.outputs.cluster_endpoint
+  cluster_name                       = dependency.eks.outputs.cluster_name
+  cluster_endpoint                   = dependency.eks.outputs.cluster_endpoint
   cluster_certificate_authority_data = dependency.eks.outputs.cluster_certificate_authority_data
-  tf_deployer_aws_access_key = local.tf_deployer_aws_access_key
-  tf_deployer_aws_secret_key = local.tf_deployer_aws_secret_key
+  tf_deployer_aws_access_key         = local.tf_deployer_aws_access_key
+  tf_deployer_aws_secret_key         = local.tf_deployer_aws_secret_key
 }

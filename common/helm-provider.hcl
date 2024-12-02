@@ -1,7 +1,7 @@
 generate "helm_provider" {
-  path = "helm-provider.tf"
+  path      = "helm-provider.tf"
   if_exists = "overwrite_terragrunt"
-  contents = <<EOF
+  contents  = <<EOF
     provider "helm" {
       kubernetes {
         host                   = var.cluster_endpoint

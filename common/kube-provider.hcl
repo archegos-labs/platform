@@ -1,7 +1,7 @@
 generate "kube_provider" {
-  path = "kube-provider.tf"
+  path      = "kube-provider.tf"
   if_exists = "overwrite_terragrunt"
-  contents = <<EOF
+  contents  = <<EOF
     data "aws_eks_cluster" "this" {
       name = var.cluster_name
     }

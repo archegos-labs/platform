@@ -1,12 +1,12 @@
 include "root" {
-  path = find_in_parent_folders()
+  path   = find_in_parent_folders()
   expose = true
 }
 
 locals {
-  org = include.root.locals.org
+  org    = include.root.locals.org
   region = include.root.locals.region
-  env = include.root.locals.env
+  env    = include.root.locals.env
 }
 
 terraform {
@@ -14,7 +14,7 @@ terraform {
 }
 
 inputs = {
-    org = local.org
-    env = local.env
-    region = local.region
+  org    = local.org
+  env    = local.env
+  region = local.region
 }
