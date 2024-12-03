@@ -36,6 +36,12 @@ jobs:
     name: "Plan"
     runs-on: ubuntu-latest
     needs: [lint]
+    strategy:
+      fail-fast: true
+      matrix:
+          infra_env: [dev]
+          region: [us-east-1]
+      runs-on: ${{ matrix.infra_env}}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
@@ -52,3 +58,5 @@ jobs:
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: 'run-all plan'
+        env:
+          DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
