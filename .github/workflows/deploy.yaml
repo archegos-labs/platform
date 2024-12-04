@@ -58,7 +58,7 @@ jobs:
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::541898866282:role/tf-deployer
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ matrix.region }}
 
       - name: Plan
@@ -69,4 +69,5 @@ jobs:
           tg_dir: ${{ env.working_dir }}
           tg_command: 'run-all plan --terragrunt-exclude-dir eks/addons/vpc-cni --terragrunt-exclude-dir flux/terraform-controller'
         env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}

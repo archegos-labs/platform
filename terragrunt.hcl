@@ -5,6 +5,7 @@ locals {
   org    = local.deploy_vars.locals.organization
   region = local.deploy_vars.locals.region
   env    = local.deploy_vars.locals.env
+  aws_role_arn = get_env("AWS_ROLE_ARN")
 }
 
 remote_state {
@@ -57,6 +58,10 @@ generate "aws-provider" {
   contents  = <<EOF
     provider "aws" {
       region = "${local.region}"
+
+      assume_role {
+        role_arn = local.aws_role_arn
+      }
 
       default_tags {
         tags = {
