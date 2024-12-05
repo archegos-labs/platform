@@ -60,7 +60,6 @@ jobs:
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: GitHub-Actions-OIDC-TERRAFORM
 
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2
