@@ -69,6 +69,21 @@ jobs:
 #          aws-region: ${{ matrix.region }}
 #          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
+      - name: Init
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ env.tf_version }}
+          tg_version: ${{ env.tg_version }}
+          tg_dir: ${{ env.working_dir }}
+          tg_command: |
+            run-all init \
+            --terragrunt-iam-role ${{ secrets.AWS_ROLE_ARN }} \
+            --terragrunt-iam-web-identity-token ${{ steps.get-token.outputs.id_token }} \
+            --terragrunt-exclude-dir eks/addons/vpc-cni \
+            --terragrunt-exclude-dir flux/terraform-controller
+        env:
+          DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
+
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2
         with:
