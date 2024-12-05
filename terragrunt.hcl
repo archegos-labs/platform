@@ -58,6 +58,7 @@ generate "aws-provider" {
   contents  = <<EOF
     provider "aws" {
       region = "${local.region}"
+      profile = "default"
 
       assume_role {
         role_arn = local.aws_role_arn
