@@ -57,12 +57,11 @@ generate "aws-provider" {
   if_exists = "overwrite_terragrunt"
   contents  = <<EOF
     provider "aws" {
-      region = "${local.region}"
-      profile = "default"
-
-      assume_role {
-        role_arn = local.aws_role_arn
-      }
+      # region = "${local.region}"
+      #
+      # assume_role {
+      #   role_arn = local.aws_role_arn
+      # }
 
       default_tags {
         tags = {
