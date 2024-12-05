@@ -61,10 +61,6 @@ jobs:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
-      - name: Sts GetCallerIdentity
-        run: |
-          aws sts get-caller-identity
-
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2
         with:
@@ -77,5 +73,4 @@ jobs:
             --terragrunt-exclude-dir eks/addons/vpc-cni \
             --terragrunt-exclude-dir flux/terraform-controller
         env:
-          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
