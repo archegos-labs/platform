@@ -61,6 +61,10 @@ jobs:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
+      - name: Sts GetCallerIdentity
+        run: |
+          aws sts get-caller-identity
+
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2
         with:
