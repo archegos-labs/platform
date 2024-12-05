@@ -68,7 +68,10 @@ jobs:
           tf_version: ${{ env.tf_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
-          tg_command: 'run-all plan --terragrunt-exclude-dir eks/addons/vpc-cni --terragrunt-exclude-dir flux/terraform-controller'
+          tg_command: | 
+            run-all plan \
+            --terragrunt-iam-role ${{ secrets.AWS_ROLE_ARN }} \
+            --terragrunt-exclude-dir eks/addons/vpc-cni \
         env:
           AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
