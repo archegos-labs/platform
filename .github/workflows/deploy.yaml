@@ -56,10 +56,12 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Configure AWS Credentials
+        id: oidc-credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          output-credentials: true
 
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2
@@ -69,7 +71,7 @@ jobs:
           tg_dir: ${{ env.working_dir }}
           tg_command: | 
             run-all plan \
-            --terragrunt-iam-web-identity-token ${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN }} \
+            --terragrunt-iam-web-identity-token ${{ steps.oidc-credentials.outputs.aws-session-token }} \
             --terragrunt-exclude-dir eks/addons/vpc-cni \
             --terragrunt-exclude-dir flux/terraform-controller
         env:
