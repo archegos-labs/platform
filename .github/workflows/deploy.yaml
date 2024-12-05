@@ -60,7 +60,7 @@ jobs:
         id: get-token
         with:
           script: |
-            let token = await core.getIDToken();
+            let token = await core.getIDToken("sts.amazonaws.com");
             core.setOutput('id_token', token)
 
 #      - name: Configure AWS Credentials
