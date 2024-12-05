@@ -55,22 +55,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Get OIDC token
-        uses: actions/github-script@v6
-        id: get-token
-        with:
-          script: |
-            const core = require('@actions/core');
-            const token = await core.getIDToken("sts.amazonaws.com");
-            core.setOutput("id_token", token)
-
-#      - name: Configure AWS Credentials
-#        id: oidc-credentials
-#        uses: aws-actions/configure-aws-credentials@v4
+#      - name: Get OIDC token
+#        uses: actions/github-script@v6
+#        id: get-token
 #        with:
-#          aws-region: ${{ matrix.region }}
-#          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-#          output-credentials: true
+#          script: |
+#            const core = require('@actions/core');
+#            let token = await core.getIDToken();
+#            core.setOutput('id_token', token)
+
+      - name: Configure AWS Credentials
+        id: oidc-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ matrix.region }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2
@@ -80,8 +79,6 @@ jobs:
           tg_dir: ${{ env.working_dir }}
           tg_command: | 
             run-all plan \
-            --terragrunt-iam-role ${{ secrets.AWS_ROLE_ARN }} \
-            --terragrunt-iam-web-identity-token ${{ steps.get-token.outputs.id_token }} \
             --terragrunt-exclude-dir eks/addons/vpc-cni \
             --terragrunt-exclude-dir flux/terraform-controller
         env:
