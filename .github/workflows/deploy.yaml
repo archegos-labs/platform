@@ -77,8 +77,7 @@ jobs:
           tg_dir: ${{ env.working_dir }}
           tg_command: | 
             run-all plan \
-            --terragrunt-iam-role ${{ secrets.AWS_ROLE_ARN }} \
-            --terragrunt-iam-web-identity-token ${{ steps.get-token.outputs.id_token }} \
+            --terragrunt-auth-provider-cmd "echo -n '{\"awsRole":{\"roleArn\":\"${{ secrets.AWS_ROLE_ARN }}\", \"webIdentityToken\":\"${{ steps.get-token.outputs.id_token }}\" }}' \
             --terragrunt-exclude-dir eks/addons/vpc-cni \
             --terragrunt-exclude-dir flux/terraform-controller
         env:
