@@ -22,34 +22,34 @@ remote_state {
   }
 }
 
-generate "versions" {
-  path      = "versions.tf"
-  if_exists = "overwrite"
-  contents  = <<EOF
-    terraform {
-      required_version = ">= 1.0"
-
-      required_providers {
-        aws = {
-          source = "hashicorp/aws"
-          version = ">= 5.78.0"
-        }
-        flux = {
-          source  = "fluxcd/flux"
-          version = ">= 1.4"
-        }
-        github = {
-          source  = "integrations/github"
-          version = ">= 6.3"
-        }
-        tls = {
-          source  = "hashicorp/tls"
-          version = ">= 4.0"
-        }
-      }
-    }
-  EOF
-}
+# generate "versions" {
+#   path      = "versions.tf"
+#   if_exists = "overwrite"
+#   contents  = <<EOF
+#     terraform {
+#       required_version = ">= 1.0"
+#
+#       required_providers {
+#         aws = {
+#           source = "hashicorp/aws"
+#           version = ">= 5.78.0"
+#         }
+#         flux = {
+#           source  = "fluxcd/flux"
+#           version = ">= 1.4"
+#         }
+#         github = {
+#           source  = "integrations/github"
+#           version = ">= 6.3"
+#         }
+#         tls = {
+#           source  = "hashicorp/tls"
+#           version = ">= 4.0"
+#         }
+#       }
+#     }
+#   EOF
+# }
 
 generate "aws-provider" {
   path      = "aws_provider.tf"
