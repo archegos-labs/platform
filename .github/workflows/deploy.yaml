@@ -12,7 +12,7 @@ permissions:
 env:
   tf_version: '1.9.8'
   tg_version: '0.68.6'
-  working_dir: './'
+  working_dir: '.'
 
 jobs:
   lint:
