@@ -70,10 +70,10 @@ jobs:
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: | 
-            run-all plan \
-              --terragrunt-non-interactive \
-              --terragrunt-exclude-dir eks/addons/vpc-cni \
-              --terragrunt-exclude-dir flux/terraform-controller \
+            run-all plan 
+              --terragrunt-non-interactive 
+              --terragrunt-exclude-dir eks/addons/vpc-cni 
+              --terragrunt-exclude-dir flux/terraform-controller 
               --terragrunt-log-level debug
         env:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
