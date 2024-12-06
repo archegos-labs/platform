@@ -60,7 +60,7 @@ jobs:
         id: get-token
         with:
           script: |
-            let token = await core.getIDToken("sts.amazonaws.com");
+            let token = await core.getIDToken('sts.amazonaws.com');
             core.setOutput('id_token', token)
 
 #      - name: Configure AWS Credentials
@@ -78,7 +78,10 @@ jobs:
           tg_command: |
             run-all init \
             --terragrunt-iam-role ${{ secrets.AWS_ROLE_ARN }} \
-            --terragrunt-iam-web-identity-token ${{ steps.get-token.outputs.id_token }}
+            --terragrunt-iam-web-identity-token ${{ steps.get-token.outputs.id_token }} \
+            --terragrunt-non-interactive \
+            --terragrunt-exclude-dir eks/addons/vpc-cni \
+            --terragrunt-exclude-dir flux/terraform-controller
         env:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
 
