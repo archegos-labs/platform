@@ -63,18 +63,13 @@ jobs:
 #            let token = await core.getIDToken('sts.amazonaws.com');
 #            core.setOutput('id_token', token)
 
-      - name: Configure AWS Credentials
-        id: aws-credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ matrix.region }}
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          output-credentials: true
-
-      - run: |
-          aws sts get-caller-identity
-          echo ${{ steps.aws-credentials.outputs.aws-access-key-id }} 
-          echo ${{ steps.aws-credentials.outputs.aws-secret-access-key }}
+#      - name: Configure AWS Credentials
+#        id: aws-credentials
+#        uses: aws-actions/configure-aws-credentials@v4
+#        with:
+#          aws-region: ${{ matrix.region }}
+#          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#          output-credentials: true
 
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2
@@ -84,9 +79,11 @@ jobs:
           tg_dir: ${{ env.working_dir }}
           tg_command: | 
             run-all plan \
+            --terragrunt-non-interactive \
             --terragrunt-exclude-dir eks/addons/vpc-cni \
             --terragrunt-exclude-dir flux/terraform-controller
+
         env:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
-          AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws-access-key-id }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.aws-secret-access-key}}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_SECRET_ACCESS_KEY }}
