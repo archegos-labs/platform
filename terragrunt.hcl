@@ -23,17 +23,17 @@ remote_state {
 }
 
 generate "versions" {
-  path      = "other_versions.tf"
+  path      = "versions.tf"
   if_exists = "overwrite"
   contents  = <<EOF
     terraform {
       required_version = ">= 1.0"
 
       required_providers {
-        # aws = {
-        #   source = "hashicorp/aws"
-        #   version = ">= 5.78.0"
-        # }
+        aws = {
+          source = "hashicorp/aws"
+          version = ">= 5.78.0"
+        }
         flux = {
           source  = "fluxcd/flux"
           version = ">= 1.4"
