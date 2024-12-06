@@ -73,8 +73,8 @@ jobs:
 
       - run: |
           aws sts get-caller-identity
-          echo ${{ steps.aws-credentials.outputs.access_key_id }} 
-          echo ${{ steps.aws-credentials.outputs.secret_access_key }}
+          echo ${{ steps.aws-credentials.outputs.aws-access-key-id }} 
+          echo ${{ steps.aws-credentials.outputs.aws-secret-access-key }}
 
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2
@@ -88,5 +88,5 @@ jobs:
             --terragrunt-exclude-dir flux/terraform-controller
         env:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
-          AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.secret_access_key }}
+          AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.aws-secret-access-key}}
