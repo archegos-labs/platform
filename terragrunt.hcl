@@ -51,21 +51,21 @@ remote_state {
 #   EOF
 # }
 
-generate "aws-provider" {
-  path      = "aws_provider.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<EOF
-    provider "aws" {
-      region = "${local.region}"
-
-      default_tags {
-        tags = {
-            Organization = "${title(local.org)}"
-            Environment = "${title(local.env)}"
-            ManagedBy = "Terraform"
-            Deployment = "Terragrunt"
-        }
-      }
-    }
-  EOF
-}
+# generate "aws-provider" {
+#   path      = "aws_provider.tf"
+#   if_exists = "overwrite_terragrunt"
+#   contents  = <<EOF
+#     provider "aws" {
+#       region = "${local.region}"
+#
+#       default_tags {
+#         tags = {
+#             Organization = "${title(local.org)}"
+#             Environment = "${title(local.env)}"
+#             ManagedBy = "Terraform"
+#             Deployment = "Terragrunt"
+#         }
+#       }
+#     }
+#   EOF
+# }
