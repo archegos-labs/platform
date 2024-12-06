@@ -72,7 +72,7 @@ jobs:
           tg_command: | 
             run-all plan \
             --terragrunt-non-interactive \
-            --terragrunt-iam-role "arn:aws:iam::541898866282:role/tf-deployer"  
+            --terragrunt-iam-role "arn:aws:iam::541898866282:role/tf-deployer" \  
             --terragrunt-exclude-dir eks/addons/vpc-cni \
             --terragrunt-exclude-dir flux/terraform-controller
         env:
