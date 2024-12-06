@@ -68,8 +68,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ matrix.region }}
+          role-session-name: AWSSession
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          output-credentials: true
 
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2.1.4
