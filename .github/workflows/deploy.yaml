@@ -71,6 +71,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           output-credentials: true
 
+      - run: |
+          aws sts get-caller-identity
+          echo ${{ steps.aws-credentials.outputs.access_key_id }} 
+          echo ${{ steps.aws-credentials.outputs.secret_access_key }}
+
       - name: Plan
         uses: gruntwork-io/terragrunt-action@v2
         with:
