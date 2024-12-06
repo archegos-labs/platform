@@ -63,17 +63,17 @@ jobs:
           role-session-name: github-actions-oidc-session
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
-      - name: Plan
+      - name: Apply
         uses: gruntwork-io/terragrunt-action@v2.1.4
         with:
           tf_version: ${{ env.tf_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: | 
-            run-all plan 
+            run-all apply
               --terragrunt-non-interactive 
               --terragrunt-exclude-dir eks/addons/vpc-cni 
-              --terragrunt-exclude-dir flux/terraform-controller 
-              --terragrunt-log-level debug
+              --terragrunt-exclude-dir flux/base
+              --terragrunt-exclude-dir flux/terraform-controller
         env:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
