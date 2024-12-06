@@ -60,7 +60,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ matrix.region }}
-          role-session-name: AWSSession
+          role-session-name: github-actions-oidc-session
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
       - name: Plan
@@ -72,8 +72,9 @@ jobs:
           tg_command: | 
             run-all plan \
             --terragrunt-non-interactive \
-            --terragrunt-iam-role arn:aws:iam::541898866282:role/tf-deployer \  
+            --terragrunt-iam-role ${{ secrets.AWS_ROLE_ARN }} \  
             --terragrunt-exclude-dir eks/addons/vpc-cni \
-            --terragrunt-exclude-dir flux/terraform-controller
+            --terragrunt-exclude-dir flux/terraform-controller \
+            --terragrunt-log-level debug
         env:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
