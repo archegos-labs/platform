@@ -84,5 +84,3 @@ jobs:
             --terragrunt-exclude-dir flux/terraform-controller
         env:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_SECRET_ACCESS_KEY }}
