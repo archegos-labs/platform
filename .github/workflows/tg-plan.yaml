@@ -63,14 +63,14 @@ jobs:
           role-session-name: github-actions-oidc-session
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
-      - name: Apply
+      - name: Plan
         uses: gruntwork-io/terragrunt-action@v2.1.4
         with:
           tf_version: ${{ env.tf_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: | 
-            run-all apply
+            run-all destroy
               --terragrunt-non-interactive 
               --terragrunt-exclude-dir eks/addons/vpc-cni 
               --terragrunt-exclude-dir flux/base
