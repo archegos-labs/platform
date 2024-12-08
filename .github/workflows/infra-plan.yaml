@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Lint
-        uses: gruntwork-io/terragrunt-action@v2
+        uses: gruntwork-io/terragrunt-action@cf355638dbd066b6a70eb01f31ad9293870a0e34 # v2.1.4
         with:
           tf_version: ${{ env.tf_version }}
           tg_version: ${{ env.tg_version }}
@@ -55,14 +55,14 @@ jobs:
 
       - name: Configure AWS Credentials
         id: aws-credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
         with:
           aws-region: ${{ matrix.region }}
           role-session-name: github-actions-oidc-session
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
       - name: Plan
-        uses: gruntwork-io/terragrunt-action@v2.1.4
+        uses: gruntwork-io/terragrunt-action@cf355638dbd066b6a70eb01f31ad9293870a0e34 # v2.1.4
         with:
           tf_version: ${{ env.tf_version }}
           tg_version: ${{ env.tg_version }}
