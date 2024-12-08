@@ -22,14 +22,14 @@ dependency "vpc" {
   config_path = "${dirname(find_in_parent_folders())}/vpc"
 
   mock_outputs                            = include.mocks.locals.vpc
-  mock_outputs_allowed_terraform_commands = ["init", "plan"]
+  mock_outputs_allowed_terraform_commands = ["init", "plan", "destroy"]
 }
 
 dependency "eks" {
   config_path = "${dirname(find_in_parent_folders())}/eks/cluster"
 
   mock_outputs                            = include.mocks.locals.eks
-  mock_outputs_allowed_terraform_commands = ["init", "plan"]
+  mock_outputs_allowed_terraform_commands = ["init", "plan", "destroy"]
 }
 
 terraform {
