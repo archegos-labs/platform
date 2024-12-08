@@ -1,9 +1,8 @@
-name: Deploy
+name: Infra Plan
 
 on:
   push:
-    branches:
-      - main
+    branches: [ $default-branch ]
 
 permissions:
   id-token: write
