@@ -26,7 +26,7 @@ dependency "eks" {
   config_path = "${dirname(find_in_parent_folders())}/eks/cluster"
 
   mock_outputs                            = include.mocks.locals.eks
-  mock_outputs_allowed_terraform_commands = ["init", "plan", "destroy"]
+  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
 }
 
 terraform {

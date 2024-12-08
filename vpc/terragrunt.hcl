@@ -15,7 +15,7 @@ dependency "account" {
   config_path = "${dirname(find_in_parent_folders())}/account"
 
   mock_outputs                            = include.mocks.locals.account
-  mock_outputs_allowed_terraform_commands = ["init", "plan", "destroy"]
+  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
 }
 
 locals {

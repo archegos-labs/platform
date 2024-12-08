@@ -70,7 +70,7 @@ jobs:
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: | 
-            run-all destroy
+            run-all plan
               --terragrunt-non-interactive 
               --terragrunt-exclude-dir eks/addons/vpc-cni 
               --terragrunt-exclude-dir flux/base

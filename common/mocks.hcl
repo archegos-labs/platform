@@ -17,4 +17,6 @@ locals {
     cluster_endpoint                   = "mock-cluster-endpoint"
     cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=="
   }
+
+  commands = ["init", "validate", "plan"]
 }

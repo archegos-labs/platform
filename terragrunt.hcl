@@ -7,6 +7,20 @@ locals {
   env    = local.deploy_vars.locals.env
 }
 
+remote_state {
+  backend = "s3"
+  generate = {
+    path      = "backend.tf"
+    if_exists = "overwrite_terragrunt"
+  }
+  config = {
+    bucket  = "terraform-state-${local.org}-${local.region}"
+    key     = "${local.env}/platform/${path_relative_to_include()}/terraform.tfstate"
+    encrypt = false
+    region  = "${local.region}"
+  }
+}
+
 generate "versions" {
   path      = "versions.tf"
   if_exists = "overwrite"
