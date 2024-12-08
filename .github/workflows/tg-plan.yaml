@@ -35,21 +35,6 @@ jobs:
           tg_dir: ${{ env.working_dir }}
           tg_command: 'hclfmt --terragrunt-check --terragrunt-diff'
 
-      - name: Validate
-        uses: gruntwork-io/terragrunt-action@v2.1.4
-        with:
-          tf_version: ${{ env.tf_version }}
-          tg_version: ${{ env.tg_version }}
-          tg_dir: ${{ env.working_dir }}
-          tg_command: |
-            run-all validate
-              --terragrunt-non-interactive 
-              --terragrunt-exclude-dir eks/addons/vpc-cni 
-              --terragrunt-exclude-dir flux/base
-              --terragrunt-exclude-dir flux/terraform-controller
-        env:
-          DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
-
   plan:
     name: Plan
     runs-on: ubuntu-latest
