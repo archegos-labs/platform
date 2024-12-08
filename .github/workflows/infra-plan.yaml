@@ -1,6 +1,8 @@
 name: Infra Plan
+run-name: ${{ github.actor }} has triggered a ${{ github.event_name }} for ${{ github.repository }}
 
 on:
+  workflow_dispatch:
   push:
     branches: [ $default-branch ]
 
@@ -17,6 +19,10 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
