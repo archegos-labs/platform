@@ -2,6 +2,11 @@ include "root" {
   path = find_in_parent_folders()
 }
 
+include "mocks" {
+  path   = "${dirname(find_in_parent_folders())}/common/mocks.hcl"
+  expose = true
+}
+
 terraform {
   source = "tfr:///terraform-aws-modules/vpc/aws?version=5.14.0"
 }
@@ -9,11 +14,7 @@ terraform {
 dependency "account" {
   config_path = "${dirname(find_in_parent_folders())}/account"
 
-  mock_outputs = {
-    resource_prefix = "mock-resource-prefix"
-    available_azs   = ["us-west-2a", "us-west-2b", "us-west-2c"]
-  }
-
+  mock_outputs                            = include.mocks.locals.account
   mock_outputs_allowed_terraform_commands = ["init", "plan"]
 }
 
