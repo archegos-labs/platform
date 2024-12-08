@@ -13,3 +13,10 @@ Terragrunt, Kubernetes, Flux and GitHub Actions.
 2. [Terraform](https://www.terraform.io) - for infrastructure as code.
 3. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
  
+## Github Actions
+
+### Authentication & Authorization
+
+AWS is accessed from GitHub Actions using OpenID Connect. GitHub acts as an Identity Provider (IDP) and AWS as a Service Provider (SP).
+Authentication happens on GitHub, and then GitHub “passes” our user to an AWS account, saying that “this is really John Smith”, 
+and AWS performs the “authorization“, that is, AWS checks whether this John Smith can create new resources. 

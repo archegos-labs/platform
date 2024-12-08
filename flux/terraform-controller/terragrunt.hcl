@@ -11,11 +11,21 @@ include "kube_provider" {
 }
 
 dependencies {
-  paths = ["${dirname(find_in_parent_folders())}/flux/base"]
+  paths = [
+    "${dirname(find_in_parent_folders())}/eks/cluster",
+    "${dirname(find_in_parent_folders())}/flux/base"
+  ]
 }
 
 dependency "eks" {
   config_path = "${dirname(find_in_parent_folders())}/eks/cluster"
+
+  mock_outputs = {
+    cluster_name                       = "mock-cluster-name"
+    cluster_endpoint                   = "mock-cluster-endpoint"
+    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=="
+  }
+  mock_outputs_allowed_terraform_commands = ["init", "plan"]
 }
 
 terraform {

@@ -7,20 +7,6 @@ locals {
   env    = local.deploy_vars.locals.env
 }
 
-remote_state {
-  backend = "s3"
-  generate = {
-    path      = "backend.tf"
-    if_exists = "overwrite_terragrunt"
-  }
-  config = {
-    bucket  = "terraform-state-${local.org}-${local.region}"
-    key     = "${local.env}/platform/${path_relative_to_include()}/terraform.tfstate"
-    encrypt = false
-    region  = "${local.region}"
-  }
-}
-
 generate "versions" {
   path      = "versions.tf"
   if_exists = "overwrite"
@@ -31,19 +17,19 @@ generate "versions" {
       required_providers {
         aws = {
           source = "hashicorp/aws"
-          version = ">= 5.78.0"
+          version = ">= 5.80.0"
         }
         flux = {
           source  = "fluxcd/flux"
-          version = ">= 1.4"
+          version = ">= 1.4.0"
         }
         github = {
           source  = "integrations/github"
-          version = ">= 6.3"
+          version = ">= 6.4.0"
         }
         tls = {
           source  = "hashicorp/tls"
-          version = ">= 4.0"
+          version = ">= 4.0.6"
         }
       }
     }
@@ -61,6 +47,7 @@ generate "aws-provider" {
         tags = {
             Organization = "${title(local.org)}"
             Environment = "${title(local.env)}"
+            Component = "Platform"
             ManagedBy = "Terraform"
             Deployment = "Terragrunt"
         }

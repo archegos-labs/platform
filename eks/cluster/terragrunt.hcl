@@ -8,10 +8,23 @@ terraform {
 
 dependency "account" {
   config_path = "${dirname(find_in_parent_folders())}/account"
+
+  mock_outputs = {
+    account_id      = "123456789012"
+    resource_prefix = "mock-resource-prefix"
+  }
+  mock_outputs_allowed_terraform_commands = ["init", "plan"]
 }
 
 dependency "vpc" {
   config_path = "${dirname(find_in_parent_folders())}/vpc"
+
+  mock_outputs = {
+    vpc_id = "mock-vpc-1234567890abcdef0"
+    private_subnets = ["mock-subnet-1234567890abcdef0", "mock-subnet-1234567890abcdef1", "mock-subnet-1234567890abcdef2"]
+    public_subnets = ["mock-subnet-1234567890abcdef3", "mock-subnet-1234567890abcdef4", "mock-subnet-1234567890abcdef5"]
+  }
+  mock_outputs_allowed_terraform_commands = ["init", "plan"]
 }
 
 locals {

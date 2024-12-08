@@ -8,6 +8,13 @@ terraform {
 
 dependency "account" {
   config_path = "${dirname(find_in_parent_folders())}/account"
+
+  mock_outputs = {
+    resource_prefix = "mock-resource-prefix"
+    available_azs   = ["us-west-2a", "us-west-2b", "us-west-2c"]
+  }
+
+  mock_outputs_allowed_terraform_commands = ["init", "plan"]
 }
 
 locals {
