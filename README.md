@@ -12,8 +12,20 @@ Terragrunt, Kubernetes, Flux and GitHub Actions.
 1. AWS Account & [AWS CLI](https://aws.amazon.com/cli/) - for managing AWS resources.
 2. [Terraform](https://www.terraform.io) - for infrastructure as code.
 3. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
- 
+
+I typically manage installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
+asdf, there is a `.tool-versions` file in the root of the project that you can use for installing.
+
 ## Github Actions
+
+We're using the familiar good ole PR based workflow. This means IaC changes are validated and planeed in the PR and
+once approved the infrastructure is deployed/applied on merge to main. The workflow is as follows:
+
+1. Infrastructure changes are made on a branch and a PR is created against main
+1. Terragrunt validate and plan are run on any changes. 
+1. Validation and planning are run on every push to a branch 
+1. Reviews and approvals are applied. Once the PR is approved, the PR is merged into main
+1. IaC changes from the PR merge are then applied.
 
 ### Authentication & Authorization
 

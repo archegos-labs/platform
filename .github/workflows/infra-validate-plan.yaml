@@ -2,14 +2,16 @@ name: Infra - Validate & Plan
 
 on:
   workflow_dispatch: # enables manual execution
-  push:
-    branches: [ $default-branch ]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
+concurrency: # set other jobs with the same 'group' in a queue
+  group: infra-deploy
+  cancel-in-progress: false
+
 permissions:
-  id-token: write
-  contents: read
+  id-token: write      # allow creation of openid connect token
+  contents: read       # allow read repository's content by steps
 
 env:
   tf_version: '1.9.8'
@@ -20,15 +22,17 @@ jobs:
   validate:
     name: Infra - Validate & Plan
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # Avoid using GitHub Runners time
+    timeout-minutes: 10 # avoid using gitHub runners time
     defaults:
       run:
         shell: bash
+
     strategy:
       fail-fast: true
       matrix:
         infra_env: [dev]
         region: [us-east-1]
+
     environment: ${{ matrix.infra_env }}
 
     steps:
@@ -41,7 +45,6 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Configure AWS Credentials
-        id: aws-credentials
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
         with:
           aws-region: ${{ matrix.region }}
@@ -49,6 +52,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
       - name: Lint
+        id: lint
         uses: gruntwork-io/terragrunt-action@cf355638dbd066b6a70eb01f31ad9293870a0e34 # v2.1.4
         with:
           tf_version: ${{ env.tf_version }}
@@ -65,6 +69,7 @@ jobs:
           tg_command: |
             run-all init
               --terragrunt-non-interactive 
+              --terragrunt-no-color
               --terragrunt-exclude-dir eks/addons/vpc-cni 
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
@@ -72,6 +77,7 @@ jobs:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
 
       - name: Validate
+        id: validate
         uses: gruntwork-io/terragrunt-action@cf355638dbd066b6a70eb01f31ad9293870a0e34 # v2.1.4
         with:
           tf_version: ${{ env.tf_version }}
@@ -80,6 +86,7 @@ jobs:
           tg_command: |
             run-all validate
               --terragrunt-non-interactive 
+              --terragrunt-no-color
               --terragrunt-exclude-dir eks/addons/vpc-cni 
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
@@ -87,6 +94,7 @@ jobs:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
 
       - name: Plan
+        id: plan
         uses: gruntwork-io/terragrunt-action@cf355638dbd066b6a70eb01f31ad9293870a0e34 # v2.1.4
         with:
           tf_version: ${{ env.tf_version }}
@@ -95,6 +103,7 @@ jobs:
           tg_command: | 
             run-all plan
               --terragrunt-non-interactive 
+              --terragrunt-no-color
               --terragrunt-exclude-dir eks/addons/vpc-cni 
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
