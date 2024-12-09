@@ -12,7 +12,10 @@ Terragrunt, Kubernetes, Flux and GitHub Actions.
 1. AWS Account & [AWS CLI](https://aws.amazon.com/cli/) - for managing AWS resources.
 2. [Terraform](https://www.terraform.io) - for infrastructure as code.
 3. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
- 
+
+I typically manage installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
+asdf, there is a `.tool-versions` file in the root of the project that you can use for installing.
+
 ## Github Actions
 
 ### Authentication & Authorization
