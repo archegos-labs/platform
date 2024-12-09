@@ -1,4 +1,4 @@
-name: Infra Validate & Plan
+name: Infra - Validate & Plan
 
 on:
   workflow_dispatch: # enables manual execution
@@ -18,7 +18,7 @@ env:
 
 jobs:
   validate:
-    name: Validate Infra
+    name: Infra - Validate & Plan
     runs-on: ubuntu-latest
     timeout-minutes: 10 # Avoid using GitHub Runners time
     defaults:
