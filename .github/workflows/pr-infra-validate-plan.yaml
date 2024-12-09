@@ -8,8 +8,9 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
-  id-token: write
-  contents: read
+  id-token: write      # allow creation of openid connect token
+  contents: read       # allow read repository's content by steps
+  pull-requests: write # allow adding comments in a pull request
 
 env:
   tf_version: '1.9.8'
