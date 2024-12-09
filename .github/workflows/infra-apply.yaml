@@ -1,11 +1,12 @@
 name: Infra - Validate & Plan
 
 on:
-  workflow_dispatch: # enables manual execution
   push:
     branches: [ $default-branch ]
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency: # set other jobs with the same 'group' in a queue
+  group: infra-deploy
+  cancel-in-progress: false
 
 permissions:
   id-token: write      # allow creation of openid connect token
@@ -18,10 +19,10 @@ env:
   working_dir: '.'
 
 jobs:
-  validate:
-    name: Infra - Validate & Plan
+  deploy:
+    name: Infra - Deploy
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # Avoid using GitHub Runners time
+    timeout-minutes: 30 # Avoid using GitHub Runners time
     defaults:
       run:
         shell: bash
@@ -31,6 +32,7 @@ jobs:
       matrix:
         infra_env: [dev]
         region: [us-east-1]
+
     environment: ${{ matrix.infra_env }}
 
     steps:
@@ -98,7 +100,7 @@ jobs:
           tf_version: ${{ env.tf_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
-          tg_command: | 
+          tg_command: |
             run-all plan
               --terragrunt-non-interactive 
               --terragrunt-no-color
@@ -108,28 +110,19 @@ jobs:
         env:
           DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
 
-      - name: Post Plan to PR
-        uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
-        env:
-          PLAN: "${{ steps.plan.outputs.tg_action_output}}"
+      - name: Apply
+        id: apply
+        uses: gruntwork-io/terragrunt-action@cf355638dbd066b6a70eb01f31ad9293870a0e34 # v2.1.4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `#### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-            <details><summary>Show Plan</summary>
-            
-            \`\`\`\n
-            ${process.env.PLAN}
-            \`\`\`
-            
-            </details>
-            
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
+          tf_version: ${{ env.tf_version }}
+          tg_version: ${{ env.tg_version }}
+          tg_dir: ${{ env.working_dir }}
+          tg_command: |
+            run-all apply
+              --terragrunt-non-interactive 
+              --terragrunt-no-color
+              --terragrunt-exclude-dir eks/addons/vpc-cni 
+              --terragrunt-exclude-dir flux/base
+              --terragrunt-exclude-dir flux/terraform-controller
+        env:
+          DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}

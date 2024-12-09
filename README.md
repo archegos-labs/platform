@@ -18,6 +18,15 @@ asdf, there is a `.tool-versions` file in the root of the project that you can u
 
 ## Github Actions
 
+We're using the familiar good ole PR based workflow. This means IaC changes are validated and planeed in the PR and
+once approved the infrastructure is deployed/applied on merge to main. The workflow is as follows:
+
+1. Infrastructure changes are made on a branch and a PR is created against main
+1. Terragrunt validate and plan are run on any changes. 
+1. Validation and planning are run on every push to a branch 
+1. Reviews and approvals are applied. Once the PR is approved, the PR is merged into main
+1. IaC changes from the PR merge are then applied.
+
 ### Authentication & Authorization
 
 AWS is accessed from GitHub Actions using OpenID Connect. GitHub acts as an Identity Provider (IDP) and AWS as a Service Provider (SP).
