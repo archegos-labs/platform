@@ -1,9 +1,23 @@
-name: Infra - Deploy
+name: Infra - Destroy
+run-name: ${{ github.actor}} is DESTROYING DEV! 🔥
 
 on:
   workflow_dispatch: # enables manual execution
-  push:
-    branches: [main]
+    inputs:
+      infra_env:
+        description: 'Environment to destroy'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+            - 'dev'
+      region:
+        description: 'Region to destroy'
+        required: true
+        default: 'us-east-1'
+        type: choice
+        options:
+            - 'us-east-1'
 
 concurrency: # set other jobs with the same 'group' in a queue
   group: platform-infra
@@ -20,21 +34,15 @@ env:
   working_dir: '.'
 
 jobs:
-  deploy:
-    name: Infra - Deploy
+  destroy:
+    name: Infra - Destroy
     runs-on: ubuntu-latest
     timeout-minutes: 30 # Avoid using GitHub Runners time
     defaults:
       run:
         shell: bash
 
-    strategy:
-      fail-fast: true
-      matrix:
-        infra_env: [dev]
-        region: [us-east-1]
-
-    environment: ${{ matrix.infra_env }}
+    environment: ${{ inputs.infra_env }}
 
     steps:
       - name: Harden Runner
@@ -48,21 +56,21 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
         with:
-          aws-region: ${{ matrix.region }}
+          aws-region: ${{ inputs.region }}
           role-session-name: github-actions-oidc-session
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
-      - name: Apply
-        id: apply
+      - name: Destory
+        id: destroy
         uses: gruntwork-io/terragrunt-action@cf355638dbd066b6a70eb01f31ad9293870a0e34 # v2.1.4
         with:
           tf_version: ${{ env.tf_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
-            run-all apply
+            run-all destroy
               --terragrunt-non-interactive 
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
         env:
-          DEPLOYMENT:  archegos-${{ matrix.infra_env }}-${{ matrix.region }}
+          DEPLOYMENT:  archegos-${{ inputs.infra_env }}-${{ inputs.region }}

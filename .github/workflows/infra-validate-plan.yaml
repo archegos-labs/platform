@@ -6,12 +6,12 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency: # set other jobs with the same 'group' in a queue
-  group: infra-deploy
+  group: platform-infra
   cancel-in-progress: false
 
 permissions:
-  id-token: write      # allow creation of openid connect token
-  contents: read       # allow read repository's content by steps
+  id-token: write # allow creation of openid connect token
+  contents: read  # allow read repository's content by steps
 
 env:
   tf_version: '1.9.8'
@@ -69,7 +69,6 @@ jobs:
           tg_command: |
             run-all init
               --terragrunt-non-interactive 
-              --terragrunt-no-color
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
         env:
@@ -85,7 +84,6 @@ jobs:
           tg_command: |
             run-all validate
               --terragrunt-non-interactive 
-              --terragrunt-no-color
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
         env:
@@ -101,7 +99,6 @@ jobs:
           tg_command: | 
             run-all plan
               --terragrunt-non-interactive 
-              --terragrunt-no-color
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
         env:
