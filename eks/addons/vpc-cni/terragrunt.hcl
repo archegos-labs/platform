@@ -2,10 +2,6 @@ include "root" {
   path = find_in_parent_folders()
 }
 
-include "helm_provider" {
-  path = "${dirname(find_in_parent_folders())}/common/helm-provider.hcl"
-}
-
 include "mocks" {
   path   = "${dirname(find_in_parent_folders())}/common/mocks.hcl"
   expose = true

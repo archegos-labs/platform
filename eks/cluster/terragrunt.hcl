@@ -63,13 +63,11 @@ inputs = {
     eks-pod-identity-agent = {
       most_recent = true
     }
+
     kube-proxy = {
       most_recent = true
     }
     coredns = {
-      most_recent = true
-    }
-    vpc-cni = {
       most_recent = true
     }
   }

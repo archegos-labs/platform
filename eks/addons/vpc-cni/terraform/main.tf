@@ -16,7 +16,11 @@ module "aws_vpc_cni_ipv4_pod_identity" {
     "aws_vpc_cni_ipv4" = {
       cluster_name = var.cluster_name
       namespace = local.namespace
-      service_account = var.service_account
+
+      # The VPC-CNI plugin is installed by default when creating an eks cluster and
+      # creates kube service account named "aws-node". We re-use this service account
+      # here for the EKS Pod Identity association.
+      service_account = "aws-node"
     }
   }
 }
@@ -35,12 +39,7 @@ resource "aws_eks_addon" "aws_vpc_cni" {
   addon_version = data.aws_eks_addon_version.latest.version
 
   resolve_conflicts_on_create = "OVERWRITE"
-  resolve_conflicts_on_update = "OVERWRITE"
+  resolve_conflicts_on_update = "PRESERVE"
 
-  configuration_values = jsonencode({
-    serviceAccount = {
-      name = var.service_account
-      create = true
-    }
-  })
+  depends_on = [module.aws_vpc_cni_ipv4_pod_identity]
 }

@@ -3,7 +3,7 @@ name: Infra - Deploy
 on:
   workflow_dispatch: # enables manual execution
   push:
-    branches: [ $default-branch ]
+    branches: [main]
 
 concurrency: # set other jobs with the same 'group' in a queue
   group: infra-deploy
