@@ -6,7 +6,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency: # set other jobs with the same 'group' in a queue
-  group: infra-deploy
+  group: platform-infra
   cancel-in-progress: false
 
 permissions:

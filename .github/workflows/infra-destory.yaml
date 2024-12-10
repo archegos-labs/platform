@@ -20,7 +20,7 @@ on:
             - 'us-east-1'
 
 concurrency: # set other jobs with the same 'group' in a queue
-  group: infra-deploy
+  group: platform-infra
   cancel-in-progress: false
 
 permissions:

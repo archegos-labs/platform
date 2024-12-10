@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 concurrency: # set other jobs with the same 'group' in a queue
-  group: infra-deploy
+  group: platform-infra
   cancel-in-progress: false
 
 permissions:
