@@ -70,7 +70,6 @@ jobs:
             run-all init
               --terragrunt-non-interactive 
               --terragrunt-no-color
-              --terragrunt-exclude-dir eks/addons/vpc-cni 
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
         env:
@@ -87,7 +86,6 @@ jobs:
             run-all validate
               --terragrunt-non-interactive 
               --terragrunt-no-color
-              --terragrunt-exclude-dir eks/addons/vpc-cni 
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
         env:
@@ -104,7 +102,6 @@ jobs:
             run-all plan
               --terragrunt-non-interactive 
               --terragrunt-no-color
-              --terragrunt-exclude-dir eks/addons/vpc-cni 
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
         env:
