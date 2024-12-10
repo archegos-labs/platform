@@ -1,6 +1,7 @@
 name: Infra - Deploy
 
 on:
+  workflow_dispatch: # enables manual execution
   push:
     branches: [ $default-branch ]
 
