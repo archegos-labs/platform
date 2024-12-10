@@ -62,7 +62,6 @@ jobs:
           tg_command: |
             run-all apply
               --terragrunt-non-interactive 
-              --terragrunt-no-color
               --terragrunt-exclude-dir flux/base
               --terragrunt-exclude-dir flux/terraform-controller
         env:
