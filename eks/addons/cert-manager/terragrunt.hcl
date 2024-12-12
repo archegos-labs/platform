@@ -3,6 +3,10 @@ include "root" {
 }
 
 include "helm_provider" {
+  path = "${dirname(find_in_parent_folders())}/common/kube-provider.hcl"
+}
+
+include "helm_provider" {
   path = "${dirname(find_in_parent_folders())}/common/helm-provider.hcl"
 }
 
