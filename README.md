@@ -38,10 +38,12 @@ and AWS performs the “authorization“, that is, AWS checks whether this John 
 The EKS cluster is setup using Terraform and Terragrunt. The cluster is setup with the following features:
 
 * [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-id-how-it-works.html) is used where applicable and possible. 
-* In addition to the default addons, the following are installed:
+* In addition to the default addons (kube-proxy, core-dns), the following are installed all using EKS Pod Identity:
+  * [VPC CNI](https://docs.aws.amazon.com/eks/latest/best-practices/vpc-cni.html) 
   * [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/)
-  * [External DNS](
+  * [External DNS](https://kubernetes-sigs.github.io/external-dns/latest/)
   * [Cert Manager](https://cert-manager.io/docs/)
+   
 ### Access
 
 Run the following to retrieve credentials for your cluster and configure `kubectl`,
