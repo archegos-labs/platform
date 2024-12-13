@@ -74,3 +74,4 @@ jobs:
               --terragrunt-exclude-dir flux/terraform-controller
         env:
           DEPLOYMENT:  archegos-${{ inputs.infra_env }}-${{ inputs.region }}
+          TF_VAR_kube_data_auth_enabled: true
