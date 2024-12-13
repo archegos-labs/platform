@@ -4,6 +4,13 @@ on:
   workflow_dispatch: # enables manual execution
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - '.github/**'
+      - 'README.md'
+      - 'LICENSE'
+      - 'CONTRIBUTING.md'
+      - '.tool-versions'
+      - '.gitignore'
 
 concurrency: # set other jobs with the same 'group' in a queue
   group: platform-infra
