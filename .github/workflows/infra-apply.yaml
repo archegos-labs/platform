@@ -11,6 +11,7 @@ on:
       - 'CONTRIBUTING.md'
       - '.tool-versions'
       - '.gitignore'
+      - 'Makefile'
 
 concurrency: # set other jobs with the same 'group' in a queue
   group: platform-infra
