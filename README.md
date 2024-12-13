@@ -32,3 +32,28 @@ once approved the infrastructure is deployed/applied on merge to main. The workf
 AWS is accessed from GitHub Actions using OpenID Connect. GitHub acts as an Identity Provider (IDP) and AWS as a Service Provider (SP).
 Authentication happens on GitHub, and then GitHub “passes” our user to an AWS account, saying that “this is really John Smith”, 
 and AWS performs the “authorization“, that is, AWS checks whether this John Smith can create new resources. 
+
+## EKS
+
+The EKS cluster is setup using Terraform and Terragrunt. The cluster is setup with the following features:
+
+* [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-id-how-it-works.html) is used where applicable and possible. 
+* In addition to the default addons, the following are installed:
+  * [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/)
+  * [External DNS](
+  * [Cert Manager](https://cert-manager.io/docs/)
+### Access
+
+Run the following to retrieve credentials for your cluster and configure `kubectl`,
+```shell
+make add-dev-cluster
+```
+Let's verify that we can access the cluster by running `kubectl cluster-info`. You should see output similiar to,
+
+```
+Kubernetes control plane is running at https://7D3A825AA8E29A730955A485709E89D2.gr7.us-east-1.eks.amazonaws.com
+CoreDNS is running at https://7D3A825AA8E29A730955A485709E89D2.gr7.us-east-1.eks.amazonaws.com/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+```
+
