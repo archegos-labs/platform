@@ -3,22 +3,8 @@ variable "cluster_name" {
   type = string
 }
 
-variable "cluster_endpoint" {
-  description = "The name of the EKS cluster"
-  type = string
-}
-
 variable "cluster_version" {
   description = "The name of the EKS cluster"
-  type = string
-}
-
-variable "cluster_certificate_authority_data" {
-  description = "The certificate authority data"
-  type = string
-}
-variable "vpc_id" {
-  description = "The VPC ID"
   type = string
 }
 
