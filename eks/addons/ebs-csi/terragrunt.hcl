@@ -26,7 +26,7 @@ terraform {
 }
 
 inputs = {
-  cluster_name                       = dependency.eks.outputs.cluster_name
-  cluster_version                    = dependency.eks.outputs.cluster_version
-  service_account                    = "ebs-csi-controller-sa"
+  cluster_name    = dependency.eks.outputs.cluster_name
+  cluster_version = dependency.eks.outputs.cluster_version
+  service_account = "ebs-csi-controller-sa"
 }

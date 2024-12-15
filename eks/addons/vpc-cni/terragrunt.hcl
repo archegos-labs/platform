@@ -26,7 +26,7 @@ terraform {
 }
 
 inputs = {
-  cluster_name                       = dependency.eks.outputs.cluster_name
-  cluster_version                    = dependency.eks.outputs.cluster_version
-  service_account                    = "aws-vpc-cni-sa"
+  cluster_name    = dependency.eks.outputs.cluster_name
+  cluster_version = dependency.eks.outputs.cluster_version
+  service_account = "aws-vpc-cni-sa"
 }
