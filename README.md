@@ -59,3 +59,11 @@ CoreDNS is running at https://7D3A825AA8E29A730955A485709E89D2.gr7.us-east-1.eks
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
+
+## Kubeflow
+
+In addition to the addons installed for the baseline EKS cluster above, we're also setting up the following addons
+to support [Kubeflow](https://www.kubeflow.org/),
+
+* [EBS-CSI Driver](https://github.com/kubernetes-sigs/aws-ebs-csi-driver) - Provides a CSI interface used by Container 
+   Orchestrators to manage the lifecycle of Amazon EBS volumes.

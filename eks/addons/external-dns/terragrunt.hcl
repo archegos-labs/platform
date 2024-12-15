@@ -33,6 +33,6 @@ terraform {
 }
 
 inputs = {
-  cluster_name                       = dependency.eks.outputs.cluster_name
-  service_account                    = "external-dns-sa"
+  cluster_name    = dependency.eks.outputs.cluster_name
+  service_account = "external-dns-sa"
 }
