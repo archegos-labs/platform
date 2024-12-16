@@ -3,20 +3,38 @@ locals {
   addon_name = "aws-fsx-csi-driver"
 }
 
-module "aws_fsx_lustre_csi_pod_identity" {
+module "aws_fsx_lustre_controller_pod_identity" {
   source = "terraform-aws-modules/eks-pod-identity/aws"
   version = "1.6.1"
 
-  name = "aws-fsx-lustre-csi"
+  name = "aws-fsx-lustre-csi-controller"
 
   attach_aws_fsx_lustre_csi_policy     = true
   aws_fsx_lustre_csi_service_role_arns = ["arn:aws:iam::*:role/aws-service-role/s3.data-source.lustre.fsx.amazonaws.com/*"]
 
   associations = {
-    "efs-csi-driver" = {
+    "fsx-csi-controller" = {
       cluster_name = var.cluster_name
       namespace       = local.namespace
-      service_account = var.service_account
+      service_account = var.controller_service_account
+    }
+  }
+}
+
+module "aws_fsx_lustre_node_pod_identity" {
+  source = "terraform-aws-modules/eks-pod-identity/aws"
+  version = "1.6.1"
+
+  name = "aws-fsx-lustre-csi-node"
+
+  attach_aws_fsx_lustre_csi_policy     = true
+  aws_fsx_lustre_csi_service_role_arns = ["arn:aws:iam::*:role/aws-service-role/s3.data-source.lustre.fsx.amazonaws.com/*"]
+
+  associations = {
+    "fsx-csi-node" = {
+      cluster_name = var.cluster_name
+      namespace       = local.namespace
+      service_account = var.node_service_account
     }
   }
 }
@@ -46,7 +64,7 @@ module "aws-fsx-csi" {
     },
     {
       name  = "controller.serviceAccount.name"
-      value = var.service_account
+      value = var.controller_service_account
     },
     {
       name  = "node.serviceAccount.create"
@@ -54,7 +72,7 @@ module "aws-fsx-csi" {
     },
     {
       name  = "node.serviceAccount.name"
-      value = var.service_account
+      value = var.node_service_account
     }
   ]
 }

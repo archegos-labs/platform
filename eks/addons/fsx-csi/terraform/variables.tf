@@ -8,8 +8,13 @@ variable "cluster_version" {
   type = string
 }
 
-variable "service_account" {
+variable "controller_service_account" {
   description = "The name of the serivce account to use for the controller"
+  type = string
+}
+
+variable "node_service_account" {
+  description = "The name of the serivce account to use for the nodes"
   type = string
 }
 

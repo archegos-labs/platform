@@ -31,5 +31,6 @@ terraform {
 inputs = {
   cluster_name    = dependency.eks.outputs.cluster_name
   cluster_version = dependency.eks.outputs.cluster_version
-  service_account = "fsx-csi-controller-sa"
+  controller_service_account = "fsx-csi-controller-sa"
+  node_service_account = "fsx-csi-node-sa"
 }
