@@ -1,15 +1,16 @@
 locals {
   namespace = "kube-system"
-  addon_name = "aws-efs-csi-driver"
+  addon_name = "aws-fsx-csi-driver"
 }
 
-module "aws_efs_csi_pod_identity" {
+module "aws_fsx_lustre_csi_pod_identity" {
   source = "terraform-aws-modules/eks-pod-identity/aws"
   version = "1.6.1"
 
-  name = var.service_account
+  name = "aws-fsx-lustre-csi"
 
-  attach_aws_efs_csi_policy = true
+  attach_aws_fsx_lustre_csi_policy     = true
+  aws_fsx_lustre_csi_service_role_arns = ["arn:aws:iam::*:role/aws-service-role/s3.data-source.lustre.fsx.amazonaws.com/*"]
 
   associations = {
     "efs-csi-driver" = {
@@ -26,7 +27,7 @@ data "aws_eks_addon_version" "latest" {
   most_recent        = true
 }
 
-resource "aws_eks_addon" "aws_efs_csi" {
+resource "aws_eks_addon" "aws_fsx_csi" {
   cluster_name = var.cluster_name
   addon_name   = local.addon_name
   addon_version = data.aws_eks_addon_version.latest.version
@@ -34,5 +35,5 @@ resource "aws_eks_addon" "aws_efs_csi" {
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
 
-  depends_on = [module.aws_efs_csi_pod_identity]
+  depends_on = [module.aws_fsx_lustre_csi_pod_identity]
 }

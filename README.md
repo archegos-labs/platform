@@ -69,3 +69,4 @@ to support [Kubeflow](https://www.kubeflow.org/),
    Orchestrators to manage the lifecycle of Amazon EBS volumes.
 * [EFS-CSI Driver](https://github.com/kubernetes-sigs/aws-efs-csi-driver) - Provides a CSI interface used by Container 
    Orchestrators to manage the lifecycle of Amazon EFS volumes.
+* [FsX-CSI Driver](https://github.com/kubernetes-sigs/aws-fsx-csi-driver) - Provides a CSI specification for container orchestrators (CO) to manage lifecycle of Amazon FSx for Lustre filesystems.
