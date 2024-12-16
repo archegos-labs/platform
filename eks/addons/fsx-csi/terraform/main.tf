@@ -50,7 +50,7 @@ module "aws-fsx-csi" {
     },
     {
       name  = "node.serviceAccount.create"
-      value = false
+      value = true
     },
     {
       name  = "node.serviceAccount.name"
