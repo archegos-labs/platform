@@ -21,5 +21,7 @@ inputs = {
 
   nvidia_gpu_operator_helm_config = {
     version = "24.6.2"
+    wait    = true
+    wait_for_jobs = true
   }
 }
