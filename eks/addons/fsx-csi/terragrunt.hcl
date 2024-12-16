@@ -7,6 +7,10 @@ include "mocks" {
   expose = true
 }
 
+include "helm_provider" {
+  path = "${dirname(find_in_parent_folders())}/common/kube-provider.hcl"
+}
+
 dependencies {
   paths = [
     "${dirname(find_in_parent_folders())}/eks/cluster",
