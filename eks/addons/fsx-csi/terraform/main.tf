@@ -21,6 +21,7 @@ module "aws_fsx_lustre_csi_pod_identity" {
   }
 }
 
+// Docs: https://github.com/kubernetes-sigs/aws-fsx-csi-driver
 module "aws-fsx-csi" {
   source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
