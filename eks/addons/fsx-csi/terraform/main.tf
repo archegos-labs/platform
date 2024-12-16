@@ -21,19 +21,39 @@ module "aws_fsx_lustre_csi_pod_identity" {
   }
 }
 
-data "aws_eks_addon_version" "latest" {
-  addon_name         = local.addon_name
-  kubernetes_version = var.cluster_version
-  most_recent        = true
-}
+module "aws-fsx-csi" {
+  source  = "aws-ia/eks-blueprints-addon/aws"
+  version = "1.1.1"
 
-resource "aws_eks_addon" "aws_fsx_csi" {
-  cluster_name = var.cluster_name
-  addon_name   = local.addon_name
-  addon_version = data.aws_eks_addon_version.latest.version
 
-  resolve_conflicts_on_create = "OVERWRITE"
-  resolve_conflicts_on_update = "PRESERVE"
+  # https://github.com/kubernetes-sigs/aws-fsx-csi-driver/blob/master/charts/aws-fsx-csi-driver/Chart.yaml
+  name             = local.addon_name
+  description      = "A Helm chart to deploy aws-fsx-csi-driver"
+  namespace        = local.namespace
+  create_namespace = false
+  chart            = local.addon_name
+  chart_version    = "1.9.2"
+  repository       = "https://kubernetes-sigs.github.io/aws-fsx-csi-driver"
 
-  depends_on = [module.aws_fsx_lustre_csi_pod_identity]
+  wait                       = true
+  wait_for_jobs              = true
+
+  set = [
+    {
+      name  = "controller.serviceAccount.create"
+      value = true
+    },
+    {
+      name  = "controller.serviceAccount.name"
+      value = var.service_account
+    },
+    {
+      name  = "node.serviceAccount.create"
+      value = false
+    },
+    {
+      name  = "node.serviceAccount.name"
+      value = var.service_account
+    }
+  ]
 }
