@@ -79,17 +79,28 @@ inputs = {
 
   eks_managed_node_groups = {
     one = {
-      name         = "node-group-1"
+      name         = "ondemand-cpu-one"
       min_size     = 1
       max_size     = 3
       desired_size = 2
     }
 
     two = {
-      name         = "node-group-2"
+      name         = "ondemand-cpu-two"
       min_size     = 1
       max_size     = 2
       desired_size = 1
+    }
+
+    gpus = {
+      node_group_name = "ondemand-gpu"
+      instance_types  = ["g4dn.xlarge"]
+      min_size        = 1
+      desired_size    = 1
+      max_size        = 3
+      ami_type        = "AL2_x86_64_GPU"
+      disk_size       = 75
+      subnet_ids      = dependency.vpc.outputs.private_subnets
     }
   }
 }
