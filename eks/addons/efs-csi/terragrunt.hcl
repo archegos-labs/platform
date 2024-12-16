@@ -2,14 +2,6 @@ include "root" {
   path = find_in_parent_folders()
 }
 
-include "helm_provider" {
-  path = "${dirname(find_in_parent_folders())}/common/kube-provider.hcl"
-}
-
-include "helm_provider" {
-  path = "${dirname(find_in_parent_folders())}/common/helm-provider.hcl"
-}
-
 include "mocks" {
   path   = "${dirname(find_in_parent_folders())}/common/mocks.hcl"
   expose = true
@@ -34,5 +26,6 @@ terraform {
 
 inputs = {
   cluster_name    = dependency.eks.outputs.cluster_name
-  service_account = "cert-manager-sa"
+  cluster_version = dependency.eks.outputs.cluster_version
+  service_account = "efs-csi-controller-sa"
 }
