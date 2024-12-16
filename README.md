@@ -67,3 +67,5 @@ to support [Kubeflow](https://www.kubeflow.org/),
 
 * [EBS-CSI Driver](https://github.com/kubernetes-sigs/aws-ebs-csi-driver) - Provides a CSI interface used by Container 
    Orchestrators to manage the lifecycle of Amazon EBS volumes.
+* [EFS-CSI Driver](https://github.com/kubernetes-sigs/aws-efs-csi-driver) - Provides a CSI interface used by Container 
+   Orchestrators to manage the lifecycle of Amazon EFS volumes.
