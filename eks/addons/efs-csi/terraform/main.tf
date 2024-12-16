@@ -11,7 +11,6 @@ module "aws_efs_csi_pod_identity" {
 
   attach_aws_efs_csi_policy = true
 
-  # Pod Identity Associations
   associations = {
     "efs-csi-driver" = {
       cluster_name = var.cluster_name
