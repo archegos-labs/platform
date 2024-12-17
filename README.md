@@ -3,10 +3,9 @@
 
 ## Overview
 
-Historically, I've been an end user of Kubernetes and IAC. Meaning I'm on an application team that uses those tools,
-but doesn't setup the platform itself. This repository is a learning exercise in how to build out an application platform 
+This repository serves a playground and exercise in how to build out an ML focused application platform 
 from scratch on top of AWS EKS that adheres to Infrastructure as Code (IaC) and GitOps practices using tools like Terraform, 
-Terragrunt, Kubernetes, Flux and GitHub Actions.
+Terragrunt, Kubernetes, GitHub Actions and Kubeflow.
 
 ## Pre-Requisites
 1. AWS Account & [AWS CLI](https://aws.amazon.com/cli/) - for managing AWS resources.
@@ -62,6 +61,8 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 
 ## Kubeflow
 
+The installation of kubeflow is done leveraging the [Terraform](https://github.com/awslabs/kubeflow-manifests/tree/main/deployments/vanilla/terraform) 
+provided by AWS Labs on the [Kubeflow for AWS](https://awslabs.github.io/kubeflow-manifests/docs/deployment/vanilla/guide-terraform/) project.
 In addition to the addons installed for the baseline EKS cluster above, we're also setting up the following addons
 to support [Kubeflow](https://www.kubeflow.org/),
 
@@ -70,3 +71,4 @@ to support [Kubeflow](https://www.kubeflow.org/),
 * [EFS-CSI Driver](https://github.com/kubernetes-sigs/aws-efs-csi-driver) - Provides a CSI interface used by Container 
    Orchestrators to manage the lifecycle of Amazon EFS volumes.
 * [FsX-CSI Driver](https://github.com/kubernetes-sigs/aws-fsx-csi-driver) - Provides a CSI specification for container orchestrators (CO) to manage lifecycle of Amazon FSx for Lustre filesystems.
+* [NVida GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/amazon-eks.html) - The NVIDIA GPU Operator simplifies the deployment and management of GPU-accelerated applications on Kubernetes.
