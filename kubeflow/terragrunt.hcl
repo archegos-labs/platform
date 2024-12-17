@@ -27,3 +27,7 @@ dependency "eks" {
 terraform {
   source = ".//terraform"
 }
+
+inputs = {
+  cluster_name    = dependency.eks.outputs.cluster_name
+}
