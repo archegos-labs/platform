@@ -19,5 +19,4 @@ resource "helm_release" "kubeflow_issuer" {
   wait_for_jobs = true
 
   depends_on  = [kubernetes_namespace.kubeflow]
-
 }
