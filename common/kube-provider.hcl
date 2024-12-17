@@ -2,14 +2,25 @@ generate "kube_provider" {
   path      = "kube-provider.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<EOF
+    # The reason there are so many "enabled" inputs rather than automatically
+    # detecting whether or not they are enabled based on the value of the input
+    # Any logic based on data sources requires the values to be known during
+    # the "plan" phase of Terraform, and often they are not, which causes problems.
+
+    data "aws_eks_cluster" "this" {
+      count = var.kube_data_auth_enabled ? 1 : 0
+      name = var.cluster_name
+    }
+
+    data "aws_eks_cluster_auth" "this" {
+      count = var.kube_data_auth_enabled ? 1 : 0
+      name = var.cluster_name
+    }
+
     provider "kubernetes" {
-      host                   = var.cluster_endpoint
-      cluster_ca_certificate = base64decode(var.cluster_certificate_authority_data)
-      exec {
-        api_version = "client.authentication.k8s.io/v1beta1"
-        command     = "aws"
-        args        = ["eks", "get-token", "--cluster-name", var.cluster_name]
-      }
+        host                   = var.kube_data_auth_enabled ? one(data.aws_eks_cluster.this[*].endpoint) : null
+        cluster_ca_certificate = var.kube_data_auth_enabled ? base64decode(one(data.aws_eks_cluster.this[*].certificate_authority[0].data)) : null
+        token                  = var.kube_data_auth_enabled ? one(data.aws_eks_cluster_auth.this[*].token) : null
     }
   EOF
 }
