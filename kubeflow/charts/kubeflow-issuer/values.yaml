@@ -1,2 +1,3 @@
-null
-...
+cluster_issuer:
+  name: cluster-self-signing-issuer
+  namespace: cert-manager
