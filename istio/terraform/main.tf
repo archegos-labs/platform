@@ -103,6 +103,23 @@ module "istio_cni" {
   depends_on = [ module.istio_istiod ]
 }
 
+module "istio_ztunnel" {
+  source = "aws-ia/eks-blueprints-addon/aws"
+  version = "1.1.1"
+
+  name          = "istio-ztunnel"
+  description   = "The node proxy component of Istio’s ambient mode."
+  namespace     = kubernetes_namespace.istio_system.metadata[0].name
+  chart         = "ztunnel"
+  chart_version = local.istio_repo_version
+  repository    = local.istio_repo_url
+
+  wait          = true
+  wait_for_jobs = true
+
+  depends_on = [ module.istio_istiod ]
+}
+
 resource "kubernetes_namespace" "istio_ingress" {
   metadata {
     labels = {
