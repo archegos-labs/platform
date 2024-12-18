@@ -66,3 +66,33 @@ module "istio_istiod" {
 
   depends_on = [module.istio_base]
 }
+
+module "istio_cni" {
+  source = "aws-ia/eks-blueprints-addon/aws"
+  version = "1.1.1"
+
+  name          = "istio-cni"
+  description   = <<-EOT
+    Responsible for detecting the pods that belong to the ambient mesh, and configuring the traffic redirection
+    between pods and the ztunnel node proxy"
+  EOT
+
+  namespace     = kubernetes_namespace.istio_system.metadata[0].name
+  chart         = "cni"
+  chart_version = local.istio_repo_version
+  repository    = local.istio_repo_url
+
+  wait          = true
+  wait_for_jobs = true
+
+  values = [
+    <<-EOT
+      cni:
+        excludeNamespaces:
+          - ${kubernetes_namespace.istio_system.metadata[0].name}
+          - kube-system
+    EOT
+  ]
+
+  depends_on = [ module.istio_istiod ]
+}
