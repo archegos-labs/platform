@@ -87,6 +87,7 @@ module "istio_cni" {
   namespace     = kubernetes_namespace.istio_system.metadata[0].name
   chart         = "cni"
   chart_version = local.istio_repo_version
+  profile       = "ambient"
   repository    = local.istio_repo_url
 
   wait          = true
@@ -94,6 +95,7 @@ module "istio_cni" {
 
   values = [
     <<-EOT
+      profile: ambient
       cni:
         excludeNamespaces:
           - ${kubernetes_namespace.istio_system.metadata[0].name}
@@ -131,6 +133,13 @@ resource "kubernetes_namespace" "istio_ingress" {
   }
 }
 
+/**
+   Remember to run the following after installing the istio-ingress gateway:
+
+   ```bash
+   kubectl rollout restart deployment istio-ingress -n istio-ingress
+    ```
+ */
 // https://istio.io/latest/docs/setup/additional-setup/gateway/
 module "istio_ingress" {
   source = "aws-ia/eks-blueprints-addon/aws"

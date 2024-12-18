@@ -71,6 +71,15 @@ load balancing, service-to-service authentication, and monitoring – with few o
 4. A pluggable policy layer and configuration API supporting access controls, rate limits and quotas
 5. Automatic metrics, logs, and traces for all traffic within a cluster, including cluster ingress and egress
 
+### Installation
+
+Installation is done via Terraform and Terragrunt. After the EKS cluster is setup and Istio is installed on the cluster. 
+The following needs to be run,
+
+```shell
+kubectl rollout restart deployment istio-ingress -n istio-ingress
+```
+
 ## Kubeflow
 
 The installation of kubeflow is done leveraging the [Terraform](https://github.com/awslabs/kubeflow-manifests/tree/main/deployments/vanilla/terraform) 
