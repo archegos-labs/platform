@@ -88,7 +88,6 @@ module "istio_cni" {
   namespace     = kubernetes_namespace.istio_system.metadata[0].name
   chart         = "cni"
   chart_version = local.istio_repo_version
-  profile       = "ambient"
   repository    = local.istio_repo_url
 
   wait          = true
