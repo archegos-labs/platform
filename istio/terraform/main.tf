@@ -120,7 +120,7 @@ module "istio_ztunnel" {
   wait          = true
   wait_for_jobs = true
 
-  depends_on = [ module.istio_istiod ]
+  depends_on = [ module.istio_cni ]
 }
 
 resource "kubernetes_namespace" "istio_ingress" {
