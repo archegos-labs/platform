@@ -120,7 +120,7 @@ module "istio_ztunnel" {
   depends_on = [ module.istio_istiod ]
 }
 
-resource "kubernetes_namespace" "ingress" {
+resource "kubernetes_namespace" "istio_ingress" {
   metadata {
     labels = {
       istio-injection = "enabled"
@@ -137,7 +137,7 @@ module "istio_ingress" {
 
   name          = "istio-ingress"
   description   = "Provides Envoy proxies running at the edge of the mesh, providing fine-grained control over traffic entering and leaving the mesh."
-  namespace     = kubernetes_namespace.istio_system.metadata[0].name
+  namespace     = kubernetes_namespace.istio_ingress.metadata[0].name
   chart         = "gateway"
   chart_version = local.istio_repo_version
   repository    = local.istio_repo_url
@@ -162,6 +162,8 @@ module "istio_ingress" {
 
   wait          = true
   wait_for_jobs = true
+
+  timeout = 600
 
   depends_on = [module.istio_base, module.istio_istiod, module.istio_cni]
 }
