@@ -5,6 +5,11 @@ locals {
 
 resource "kubernetes_namespace" "istio_system" {
   metadata {
+    labels = {
+      istio-operator-managed = "Reconcile"
+      istio-injection = "disabled"
+    }
+
     name = "istio-system"
   }
 }
@@ -67,6 +72,7 @@ module "istio_istiod" {
   depends_on = [module.istio_base]
 }
 
+// https://istio.io/latest/docs/setup/additional-setup/cni/
 module "istio_cni" {
   source = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
