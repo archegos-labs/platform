@@ -146,5 +146,7 @@ module "istio_ingress" {
   wait          = true
   wait_for_jobs = true
 
+  timeout = 600
+
   depends_on = [module.istio_base, module.istio_istiod, module.istio_cni]
 }
