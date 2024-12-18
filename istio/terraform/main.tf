@@ -46,4 +46,6 @@ module "istio_istiod" {
       value = "/dev/stdout"
     }
   ]
+
+  depends_on = [module.istio_base]
 }
