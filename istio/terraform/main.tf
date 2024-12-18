@@ -40,11 +40,28 @@ module "istio_istiod" {
   wait          = true
   wait_for_jobs = true
 
-  set = [
-    {
-      name  = "meshConfig.accessLogFile"
-      value = "/dev/stdout"
-    }
+  values = [
+    <<-EOT
+      meshConfig:
+        accessLogFile: /dev/stdout
+        defaultConfig:
+          proxyMetadata: {}
+          tracing: {}
+        enablePrometheusMerge: true
+        rootNamespace: ${kubernetes_namespace.istio_system.metadata[0].name}
+        tcpKeepalive:
+          interval: 5s
+          probes: 3
+          time: 10s
+      pilot:
+        env:
+          CLOUD_PLATFORM: aws
+      istio_cni:
+        enabled: true
+        chained: true
+      global:
+        istioNamespace:  ${kubernetes_namespace.istio_system.metadata[0].name}
+    EOT
   ]
 
   depends_on = [module.istio_base]
