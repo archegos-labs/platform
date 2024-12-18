@@ -113,12 +113,13 @@ resource "kubernetes_namespace" "ingress" {
   }
 }
 
+// https://istio.io/latest/docs/setup/additional-setup/gateway/
 module "istio_ingress" {
   source = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
 
   name          = "istio-ingress"
-  description   = "Contains the basic CRDs and cluster roles required to set up Istio."
+  description   = "Provides Envoy proxies running at the edge of the mesh, providing fine-grained control over traffic entering and leaving the mesh."
   namespace     = kubernetes_namespace.istio_system.metadata[0].name
   chart         = "gateway"
   chart_version = local.istio_repo_version
