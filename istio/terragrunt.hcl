@@ -18,6 +18,9 @@ include "helm_provider" {
 dependencies {
   paths = [
     "${dirname(find_in_parent_folders())}/eks/cluster",
+    "${dirname(find_in_parent_folders())}/eks/addons/cert-manager",
+    "${dirname(find_in_parent_folders())}/eks/addons/vpc-cni",
+    "${dirname(find_in_parent_folders())}/eks/addons/awslb-controller",
   ]
 }
 

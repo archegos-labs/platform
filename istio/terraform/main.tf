@@ -60,6 +60,7 @@ module "istio_istiod" {
           time: 10s
       pilot:
         env:
+          PILOT_ENABLE_AMBIENT: true
           CLOUD_PLATFORM: aws
       istio_cni:
         enabled: true
@@ -163,7 +164,5 @@ module "istio_ingress" {
   wait          = true
   wait_for_jobs = true
 
-  timeout = 600
-
-  depends_on = [module.istio_base, module.istio_istiod, module.istio_cni]
+  depends_on = [module.istio_ztunnel, module.istio_cni]
 }
