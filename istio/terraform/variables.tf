@@ -3,6 +3,12 @@ variable "cluster_name" {
   type = string
 }
 
+variable "ingress_namespace" {
+  description = "Istio ingress namespace"
+  default = "istio-ingress"
+  type = string
+}
+
 variable "kube_data_auth_enabled" {
   type        = bool
   default     = false

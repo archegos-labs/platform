@@ -102,3 +102,48 @@ module "istio_cni" {
 
   depends_on = [ module.istio_istiod ]
 }
+
+resource "kubernetes_namespace" "ingress" {
+  metadata {
+    labels = {
+      istio-injection = "enabled"
+    }
+
+    name = "${var.ingress_namespace}"
+  }
+}
+
+module "istio_ingress" {
+  source = "aws-ia/eks-blueprints-addon/aws"
+  version = "1.1.1"
+
+  name          = "istio-ingress"
+  description   = "Contains the basic CRDs and cluster roles required to set up Istio."
+  namespace     = kubernetes_namespace.istio_system.metadata[0].name
+  chart         = "gateway"
+  chart_version = local.istio_repo_version
+  repository    = local.istio_repo_url
+
+  values = [
+    yamlencode(
+      {
+        labels = {
+          istio = "ingressgateway"
+        }
+        service = {
+          annotations = {
+            "service.beta.kubernetes.io/aws-load-balancer-type"            = "external"
+            "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type" = "ip"
+            "service.beta.kubernetes.io/aws-load-balancer-scheme"          = "internet-facing"
+            "service.beta.kubernetes.io/aws-load-balancer-attributes"      = "load_balancing.cross_zone.enabled=true"
+          }
+        }
+      }
+    )
+  ]
+
+  wait          = true
+  wait_for_jobs = true
+
+  depends_on = [module.istio_base, module.istio_istiod, module.istio_cni]
+}
