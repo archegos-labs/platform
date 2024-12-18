@@ -58,6 +58,18 @@ CoreDNS is running at https://7D3A825AA8E29A730955A485709E89D2.gr7.us-east-1.eks
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
+## Service Mesh
+
+[Istio](https://istio.io/latest/docs/overview/what-is-istio/) is used for the service mesh layer. Istio’s powerful 
+features provide a uniform and efficient way to secure, connect, and monitor services. Istio is the path to 
+load balancing, service-to-service authentication, and monitoring – with few or no service code changes. It gives you:
+
+1. Secure service-to-service communication in a cluster with mutual TLS encryption, strong identity-based authentication 
+   and authorization
+2. Automatic load balancing for HTTP, gRPC, WebSocket, and TCP traffic
+3. Fine-grained control of traffic behavior with rich routing rules, retries, failovers, and fault injection
+4. A pluggable policy layer and configuration API supporting access controls, rate limits and quotas
+5. Automatic metrics, logs, and traces for all traffic within a cluster, including cluster ingress and egress
 
 ## Kubeflow
 
