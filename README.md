@@ -3,9 +3,21 @@
 
 ## Overview
 
-This repository serves a playground and exercise in how to build out an ML focused application platform 
-from scratch on top of AWS EKS that adheres to Infrastructure as Code (IaC) and GitOps practices using tools like Terraform, 
+This repository serves a playground and exercise in how to build out an ML focused application platform
+from scratch on top of AWS EKS that adheres to Infrastructure as Code (IaC) and GitOps practices using tools like Terraform,
 Terragrunt, Kubernetes, GitHub Actions and Kubeflow.
+
+<!-- toc-begin -->
+* [Pre-requisites](#pre-requisites)
+* [Github Actions](#github-actions)
+* [AWS EKS](#eks)
+* [Service Mesh](#service-mesh)
+* [Kubeflow](#kubeflow)
+<!-- toc-end -->
+
+Should you find this project useful, please consider donating through <a href="https://www.buymeacoffee.com/aeden" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+At a minimum it helps with the AWS bill.
+
 
 ## Pre-Requisites
 1. AWS Account & [AWS CLI](https://aws.amazon.com/cli/) - for managing AWS resources.
