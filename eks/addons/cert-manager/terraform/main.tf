@@ -3,17 +3,17 @@ locals {
 }
 
 module "cert_manager_pod_identity" {
-  source = "terraform-aws-modules/eks-pod-identity/aws"
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
   version = "1.6.1"
 
-  name = "${var.service_account}"
+  name                          = var.service_account
   attach_cert_manager_policy    = true
   cert_manager_hosted_zone_arns = ["arn:aws:route53:::hostedzone/*"]
 
   associations = {
     "cert-manager" = {
-      cluster_name   = var.cluster_name
-      namespace      = local.namespace
+      cluster_name    = var.cluster_name
+      namespace       = local.namespace
       service_account = var.service_account
     }
   }
@@ -33,8 +33,8 @@ module "cert_manager" {
   chart_version    = "v1.14.3"
   repository       = "https://charts.jetstack.io"
 
-  wait                       = true
-  wait_for_jobs              = true
+  wait          = true
+  wait_for_jobs = true
 
   set = [
     {

@@ -27,10 +27,10 @@ resource "github_repository" "fluxcd" {
   name        = var.github_repository
   description = "The home of Flux app definitions"
 
-  visibility = "public"
-  license_template = "mit"
+  visibility         = "public"
+  license_template   = "mit"
   gitignore_template = "Terraform"
-  has_issues = true
+  has_issues         = true
 }
 
 resource "tls_private_key" "flux" {

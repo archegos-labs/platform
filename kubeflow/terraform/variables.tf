@@ -1,6 +1,6 @@
 variable "cluster_name" {
   description = "The name of the EKS cluster"
-  type = string
+  type        = string
 }
 
 variable "kube_data_auth_enabled" {

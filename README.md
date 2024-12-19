@@ -87,7 +87,7 @@ kubectl rollout restart deployment istio-ingress -n istio-ingress
 In addition to the Istio control plane, the following tools are installed to support the service mesh,
 
 * [Kiali](https://kiali.io/) - Configure, visualize, validate and troubleshoot your mesh! Kiali is a console for Istio service mesh.
-
+* [Prometheus](https://prometheus.io/) - Prometheus is an open-source systems monitoring and alerting toolkit.
 
 #### Kiali
 
@@ -96,7 +96,7 @@ To access the Kiali dashboard, run the following,
 ```shell
 kubectl port-forward svc/kiali 20001:20001 -n istio-system
 ```
-Then navigate to `https://localhost:20001/` in your preferred web browser.
+Then navigate to `http://localhost:20001/` in your preferred web browser. Learn more accessing the Kiali dashboard [here](https://kiali.io/docs/installation/installation-guide/accessing-kiali/).
 
 If you want the operator to re-process the Kiali CR (called “reconciliation”) without having to change the Kiali CR’s 
 spec fields, you can modify any annotation on the Kiali CR itself. This will trigger the operator to reconcile the 
@@ -108,6 +108,7 @@ kubectl annotate kiali my-kiali -n istio-system --overwrite kiali.io/reconcile="
 ```
 
 For more details on the CR see [Kiali CR](https://kiali.io/docs/installation/installation-guide/creating-updating-kiali-cr/)
+
 ## Kubeflow
 
 The installation of kubeflow is done leveraging the [Terraform](https://github.com/awslabs/kubeflow-manifests/tree/main/deployments/vanilla/terraform) 

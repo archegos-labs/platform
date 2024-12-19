@@ -1,5 +1,5 @@
 locals {
-  istio_repo_url = "https://istio-release.storage.googleapis.com/charts"
+  istio_repo_url     = "https://istio-release.storage.googleapis.com/charts"
   istio_repo_version = "1.24.1"
 }
 
@@ -11,7 +11,7 @@ resource "kubernetes_namespace" "istio_system" {
 
 // https://istio.io/latest/docs/ambient/install/helm/#base-components
 module "istio_base" {
-  source = "aws-ia/eks-blueprints-addon/aws"
+  source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
 
   name          = "istio-base"
@@ -71,11 +71,11 @@ module "istio_istiod" {
 
 // https://istio.io/latest/docs/setup/additional-setup/cni/
 module "istio_cni" {
-  source = "aws-ia/eks-blueprints-addon/aws"
+  source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
 
-  name          = "istio-cni"
-  description   = <<-EOT
+  name        = "istio-cni"
+  description = <<-EOT
     Responsible for detecting the pods that belong to the ambient mesh, and configuring the traffic redirection
     between pods and the ztunnel node proxy"
   EOT
@@ -98,11 +98,11 @@ module "istio_cni" {
     EOT
   ]
 
-  depends_on = [ module.istio_istiod ]
+  depends_on = [module.istio_istiod]
 }
 
 module "istio_ztunnel" {
-  source = "aws-ia/eks-blueprints-addon/aws"
+  source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
 
   name          = "istio-ztunnel"
@@ -115,7 +115,7 @@ module "istio_ztunnel" {
   wait          = true
   wait_for_jobs = true
 
-  depends_on = [ module.istio_cni ]
+  depends_on = [module.istio_cni]
 }
 
 resource "kubernetes_namespace" "istio_ingress" {
@@ -124,7 +124,7 @@ resource "kubernetes_namespace" "istio_ingress" {
       istio-injection = "enabled"
     }
 
-    name = "${var.ingress_namespace}"
+    name = var.ingress_namespace
   }
 }
 
@@ -137,7 +137,7 @@ resource "kubernetes_namespace" "istio_ingress" {
  */
 // https://istio.io/latest/docs/setup/additional-setup/gateway/
 module "istio_ingress" {
-  source = "aws-ia/eks-blueprints-addon/aws"
+  source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
 
   name          = "istio-ingress"
@@ -185,13 +185,13 @@ module "kiali_operator" {
   source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
 
-  name          = "kiali-operator"
-  description   = "Kiali is a console for Istio service mesh"
-  namespace     = "kiali-operator"
+  name             = "kiali-operator"
+  description      = "Kiali is a console for Istio service mesh"
+  namespace        = "kiali-operator"
   create_namespace = true
-  chart         = "kiali-operator"
-  chart_version = "v2.2.0"
-  repository    = "https://kiali.org/helm-charts"
+  chart            = "kiali-operator"
+  chart_version    = "v2.2.0"
+  repository       = "https://kiali.org/helm-charts"
 
   // CR spec: https://kiali.io/docs/configuration/kialis.kiali.io/
   values = [

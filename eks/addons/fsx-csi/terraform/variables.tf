@@ -1,21 +1,21 @@
 variable "cluster_name" {
   description = "The name of the EKS cluster"
-  type = string
+  type        = string
 }
 
 variable "cluster_version" {
   description = "The name of the EKS cluster"
-  type = string
+  type        = string
 }
 
 variable "controller_service_account" {
   description = "The name of the serivce account to use for the controller"
-  type = string
+  type        = string
 }
 
 variable "node_service_account" {
   description = "The name of the serivce account to use for the nodes"
-  type = string
+  type        = string
 }
 
 variable "kube_data_auth_enabled" {

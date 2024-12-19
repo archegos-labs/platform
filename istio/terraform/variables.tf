@@ -1,12 +1,12 @@
 variable "cluster_name" {
   description = "The name of the EKS cluster"
-  type = string
+  type        = string
 }
 
 variable "ingress_namespace" {
   description = "Istio ingress namespace"
-  default = "istio-ingress"
-  type = string
+  default     = "istio-ingress"
+  type        = string
 }
 
 variable "kube_data_auth_enabled" {
