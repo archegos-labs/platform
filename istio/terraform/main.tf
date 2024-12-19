@@ -205,7 +205,7 @@ module "kiali_operator" {
         istio_namespace: ${kubernetes_namespace.istio_system.metadata[0].name}
         external_services:
           prometheus:
-            url: "http://prometheus-operated.${kubernetes_namespace.istio_system}:9090"
+            url: "http://prometheus-operated.${kubernetes_namespace.istio_system.metadata[0].name}:9090"
     EOF
   ]
 }
