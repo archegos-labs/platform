@@ -13,15 +13,6 @@ resource "helm_release" "prometheus" {
   cleanup_on_fail = true
   values = [
     <<EOF
-    prometheus:
-      prometheusSpec:
-        storageSpec:
-          volumeClaimTemplate:
-            spec:
-              storageClassName: "standard"
-              resources:
-                requests:
-                  storage: 10Gi
     alertmanager:
       enabled: false
     EOF
