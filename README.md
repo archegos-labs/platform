@@ -71,6 +71,8 @@ load balancing, service-to-service authentication, and monitoring – with few o
 4. A pluggable policy layer and configuration API supporting access controls, rate limits and quotas
 5. Automatic metrics, logs, and traces for all traffic within a cluster, including cluster ingress and egress
 
+This installation of Istio has been setup in [ambient mode](https://istio.io/latest/docs/ambient/overview/).
+
 ### Installation
 
 Installation is done via Terraform and Terragrunt. After the EKS cluster is setup and Istio is installed on the cluster. 
@@ -79,6 +81,13 @@ The following needs to be run,
 ```shell
 kubectl rollout restart deployment istio-ingress -n istio-ingress
 ```
+
+### Tools
+
+In addition to the Istio control plane, the following tools are installed to support the service mesh,
+
+* [Kiali](https://kiali.io/) -Configure, visualize, validate and troubleshoot your mesh! Kiali is a console for Istio service mesh.
+
 
 ## Kubeflow
 

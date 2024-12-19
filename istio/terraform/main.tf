@@ -5,11 +5,6 @@ locals {
 
 resource "kubernetes_namespace" "istio_system" {
   metadata {
-    labels = {
-      istio-operator-managed = "Reconcile"
-      istio-injection = "disabled"
-    }
-
     name = "istio-system"
   }
 }
@@ -175,4 +170,31 @@ module "istio_ingress" {
   wait_for_jobs = true
 
   depends_on = [module.istio_ztunnel, module.istio_cni]
+}
+
+
+
+module "kiali_operator" {
+  source  = "aws-ia/eks-blueprints-addon/aws"
+  version = "1.1.1"
+
+  name          = "kiali-operator"
+  description   = "Kiali is a console for Istio service mesh"
+  namespace     = "kiali-operator"
+  create_namespace = true
+  chart         = "kiali_operator"
+  chart_version = "v1.30.0"
+  repository    = "https://kiali.org/helm-charts"
+
+  // CR spec: https://kiali.io/docs/configuration/kialis.kiali.io/
+  values = [
+    <<-EOF
+    cr:
+      create: true
+      namespace: ${kubernetes_namespace.istio_system.metadata[0].name}
+      auth:
+        strategy: "anonymous"
+      istio_namespace: ${kubernetes_namespace.istio_system.metadata[0].name}
+    EOF
+  ]
 }
