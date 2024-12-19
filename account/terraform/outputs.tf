@@ -20,16 +20,16 @@ output "resource_prefix" {
 
 output "available_azs" {
   description = "The zones available to the account"
-  value = data.aws_availability_zones.available.names
+  value       = data.aws_availability_zones.available.names
 }
 
 output "caller_arn" {
   description = "The caller identity"
-  value = data.aws_caller_identity.current.arn
+  value       = data.aws_caller_identity.current.arn
 }
 
 output "account_id" {
   description = "The account ID"
-  value = data.aws_caller_identity.current.account_id
+  value       = data.aws_caller_identity.current.account_id
 }
 

@@ -1,10 +1,10 @@
 locals {
-  namespace = "kube-system"
+  namespace  = "kube-system"
   addon_name = "aws-fsx-csi-driver"
 }
 
 module "aws_fsx_lustre_controller_pod_identity" {
-  source = "terraform-aws-modules/eks-pod-identity/aws"
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
   version = "1.6.1"
 
   name = "aws-fsx-lustre-csi-controller"
@@ -14,7 +14,7 @@ module "aws_fsx_lustre_controller_pod_identity" {
 
   associations = {
     "fsx-csi-controller" = {
-      cluster_name = var.cluster_name
+      cluster_name    = var.cluster_name
       namespace       = local.namespace
       service_account = var.controller_service_account
     }
@@ -22,7 +22,7 @@ module "aws_fsx_lustre_controller_pod_identity" {
 }
 
 module "aws_fsx_lustre_node_pod_identity" {
-  source = "terraform-aws-modules/eks-pod-identity/aws"
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
   version = "1.6.1"
 
   name = "aws-fsx-lustre-csi-node"
@@ -32,7 +32,7 @@ module "aws_fsx_lustre_node_pod_identity" {
 
   associations = {
     "fsx-csi-node" = {
-      cluster_name = var.cluster_name
+      cluster_name    = var.cluster_name
       namespace       = local.namespace
       service_account = var.node_service_account
     }
@@ -54,8 +54,8 @@ module "aws-fsx-csi" {
   chart_version    = "1.9.2"
   repository       = "https://kubernetes-sigs.github.io/aws-fsx-csi-driver"
 
-  wait                       = true
-  wait_for_jobs              = true
+  wait          = true
+  wait_for_jobs = true
 
   set = [
     {

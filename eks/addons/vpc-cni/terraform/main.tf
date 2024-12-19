@@ -1,10 +1,10 @@
 locals {
-  namespace = "kube-system"
+  namespace  = "kube-system"
   addon_name = "vpc-cni"
 }
 
 module "aws_vpc_cni_ipv4_pod_identity" {
-  source = "terraform-aws-modules/eks-pod-identity/aws"
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
   version = "1.6.1"
 
   name = var.service_account
@@ -15,7 +15,7 @@ module "aws_vpc_cni_ipv4_pod_identity" {
   associations = {
     "aws_vpc_cni_ipv4" = {
       cluster_name = var.cluster_name
-      namespace = local.namespace
+      namespace    = local.namespace
 
       # The VPC-CNI plugin is installed by default when creating an eks cluster and
       # creates kube service account named "aws-node". We re-use this service account
@@ -34,8 +34,8 @@ data "aws_eks_addon_version" "latest" {
 # For more, https://github.com/aws/amazon-vpc-cni-k8s
 # https://github.com/aws/eks-charts/tree/master/stable/aws-vpc-cni#adopting-the-existing-aws-node-resources-in-an-eks-cluster
 resource "aws_eks_addon" "aws_vpc_cni" {
-  cluster_name = var.cluster_name
-  addon_name   = local.addon_name
+  cluster_name  = var.cluster_name
+  addon_name    = local.addon_name
   addon_version = data.aws_eks_addon_version.latest.version
 
   resolve_conflicts_on_create = "OVERWRITE"

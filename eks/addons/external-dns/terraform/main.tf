@@ -3,7 +3,7 @@ locals {
 }
 
 module "external_dns_pod_identity" {
-  source = "terraform-aws-modules/eks-pod-identity/aws"
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
   version = "1.6.1"
 
   name = var.service_account
@@ -13,8 +13,8 @@ module "external_dns_pod_identity" {
 
   associations = {
     "external-dns" = {
-      cluster_name   = var.cluster_name
-      namespace      = local.namespace
+      cluster_name    = var.cluster_name
+      namespace       = local.namespace
       service_account = var.service_account
     }
   }
@@ -38,8 +38,8 @@ module "external_dns" {
   repository       = "https://kubernetes-sigs.github.io/external-dns/"
   values           = ["provider: aws", "source: ingress"]
 
-  wait                       = true
-  wait_for_jobs              = true
+  wait          = true
+  wait_for_jobs = true
 
   set = [
     {

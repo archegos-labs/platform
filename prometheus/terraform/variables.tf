@@ -3,14 +3,10 @@ variable "cluster_name" {
   type        = string
 }
 
-variable "vpc_id" {
-  description = "The VPC ID"
+variable "prometheus_namespace" {
+  description = "Prometheus name space"
   type        = string
-}
-
-variable "service_account" {
-  description = "The name of the serivce account to use for the controller"
-  type        = string
+  default     = "kube-system"
 }
 
 variable "kube_data_auth_enabled" {

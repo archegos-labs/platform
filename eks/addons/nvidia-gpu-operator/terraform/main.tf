@@ -1,5 +1,5 @@
 locals {
-  namespace = "gpu-operator"
+  namespace  = "gpu-operator"
   addon_name = "gpu-operator"
 }
 
@@ -19,6 +19,6 @@ module "nvidia_gpu_operator" {
   chart_version    = "v24.9.1"
   repository       = "https://helm.ngc.nvidia.com/nvidia"
 
-  wait                       = true
-  wait_for_jobs              = true
+  wait          = true
+  wait_for_jobs = true
 }
