@@ -7,8 +7,8 @@ resource "helm_release" "prometheus" {
   repository       = "https://prometheus-community.github.io/helm-charts"
   version          = "v67.3.1"
 
-  wait          = true
-  wait_for_jobs = true
+  atomic           = true
+  recreate_pods    = true
 
   cleanup_on_fail = true
   values = [
