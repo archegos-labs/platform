@@ -3,3 +3,5 @@ terraform 1.9.8
 terragrunt 0.68.6
 skaffold 2.13.2
 awscli 2.19.2
+helm 3.16.4
+aws-nuke 3.34.0

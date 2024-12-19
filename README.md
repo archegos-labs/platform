@@ -96,7 +96,7 @@ To access the Kiali dashboard, run the following,
 ```shell
 kubectl port-forward svc/kiali 20001:20001 -n istio-system
 ```
-Then navigate to https://localhost:20001/ in your preferred web browser.
+Then navigate to `https://localhost:20001/` in your preferred web browser.
 
 If you want the operator to re-process the Kiali CR (called “reconciliation”) without having to change the Kiali CR’s 
 spec fields, you can modify any annotation on the Kiali CR itself. This will trigger the operator to reconcile the 
