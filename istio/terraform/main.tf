@@ -174,6 +174,13 @@ module "istio_ingress" {
 
 
 
+/**
+ * https://kiali.io/docs/installation/installation-guide/creating-updating-kiali-cr/
+ *
+ * The Kiali Operator watches the Kiali Custom Resource (Kiali CR), a custom resource that contains the
+ * Kiali Server deployment configuration. Creating, updating, or removing a Kiali CR will trigger the Kiali Operator
+ * to install, update, or remove Kiali.
+ */
 module "kiali_operator" {
   source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
@@ -192,9 +199,10 @@ module "kiali_operator" {
     cr:
       create: true
       namespace: ${kubernetes_namespace.istio_system.metadata[0].name}
-      auth:
-        strategy: "anonymous"
-      istio_namespace: ${kubernetes_namespace.istio_system.metadata[0].name}
+      spec:
+        auth:
+          strategy: anonymous
+        istio_namespace: ${kubernetes_namespace.istio_system.metadata[0].name}
     EOF
   ]
 }
