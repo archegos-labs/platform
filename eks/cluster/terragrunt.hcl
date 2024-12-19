@@ -74,7 +74,7 @@ inputs = {
 
   eks_managed_node_group_defaults = {
     ami_type       = "AL2_x86_64"
-    instance_types = ["t3.small"]
+    instance_types = ["t3.medium"]
   }
 
   eks_managed_node_groups = {
@@ -88,8 +88,8 @@ inputs = {
     two = {
       name         = "ondemand-cpu-two"
       min_size     = 1
-      max_size     = 2
-      desired_size = 1
+      max_size     = 3
+      desired_size = 2
     }
 
     gpus = {
