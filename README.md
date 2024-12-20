@@ -139,3 +139,5 @@ to support [Kubeflow](https://www.kubeflow.org/),
    Orchestrators to manage the lifecycle of Amazon EFS volumes.
 * [FsX-CSI Driver](https://github.com/kubernetes-sigs/aws-fsx-csi-driver) - Provides a CSI specification for container orchestrators (CO) to manage lifecycle of Amazon FSx for Lustre filesystems.
 * [NVida GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/amazon-eks.html) - The NVIDIA GPU Operator simplifies the deployment and management of GPU-accelerated applications on Kubernetes.
+
+### Training Operator
