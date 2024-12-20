@@ -5,6 +5,11 @@ locals {
 
 resource "kubernetes_namespace" "istio_system" {
   metadata {
+    labels = {
+      istio-operator-managed = "Reconcile"
+      istio-injection = "disabled"
+    }
+
     name = "istio-system"
   }
 }
