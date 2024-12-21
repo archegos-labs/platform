@@ -6,7 +6,7 @@ variable "cluster_name" {
 variable "prometheus_namespace" {
   description = "Prometheus name space"
   type        = string
-  default     = "istio-system"
+  default     = "monitoring"
 }
 
 variable "kube_data_auth_enabled" {

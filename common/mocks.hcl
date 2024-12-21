@@ -18,5 +18,9 @@ locals {
     cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=="
   }
 
+  prometheus = {
+    namespace = "mock-namespace"
+  }
+
   commands = ["init", "validate", "plan"]
 }

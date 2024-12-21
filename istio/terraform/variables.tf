@@ -9,6 +9,12 @@ variable "ingress_namespace" {
   type        = string
 }
 
+variable "prometheus_namespace" {
+  description = "Istio ingress namespace"
+  default     = "istio-ingress"
+  type        = string
+}
+
 variable "kube_data_auth_enabled" {
   type        = bool
   default     = false
