@@ -14,6 +14,7 @@ include "helm_provider" {
 dependencies {
   paths = [
     "${dirname(find_in_parent_folders())}/eks/cluster",
+    "${dirname(find_in_parent_folders())}/istio",
   ]
 }
 
