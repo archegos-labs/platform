@@ -9,6 +9,7 @@ Terragrunt, Kubernetes, GitHub Actions and Kubeflow.
 
 <!-- toc-begin -->
 * [Pre-requisites](#pre-requisites)
+* [VPC & Networking](#vpc--networking)
 * [Github Actions](#github-actions)
 * [AWS EKS](#eks)
 * [Service Mesh](#service-mesh)
@@ -25,12 +26,34 @@ At a minimum it helps with the AWS bill.
 
 
 ## Pre-Requisites
-1. AWS Account & [AWS CLI](https://aws.amazon.com/cli/) - for managing AWS resources.
-2. [Terraform](https://www.terraform.io) - for infrastructure as code.
-3. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
+If you're following along, at a minimum you'll need the following,
+ 
+1. [Github CLI](https://cli.github.com/) - for managing GitHub resources.
+2. AWS Account & [AWS CLI](https://aws.amazon.com/cli/) - for managing AWS resources.
+3. [Terraform](https://www.terraform.io) - for infrastructure as code.
+4. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
 
 I typically manage installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
 asdf, there is a `.tool-versions` file in the root of the project that you can use for installing.
+
+## Up & Running
+
+```shell
+
+```
+
+## VPC & Networking
+
+Our first step is to set up a Virtual Private Cloud (VPC) and subnets where our EKS cluster will live. The VPC will
+look like the following,
+
+
+
+
+#### References
+* [AWS VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
+* [AWS EKS VPC & Subnet Considerations](https://docs.aws.amazon.com/eks/latest/best-practices/subnets.html)
+
 
 ## Github Actions
 

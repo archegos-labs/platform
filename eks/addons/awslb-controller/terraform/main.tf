@@ -20,11 +20,6 @@ module "aws_lb_controller_pod_identity" {
   }
 }
 
-/**
-  Docs: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.7/
-  More Help: https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/aws-load-balancer-controller.md
-  Helm Chart: https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller
- */
 module "eks_blueprints_addon" {
   source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"

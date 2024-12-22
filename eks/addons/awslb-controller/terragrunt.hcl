@@ -1,3 +1,10 @@
+/**
+  AWS Load Balancer Controller for AWS EKS.
+
+  Docs: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.11/
+  More Help: https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/aws-load-balancer-controller.md
+  Helm Chart: https://github.com/kubernetes-sigs/aws-load-balancer-controller/tree/main/helm/aws-load-balancer-controller
+ */
 include "root" {
   path = find_in_parent_folders()
 }

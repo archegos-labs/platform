@@ -27,7 +27,21 @@ inputs = {
   name = "${dependency.account.outputs.resource_prefix}-vpc"
   cidr = local.cidr
 
+
+  /**
+    Best Practice: Multi-AZ Deployment
+    https://docs.aws.amazon.com/eks/latest/best-practices/subnets.html
+
+    Ensures high availability and fault tolerance.
+   */
   azs = slice(dependency.account.outputs.available_azs, 0, 3)
+
+  /**
+    Best Practice: Create Public and Private Subnets in Each Availability Zone
+    https://docs.aws.amazon.com/eks/latest/best-practices/subnets.html
+
+    Supports node creation in private subnets and ELB creation in public subnets.
+   */
   private_subnets = [
     for k, v in slice(dependency.account.outputs.available_azs, 0, 3) :
     cidrsubnet(local.cidr, 8, k + 1)
@@ -36,9 +50,13 @@ inputs = {
     for k, v in slice(dependency.account.outputs.available_azs, 0, 3) :
     "${dependency.account.outputs.resource_prefix}-private-subnet-${v}"
   ]
+  /**
+   * Enables automatic discovery of subnets that an Application Load Balancer uses in Amazon EKS.
+   * See: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.11/deploy/subnet_discovery/
+   */
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb"                                         = 1
-    "kubernetes.io/cluster/${dependency.account.outputs.resource_prefix}-vpc" = "shared"
+    "kubernetes.io/cluster/${dependency.account.outputs.resource_prefix}-eks" = "shared"
   }
 
   public_subnets = [
@@ -49,14 +67,25 @@ inputs = {
     for k, v in slice(dependency.account.outputs.available_azs, 0, 3) :
     "${dependency.account.outputs.resource_prefix}-public-subnet-${v}"
   ]
+  /**
+   * Enables automatic discovery of subnets that an Application Load Balancer uses in Amazon EKS
+   * See: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.11/deploy/subnet_discovery/
+   */
   public_subnet_tags = {
     "kubernetes.io/role/elb"                                                  = 1
     "kubernetes.io/cluster/${dependency.account.outputs.resource_prefix}-eks" = "shared"
   }
   map_public_ip_on_launch = true
 
+  /**
+    Best Practice Deploy NAT Gateways in each Availability Zone
+    https://docs.aws.amazon.com/eks/latest/best-practices/subnets.html
+
+    Ensures zone-independent architecture and reduces cross AZ expenditures.
+   */
   enable_nat_gateway = true
-  single_nat_gateway = true
+  single_nat_gateway = false
+  one_nat_gateway_per_az = true
 
   enable_dns_support   = true
   enable_dns_hostnames = true
