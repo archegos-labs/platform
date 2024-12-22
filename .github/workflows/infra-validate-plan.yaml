@@ -12,7 +12,7 @@ on:
       - '.tool-versions'
       - '.gitignore'
       - 'Makefile'
-      - '*.draw.io'
+      - '**/docs/**'
 
 concurrency: # set other jobs with the same 'group' in a queue
   group: platform-infra
