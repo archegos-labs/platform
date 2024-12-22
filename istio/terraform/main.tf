@@ -213,4 +213,6 @@ module "kiali_operator" {
             url: "http://prometheus-operated.${var.prometheus_namespace}:9090"
     EOF
   ]
+
+  depends_on = [module.istio_cni]
 }
