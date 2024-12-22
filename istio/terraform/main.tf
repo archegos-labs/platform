@@ -171,9 +171,6 @@ module "istio_ingress" {
     )
   ]
 
-  wait          = true
-  wait_for_jobs = true
-
   depends_on = [module.istio_ztunnel, module.istio_cni]
 }
 
