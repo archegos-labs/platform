@@ -47,8 +47,7 @@ asdf, there is a `.tool-versions` file in the root of the project that you can u
 Our first step is to set up a Virtual Private Cloud (VPC) and subnets where our EKS cluster will live. The VPC will
 look like the following,
 
-
-
+![eks-ready-vpc.drawio.svg](vpc/docs/eks-ready-vpc.drawio.svg)
 
 #### References
 * [AWS VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
