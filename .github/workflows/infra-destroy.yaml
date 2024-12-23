@@ -70,5 +70,6 @@ jobs:
           tg_command: |
             run-all destroy --terragrunt-non-interactive
         env:
+          ORG_NAME: ${{ env.ORG_NAME }}
           DEPLOYMENT:  ${{ inputs.infra_env }}-${{ inputs.region }}
           TF_VAR_kube_data_auth_enabled: true
