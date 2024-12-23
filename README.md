@@ -114,6 +114,10 @@ aws resourcegroupstaggingapi get-resources \
 
 ## EKS
 
+Next well setup an EKS cluster within the VPC laid out above. The basics of the setup will look like,
+
+![eks-cluster.drawio.svg](eks/docs/eks-cluster.drawio.svg)
+
 The cluster is set up with the following features:
 
 * [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-id-how-it-works.html) is used where applicable and possible.
