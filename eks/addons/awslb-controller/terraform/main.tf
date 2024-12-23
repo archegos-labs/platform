@@ -28,7 +28,7 @@ module "eks_blueprints_addon" {
   description = "A Helm chart to deploy aws-load-balancer-controller"
 
   chart            = "aws-load-balancer-controller"
-  chart_version    = "1.10.0"
+  chart_version    = "1.11.0"
   repository       = "https://aws.github.io/eks-charts"
   namespace        = local.namespace
   create_namespace = false

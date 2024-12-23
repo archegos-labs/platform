@@ -68,10 +68,7 @@ jobs:
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
-            run-all destroy
-              --terragrunt-non-interactive 
-              --terragrunt-exclude-dir flux/base
-              --terragrunt-exclude-dir flux/terraform-controller
+            run-all destroy --terragrunt-non-interactive
         env:
-          DEPLOYMENT:  archegos-${{ inputs.infra_env }}-${{ inputs.region }}
+          DEPLOYMENT:  ${{ inputs.infra_env }}-${{ inputs.region }}
           TF_VAR_kube_data_auth_enabled: true

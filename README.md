@@ -9,11 +9,12 @@ Terragrunt, Kubernetes, GitHub Actions and Kubeflow.
 
 <!-- toc-begin -->
 * [Pre-requisites](#pre-requisites)
-* [VPC & Networking](#vpc--networking)
-* [Github Actions](#github-actions)
-* [AWS EKS](#eks)
+* [Setup](#setup)
+* [Networking](#networking)
+* [EKS](#eks)
 * [Service Mesh](#service-mesh)
 * [Kubeflow](#kubeflow)
+* [Github Actions](#github-actions)
 <!-- toc-end -->
 
 ### Donations
@@ -28,8 +29,10 @@ At a minimum it helps with the AWS bill.
 ## Pre-Requisites
 If you're following along, at a minimum you'll need the following,
  
-1. AWS Account 
-2. [AWS CLI](https://aws.amazon.com/cli/) setup locally - for managing AWS resources.
+1. [AWS Account](https://aws.amazon.com/resources/create-account/) with the following service quotas,
+   * Amazon EC2 Instances - Running On-Demand G and VT instances = 32
+   * Amazon EC2 Instances - All Demand G and VT Spot Instance Requests = 32
+2. [AWS CLI](https://aws.amazon.com/cli/) - setup with administrative access to make demonstration easy. 
 3. [Github CLI](https://cli.github.com/) - for managing GitHub resources.
 4. [Terraform](https://www.terraform.io) - for infrastructure as code.
 5. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
@@ -37,13 +40,30 @@ If you're following along, at a minimum you'll need the following,
 I typically manage installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
 asdf, there is a `.tool-versions` file in the root of the project that you can use for installing.
 
-## Up & Running
+Verify you have the prequisites installed by running the following,
 
 ```shell
+make
+````
 
+You should see version output for each of the tools listed above.
+
+## Setup 
+
+Let's first fork and clone the repo,
+
+```shell
+gh repo fork archegos-labs/platform --clone ~/projects/platform; cd ~/projects/platform
 ```
 
-## VPC & Networking
+Let's validate that the prequisites are installed by running,
+
+```shell
+ORG_NAME="ExampleOrg" make plan-all
+```
+This runs Terragrunt / Terraform plan on all the modules in the repository. 
+
+## Networking
 
 Our first step is to set up a Virtual Private Cloud (VPC) and subnets where our EKS cluster will live. The VPC will
 look like the following,
@@ -60,42 +80,49 @@ The notable features of the VPC setup are,
 * NAT Gateways in each public subnet of each availability zone to ensure zone-independent architecture 
   and reduce cross AZ expenditures.
 * The default NACL is associated with each subnet in the VPC.
- 
+
+If your AWS account and CLI are setup, you can run the following to create the VPC and subnets,
+
+```shell 
+make deploy-vpc
+```
+After the VPC is created, you can view many of its components as illustrated in the diagram above by running,
+
+```shell
+aws resourcegroupstaggingapi get-resources \
+  --resource-type-filters \
+      ec2:vpc \
+      ec2:subnet \
+      ec2:natgateway \
+      ec2:internet-gateway \
+      ec2:route-table \
+      ec2:elastic-ip \
+      ec2:network-interface \
+      ec2:security-group \
+      ec2:network-acl \
+  --query 'ResourceTagMappingList[].{ARN:ResourceARN,Name:Tags[?Key==`Name`].Value | [0]}' \
+  --output table
+```
+
 #### References
+
 * [EKS Network Requirements](https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html)
 * [EKS VPC & Subnet Considerations](https://docs.aws.amazon.com/eks/latest/best-practices/subnets.html)
 * [AWS VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
 * [Network ACLs](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html)
 * [Route Tables](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html)
- 
-## Github Actions
-
-We're using the familiar good ole PR based workflow. This means IaC changes are validated and planned in the PR and
-once approved the infrastructure is deployed/applied on merge to main. The workflow is as follows:
-
-1. Infrastructure changes are made on a branch and a PR is created against main
-1. Terragrunt validate and plan are run on any changes. 
-1. Validation and planning are run on every push to a branch 
-1. Reviews and approvals are applied. Once the PR is approved, the PR is merged into main
-1. IaC changes from the PR merge are then applied.
-
-### Authentication & Authorization
-
-AWS is accessed from GitHub Actions using OpenID Connect. GitHub acts as an Identity Provider (IDP) and AWS as a Service Provider (SP).
-Authentication happens on GitHub, and then GitHub “passes” our user to an AWS account, saying that “this is really John Smith”, 
-and AWS performs the “authorization“, that is, AWS checks whether this John Smith can create new resources. 
 
 ## EKS
 
-The EKS cluster is setup using Terraform and Terragrunt. The cluster is setup with the following features:
+The cluster is set up with the following features:
 
-* [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-id-how-it-works.html) is used where applicable and possible. 
+* [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-id-how-it-works.html) is used where applicable and possible.
 * In addition to the default addons (kube-proxy, core-dns), the following are installed all using EKS Pod Identity:
-  * [VPC CNI](https://docs.aws.amazon.com/eks/latest/best-practices/vpc-cni.html) 
-  * [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/)
-  * [External DNS](https://kubernetes-sigs.github.io/external-dns/latest/)
-  * [Cert Manager](https://cert-manager.io/docs/)
-   
+    * [VPC CNI](https://docs.aws.amazon.com/eks/latest/best-practices/vpc-cni.html)
+    * [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/)
+    * [External DNS](https://kubernetes-sigs.github.io/external-dns/latest/)
+    * [Cert Manager](https://cert-manager.io/docs/)
+
 ### Access
 
 Run the following to retrieve credentials for your cluster and configure `kubectl`,
@@ -113,6 +140,24 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 
 #### References
 1. [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)
+
+
+## Github Actions
+
+We're using the familiar good ole PR based workflow. This means IaC changes are validated and planned in the PR and
+once approved the infrastructure is deployed/applied on merge to main. The workflow is as follows:
+
+1. Infrastructure changes are made on a branch and a PR is created against main
+1. Terragrunt validate and plan are run on any changes. 
+1. Validation and planning are run on every push to a branch 
+1. Reviews and approvals are applied. Once the PR is approved, the PR is merged into main
+1. IaC changes from the PR merge are then applied.
+
+### Authentication & Authorization
+
+AWS is accessed from GitHub Actions using OpenID Connect. GitHub acts as an Identity Provider (IDP) and AWS as a Service Provider (SP).
+Authentication happens on GitHub, and then GitHub “passes” our user to an AWS account, saying that “this is really John Smith”, 
+and AWS performs the “authorization“, that is, AWS checks whether this John Smith can create new resources. 
 
 
 ## Service Mesh
