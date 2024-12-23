@@ -1,4 +1,4 @@
-# Platform (In Progress)
+# Platform - Under Development
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://www.opensource.org/licenses/MIT)
 
 ## Overview
@@ -49,14 +49,27 @@ look like the following,
 
 ![eks-ready-vpc.drawio.svg](vpc/docs/eks-ready-vpc.drawio.svg)
 
-#### References
-* [AWS VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
-* [AWS EKS VPC & Subnet Considerations](https://docs.aws.amazon.com/eks/latest/best-practices/subnets.html)
-* [Network ACLs](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html)
+The notable features of the VPC setup are,
 
+* There are sufficient IP addresses for the cluster and apps on it. The IP CIDR block is `10.0.0.0 / 16`.
+* Subnets in multiple availability zones (AZ) for high availability. 
+* There are private and public subnets in each availability zone for granular control inbound and outbound traffic. 
+  Private subnets are for the EKS nodes with no direct internet access and public subnets for receiving and managing 
+  internet traffic. 
+* NAT Gateways in each public subnet of each availability zone to ensure zone-independent architecture 
+  and reduce cross AZ expenditures.
+* The default NACL is associated with each subnet in the VPC.
+ 
+#### References
+* [EKS VPC & Subnet Requirements](https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html)
+* [EKS VPC & Subnet Considerations](https://docs.aws.amazon.com/eks/latest/best-practices/subnets.html)
+* [AWS VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
+* [Network ACLs](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html)
+* [Route Tables](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html)
+ 
 ## Github Actions
 
-We're using the familiar good ole PR based workflow. This means IaC changes are validated and planeed in the PR and
+We're using the familiar good ole PR based workflow. This means IaC changes are validated and planned in the PR and
 once approved the infrastructure is deployed/applied on merge to main. The workflow is as follows:
 
 1. Infrastructure changes are made on a branch and a PR is created against main
@@ -96,6 +109,10 @@ CoreDNS is running at https://7D3A825AA8E29A730955A485709E89D2.gr7.us-east-1.eks
 
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
+
+#### References
+1. [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)
+
 
 ## Service Mesh
 

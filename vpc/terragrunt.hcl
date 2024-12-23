@@ -56,7 +56,6 @@ inputs = {
    */
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb"                                         = 1
-    "kubernetes.io/cluster/${dependency.account.outputs.resource_prefix}-eks" = "shared"
   }
 
   public_subnets = [
@@ -73,7 +72,6 @@ inputs = {
    */
   public_subnet_tags = {
     "kubernetes.io/role/elb"                                                  = 1
-    "kubernetes.io/cluster/${dependency.account.outputs.resource_prefix}-eks" = "shared"
   }
   map_public_ip_on_launch = true
 
@@ -87,6 +85,12 @@ inputs = {
   single_nat_gateway = false
   one_nat_gateway_per_az = true
 
+  /**
+    Network Requirement: Enable DNS Resolution and DNS Hostnames
+    https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html
+
+    Required for nodes to register to your cluster.
+  */
   enable_dns_support   = true
   enable_dns_hostnames = true
 
