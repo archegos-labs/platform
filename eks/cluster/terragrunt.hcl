@@ -79,14 +79,14 @@ inputs = {
 
   eks_managed_node_groups = {
     cpus = {
-      name         = "${dependency.account.outputs.resource_prefix}-ondemand-cpu"
+      name         = "ondemand-cpu"
       min_size     = 1
       max_size     = 3
       desired_size = 2
     }
 
     gpus = {
-      node_group_name = "${dependency.account.outputs.resource_prefix}-ondemand-gpu"
+      name = "ondemand-gpu"
       instance_types  = ["g4dn.xlarge"]
       min_size        = 1
       desired_size    = 1
