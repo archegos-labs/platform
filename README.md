@@ -61,7 +61,7 @@ The notable features of the VPC setup are,
 * The default NACL is associated with each subnet in the VPC.
  
 #### References
-* [EKS VPC & Subnet Requirements](https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html)
+* [EKS Network Requirements](https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html)
 * [EKS VPC & Subnet Considerations](https://docs.aws.amazon.com/eks/latest/best-practices/subnets.html)
 * [AWS VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
 * [Network ACLs](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html)
