@@ -44,6 +44,6 @@ terraform {
 }
 
 inputs = {
-  cluster_name = dependency.eks.outputs.cluster_name
-  prometheus_namespace   = dependency.prometheus.outputs.namespace
+  cluster_name         = dependency.eks.outputs.cluster_name
+  prometheus_namespace = dependency.prometheus.outputs.namespace
 }

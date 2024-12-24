@@ -86,14 +86,14 @@ inputs = {
     }
 
     gpus = {
-      name = "ondemand-gpu"
-      instance_types  = ["g4dn.xlarge"]
-      min_size        = 1
-      desired_size    = 1
-      max_size        = 3
-      ami_type        = "AL2_x86_64_GPU"
-      disk_size       = 75
-      subnet_ids      = dependency.vpc.outputs.private_subnets
+      name           = "ondemand-gpu"
+      instance_types = ["g4dn.xlarge"]
+      min_size       = 1
+      desired_size   = 1
+      max_size       = 3
+      ami_type       = "AL2_x86_64_GPU"
+      disk_size      = 75
+      subnet_ids     = dependency.vpc.outputs.private_subnets
     }
   }
 
