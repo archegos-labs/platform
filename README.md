@@ -105,7 +105,7 @@ aws resourcegroupstaggingapi get-resources \
 ```
 
 #### References
-
+ 
 * [EKS Network Requirements](https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html)
 * [EKS VPC & Subnet Considerations](https://docs.aws.amazon.com/eks/latest/best-practices/subnets.html)
 * [AWS VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
@@ -148,7 +148,7 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
 #### References
-* [Managed Node Group](https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html)
+* [Managed Node Groups](https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html)
 * [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)
 
 
