@@ -73,10 +73,7 @@ inputs = {
   public_subnet_tags = {
     "kubernetes.io/role/elb" = 1
   }
-
-  # Ensure only public subnets have map_public_ip_on_launch = true
-  public_subnet_map_public_ip_on_launch  = true
-  private_subnet_map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
 
   /**
     Best Practice Deploy NAT Gateways in each Availability Zone
