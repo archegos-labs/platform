@@ -155,8 +155,8 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 
 ## Service Mesh
 
-Our next step on the journey of getting Kubeflow up on AWS is setting up [Istio](https://istio.io/latest/docs/overview/what-is-istio/) 
-Istio’s powerful features that provide a uniform and efficient way to secure, connect, and monitor services. Kubeflow
+Our next step on the journey of getting Kubeflow up on AWS is setting up [Istio.](https://istio.io/latest/docs/overview/what-is-istio/) 
+Istio’s powerful features provide a uniform and efficient way to secure, connect, and monitor services. Kubeflow
 is a collection of tools, frameworks and services that are stiched together to provide a seamless ML platform under
 Istio. Below are some of the features Kubeflow leverages, 
 
