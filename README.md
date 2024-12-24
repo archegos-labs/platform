@@ -152,29 +152,13 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 * [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)
 
 
-## Github Actions
-
-We're using the familiar good ole PR based workflow. This means IaC changes are validated and planned in the PR and
-once approved the infrastructure is deployed/applied on merge to main. The workflow is as follows:
-
-1. Infrastructure changes are made on a branch and a PR is created against main
-1. Terragrunt validate and plan are run on any changes. 
-1. Validation and planning are run on every push to a branch 
-1. Reviews and approvals are applied. Once the PR is approved, the PR is merged into main
-1. IaC changes from the PR merge are then applied.
-
-### Authentication & Authorization
-
-AWS is accessed from GitHub Actions using OpenID Connect. GitHub acts as an Identity Provider (IDP) and AWS as a Service Provider (SP).
-Authentication happens on GitHub, and then GitHub “passes” our user to an AWS account, saying that “this is really John Smith”, 
-and AWS performs the “authorization“, that is, AWS checks whether this John Smith can create new resources. 
-
 
 ## Service Mesh
 
-[Istio](https://istio.io/latest/docs/overview/what-is-istio/) is used for the service mesh layer. Istio’s powerful 
-features provide a uniform and efficient way to secure, connect, and monitor services. Istio is the path to 
-load balancing, service-to-service authentication, and monitoring – with few or no service code changes. It gives you:
+Our next step on the journey of getting Kubeflow up on AWS is setting up [Istio](https://istio.io/latest/docs/overview/what-is-istio/) 
+Istio’s powerful features that provide a uniform and efficient way to secure, connect, and monitor services. Kubeflow
+is a collection of tools, frameworks and services that are stiched together to provide a seamless ML platform under
+Istio. Below are some of the features Kubeflow leverages, 
 
 1. Secure service-to-service communication in a cluster with mutual TLS encryption, strong identity-based authentication 
    and authorization
@@ -193,6 +177,10 @@ The following needs to be run,
 ```shell
 kubectl rollout restart deployment istio-ingress -n istio-ingress
 ```
+
+#### References
+* [Why Kubeflow Needs Istio](https://www.kubeflow.org/docs/concepts/multi-tenancy/istio/#why-kubeflow-needs-istio)
+* [Istio](https://istio.io/latest/docs/overview/what-is-istio/)
 
 ### Tools
 
@@ -236,3 +224,23 @@ to support [Kubeflow](https://www.kubeflow.org/),
 * [NVida GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/amazon-eks.html) - The NVIDIA GPU Operator simplifies the deployment and management of GPU-accelerated applications on Kubernetes.
 
 ### Training Operator
+
+
+
+## Github Actions
+
+We're using the familiar good ole PR based workflow. This means IaC changes are validated and planned in the PR and
+once approved the infrastructure is deployed/applied on merge to main. The workflow is as follows:
+
+1. Infrastructure changes are made on a branch and a PR is created against main
+1. Terragrunt validate and plan are run on any changes.
+1. Validation and planning are run on every push to a branch
+1. Reviews and approvals are applied. Once the PR is approved, the PR is merged into main
+1. IaC changes from the PR merge are then applied.
+
+### Authentication & Authorization
+
+AWS is accessed from GitHub Actions using OpenID Connect. GitHub acts as an Identity Provider (IDP) and AWS as a Service Provider (SP).
+Authentication happens on GitHub, and then GitHub “passes” our user to an AWS account, saying that “this is really John Smith”,
+and AWS performs the “authorization“, that is, AWS checks whether this John Smith can create new resources. 
+
