@@ -118,6 +118,11 @@ Next we'll setup an EKS cluster within the VPC laid out above. The basics of the
 
 ![eks-cluster.drawio.svg](eks/docs/eks-cluster.drawio.svg)
 
+The most notable features of the EKS cluster setup are,
+ * Two node groups, one for general purpose workloads and one for GPU workloads.
+ * API server endpoint access is public and private.
+ * Appropriate security groups attached to network interfaces.
+
 In addition to node and security layout above, the following addons are installed,
 
 * [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-id-how-it-works.html) is used where applicable and possible.
@@ -143,7 +148,8 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
 #### References
-1. [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)
+* [Managed Node Group](https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html)
+* [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)
 
 
 ## Github Actions
