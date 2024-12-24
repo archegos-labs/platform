@@ -114,7 +114,7 @@ aws resourcegroupstaggingapi get-resources \
 
 ## EKS
 
-Next well setup an EKS cluster within the VPC laid out above. The basics of the setup will look like,
+Next we'll setup an EKS cluster within the VPC laid out above. The basics of the setup will look like,
 
 ![eks-cluster.drawio.svg](eks/docs/eks-cluster.drawio.svg)
 
