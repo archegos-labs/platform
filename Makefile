@@ -10,7 +10,7 @@ default:
 	terragrunt -v
 
 add-dev-cluster:
-	aws eks --region us-east-1 update-kubeconfig --name $(ORG_NAME)-dev-eks
+	aws eks --region us-east-1 update-kubeconfig --name $(shell echo $(ORG_NAME) | tr '[:upper:]' '[:lower:]')-dev-eks
 
 plan-all:
 	ORG_NAME=$(ORG_NAME) \

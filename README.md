@@ -118,7 +118,7 @@ Next we'll setup an EKS cluster within the VPC laid out above. The basics of the
 
 ![eks-cluster.drawio.svg](eks/docs/eks-cluster.drawio.svg)
 
-The cluster is set up with the following features:
+In addition to node and security layout above, the following addons are installed,
 
 * [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-id-how-it-works.html) is used where applicable and possible.
 * In addition to the default addons (kube-proxy, core-dns), the following are installed all using EKS Pod Identity:
