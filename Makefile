@@ -1,7 +1,11 @@
 .SILENT:
 
-ORG_NAME := "Archegos"
-DEPLOYMENT := "dev-us-east-1"
+region ?= us-east-1
+platform_env ?= dev
+org_name ?= Archegos
+
+export ORG_NAME=$(shell echo $(org_name) | tr '[:upper:]' '[:lower:]')
+export DEPLOYMENT=$(platform_env)-$(region)
 
 default:
 	aws --version
@@ -9,35 +13,31 @@ default:
 	terraform -v
 	terragrunt -v
 
-add-dev-cluster:
-	aws eks --region us-east-1 update-kubeconfig --name $(shell echo $(ORG_NAME) | tr '[:upper:]' '[:lower:]')-dev-eks
+add-cluster:
+	echo "Adding Kube cluster for ORG: $(org_name), REGION: $(region), ENV: $(platform_env)"
+	aws eks --region $(region) update-kubeconfig --name $(ORG_NAME)-$(platform_env)-eks
 
 plan-all:
-	ORG_NAME=$(ORG_NAME) \
-	DEPLOYMENT=$(DEPLOYMENT) \
+	echo "Planning all resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	TF_VAR_kube_data_auth_enabled=false \
 		terragrunt run-all plan --terragrunt-non-interactive
 
 deploy-vpc:
-	ORG_NAME=$(ORG_NAME) \
-	DEPLOYMENT=$(DEPLOYMENT) \
+	echo "Applying all VPC resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	TF_VAR_kube_data_auth_enabled=true \
 		terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir vpc
 
 destroy-vpc:
-	ORG_NAME=$(ORG_NAME) \
-	DEPLOYMENT=$(DEPLOYMENT) \
+	echo "Destroying all VPC resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	TF_VAR_kube_data_auth_enabled=true \
 		terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir vpc
 
 deploy-eks:
-	ORG_NAME=$(ORG_NAME) \
-	DEPLOYMENT=$(DEPLOYMENT) \
+	echo "Applying all EKS resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	TF_VAR_kube_data_auth_enabled=true \
 		terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir eks/cluster
 
 destroy-eks:
-	ORG_NAME=$(ORG_NAME) \
-	DEPLOYMENT=$(DEPLOYMENT) \
+	echo "Destroying all EKS resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	TF_VAR_kube_data_auth_enabled=true \
 		terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir eks/cluster
