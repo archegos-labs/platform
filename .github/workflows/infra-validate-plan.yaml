@@ -78,6 +78,7 @@ jobs:
           tg_command: |
             run-all init --terragrunt-non-interactive
         env:
+          ORG_NAME: ${{ vars.ORG_NAME }}
           DEPLOYMENT: ${{ matrix.infra_env }}-${{ matrix.region }}
 
       - name: Validate
@@ -90,6 +91,7 @@ jobs:
           tg_command: |
             run-all validate --terragrunt-non-interactive
         env:
+          ORG_NAME: ${{ vars.ORG_NAME }}
           DEPLOYMENT: ${{ matrix.infra_env }}-${{ matrix.region }}
 
       - name: Plan

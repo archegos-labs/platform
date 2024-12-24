@@ -55,7 +55,7 @@ inputs = {
    * See: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.11/deploy/subnet_discovery/
    */
   private_subnet_tags = {
-    "kubernetes.io/role/internal-elb"                                         = 1
+    "kubernetes.io/role/internal-elb" = 1
   }
 
   public_subnets = [
@@ -71,7 +71,7 @@ inputs = {
    * See: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.11/deploy/subnet_discovery/
    */
   public_subnet_tags = {
-    "kubernetes.io/role/elb"                                                  = 1
+    "kubernetes.io/role/elb" = 1
   }
   map_public_ip_on_launch = true
 
@@ -81,8 +81,8 @@ inputs = {
 
     Ensures zone-independent architecture and reduces cross AZ expenditures.
    */
-  enable_nat_gateway = true
-  single_nat_gateway = false
+  enable_nat_gateway     = true
+  single_nat_gateway     = false
   one_nat_gateway_per_az = true
 
   /**

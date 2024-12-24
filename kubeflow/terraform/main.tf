@@ -27,7 +27,7 @@ resource "helm_release" "training_operator" {
   namespace   = kubernetes_namespace.kubeflow.metadata[0].name
   chart       = "../charts/training-operator"
 
-  version     = "v1.8.0"
+  version = "v1.8.0"
 
   wait          = true
   wait_for_jobs = true
