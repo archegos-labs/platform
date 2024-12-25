@@ -33,18 +33,6 @@ generate "versions" {
           source = "hashicorp/aws"
           version = ">= 5.80.0"
         }
-        flux = {
-          source  = "fluxcd/flux"
-          version = ">= 1.4.0"
-        }
-        github = {
-          source  = "integrations/github"
-          version = ">= 6.4.0"
-        }
-        tls = {
-          source  = "hashicorp/tls"
-          version = ">= 4.0.6"
-        }
       }
     }
   EOF

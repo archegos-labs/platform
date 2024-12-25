@@ -36,7 +36,7 @@ If you're following along, at a minimum you'll need the following,
 3. [Github CLI](https://cli.github.com/) - for managing GitHub resources.
 4. [Terraform](https://www.terraform.io) - for infrastructure as code.
 5. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
-
+6. [Kubectl](https://kubernetes.io/docs/tasks/tools/) - for managing Kubernetes clusters.
 I typically manage installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
 asdf, there is a `.tool-versions` file in the root of the project that you can use for installing.
 
@@ -136,7 +136,7 @@ In addition to node and security layout above, the following addons are installe
 
 Run the following to retrieve credentials for your cluster and configure `kubectl`,
 ```shell
-make add-dev-cluster
+make add-cluster
 ```
 Let's verify that we can access the cluster by running `kubectl cluster-info`. You should see output similiar to,
 
@@ -225,6 +225,9 @@ to support [Kubeflow](https://www.kubeflow.org/),
 
 ### Training Operator
 
+Before running the training example you'll need to ensure,
+
+* You have kubectl configured. Running `make add-cluster` will add the dev cluster created above to your kubeconfig. 
 
 
 ## Github Actions

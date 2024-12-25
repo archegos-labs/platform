@@ -78,7 +78,14 @@ inputs = {
   }
 
   eks_managed_node_groups = {
-    cpus = {
+    cpus_group_one = {
+      name         = "ondemand-cpu"
+      min_size     = 1
+      max_size     = 3
+      desired_size = 2
+    }
+
+    cpus_group_one = {
       name         = "ondemand-cpu"
       min_size     = 1
       max_size     = 3
@@ -89,13 +96,27 @@ inputs = {
       name           = "ondemand-gpu"
       instance_types = ["g4dn.xlarge"]
       min_size       = 1
-      desired_size   = 1
+      desired_size   = 2
       max_size       = 3
       ami_type       = "AL2_x86_64_GPU"
       disk_size      = 75
       subnet_ids     = dependency.vpc.outputs.private_subnets
+
+      labels = {
+        "nvidia.com/gpu.present" = "true"
+      }
+
+      taints = {
+        # Ensure only GPU workloads are scheduled on this node group
+        gpu = {
+          key    = "nvidia.com/gpu"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      }
     }
   }
+
 
   #  EKS K8s API cluster needs to be able to talk with the EKS worker nodes with port 15017/TCP and 15012/TCP which is used by Istio
   #  Istio in order to create sidecar needs to be able to communicate with webhook and for that network passage to EKS is needed.
