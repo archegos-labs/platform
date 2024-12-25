@@ -85,7 +85,7 @@ inputs = {
       desired_size = 2
     }
 
-    cpus_group_one = {
+    cpus_group_two = {
       name         = "ondemand-cpu"
       min_size     = 1
       max_size     = 3
