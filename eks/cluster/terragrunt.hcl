@@ -103,7 +103,7 @@ inputs = {
       subnet_ids     = dependency.vpc.outputs.private_subnets
 
       labels = {
-        "nvidia.com/gpu.present"        = "true"
+        "nvidia.com/gpu.present" = "true"
       }
 
       taints = {
