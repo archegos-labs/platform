@@ -59,7 +59,7 @@ gh repo fork archegos-labs/platform --clone ~/projects/platform; cd ~/projects/p
 Let's validate that the prequisites are installed by running,
 
 ```shell
-ORG_NAME="ExampleOrg" make plan-all
+make plan-all org_name="ExampleOrg"
 ```
 This runs Terragrunt / Terraform plan on all the modules in the repository. 
 
@@ -222,6 +222,9 @@ to support [Kubeflow](https://www.kubeflow.org/),
    Orchestrators to manage the lifecycle of Amazon EFS volumes.
 * [FsX-CSI Driver](https://github.com/kubernetes-sigs/aws-fsx-csi-driver) - Provides a CSI specification for container orchestrators (CO) to manage lifecycle of Amazon FSx for Lustre filesystems.
 * [NVida GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/amazon-eks.html) - The NVIDIA GPU Operator simplifies the deployment and management of GPU-accelerated applications on Kubernetes.
+
+### FSx for Lustre
+
 
 ### Training Operator
 

@@ -113,6 +113,11 @@ inputs = {
           value  = "true"
           effect = "NO_SCHEDULE"
         }
+
+        fsx = {
+          key = "fsx.csi.aws.com/agent-not-ready"
+          effect = "NO_EXECUTE"
+        }
       }
     }
   }

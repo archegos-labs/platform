@@ -39,3 +39,46 @@ resource "helm_release" "training_operator" {
 
   depends_on = [kubernetes_namespace.kubeflow]
 }
+
+#######################################
+# FSx for Lustre
+#######################################
+
+resource "aws_security_group" "fsx_lustre_sg" {
+  name = "${var.cluster_name}-fsx-lustre-sg"
+  description = "Security group for fsx lustre clients in vpc"
+  vpc_id      = var.vpc_id
+
+  egress {
+    from_port   = 988
+    to_port     = 988
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 988
+    to_port     = 988
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+}
+
+resource "aws_fsx_lustre_file_system" "fs" {
+  file_system_type_version = "2.15"
+
+  storage_capacity = "1200GiB"
+  subnet_ids       = [var.private_subnets[0]]
+
+  deployment_type  = "SCRATCH_2"
+
+  security_group_ids = [aws_security_group.fsx_lustre_sg.id]
+
+  log_configuration {
+    level = "WARN_ERROR"
+  }
+
+  tags = {
+    Cluster = var.cluster_name
+  }
+}
