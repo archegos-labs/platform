@@ -67,7 +67,7 @@ resource "aws_security_group" "fsx_lustre_sg" {
 resource "aws_fsx_lustre_file_system" "fs" {
   file_system_type_version = "2.15"
 
-  storage_capacity = "1200GiB"
+  storage_capacity = 1200
   subnet_ids       = [var.private_subnets[0]]
 
   deployment_type = "SCRATCH_2"
