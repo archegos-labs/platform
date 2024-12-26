@@ -82,3 +82,24 @@ resource "aws_fsx_lustre_file_system" "fs" {
     Cluster = var.cluster_name
   }
 }
+
+resource "aws_s3_bucket" "ml_platform" {
+  bucket = "${var.cluster_name}-ml-platform"
+}
+
+resource "aws_fsx_data_repository_association" "this" {
+  file_system_id       = aws_fsx_lustre_file_system.fs.id
+  data_repository_path = "s3://${aws_s3_bucket.ml_platform.id}"
+  file_system_path     = "/${var.cluster_name}-ml-platform"
+  batch_import_meta_data_on_create = true
+
+  s3 {
+    auto_export_policy {
+      events = ["NEW", "CHANGED", "DELETED"]
+    }
+
+    auto_import_policy {
+      events = ["NEW", "CHANGED", "DELETED"]
+    }
+  }
+}
