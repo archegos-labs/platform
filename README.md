@@ -3,9 +3,9 @@
 
 ## Overview
 
-This repository serves a playground and exercise in how to build out an ML focused application platform
+This repository serves a playground and exercise in how to build out an ML focused application platform 
 from scratch on top of AWS EKS that adheres to Infrastructure as Code (IaC) and GitOps practices using tools like Terraform,
-Terragrunt, Kubernetes, GitHub Actions and Kubeflow.
+Terragrunt, Kubernetes, GitHub Actions and Kubeflow. 
 
 <!-- toc-begin -->
 * [Pre-requisites](#pre-requisites)
@@ -217,21 +217,26 @@ In addition to the addons installed for the baseline EKS cluster above, we're al
 to support [Kubeflow](https://www.kubeflow.org/),
 
 * [EBS-CSI Driver](https://github.com/kubernetes-sigs/aws-ebs-csi-driver) - Provides a CSI interface used by Container 
-   Orchestrators to manage the lifecycle of Amazon EBS volumes.
+  Orchestrators to manage the lifecycle of Amazon EBS volumes.
 * [EFS-CSI Driver](https://github.com/kubernetes-sigs/aws-efs-csi-driver) - Provides a CSI interface used by Container 
-   Orchestrators to manage the lifecycle of Amazon EFS volumes.
-* [FsX-CSI Driver](https://github.com/kubernetes-sigs/aws-fsx-csi-driver) - Provides a CSI specification for container orchestrators (CO) to manage lifecycle of Amazon FSx for Lustre filesystems.
-* [NVida GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/amazon-eks.html) - The NVIDIA GPU Operator simplifies the deployment and management of GPU-accelerated applications on Kubernetes.
+  Orchestrators to manage the lifecycle of Amazon EFS volumes.
+* [FsX-CSI Driver](https://github.com/kubernetes-sigs/aws-fsx-csi-driver) - Provides a CSI specification for container 
+  orchestrators (CO) to manage lifecycle of Amazon FSx for Lustre filesystems.
+* [NVida GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/amazon-eks.html) - 
+  The NVIDIA GPU Operator simplifies the deployment and management of GPU-accelerated applications on Kubernetes.
 
 ### FSx for Lustre
 
+We make use of FSx for Lustre to provide a high-performance file system for Kubeflow. This supports the performance of 
+loading large datasets for model training.
+
+TODO: How does this get leveraged in jobs?
 
 ### Training Operator
 
 Before running the training example you'll need to ensure,
 
 * You have kubectl configured. Running `make add-cluster` will add the dev cluster created above to your kubeconfig. 
-
 
 ## Github Actions
 

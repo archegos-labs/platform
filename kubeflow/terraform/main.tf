@@ -103,3 +103,32 @@ resource "aws_fsx_data_repository_association" "this" {
     }
   }
 }
+
+resource "helm_release" "pv_fsx" {
+  chart = "../charts/pv-fsx"
+  name = "pv-fsx"
+  version = "1.1.0"
+  namespace = kubernetes_namespace.kubeflow.metadata[0].name
+
+  set {
+    name  = "namespace"
+    value = kubernetes_namespace.kubeflow.metadata[0].name
+  }
+
+  set {
+    name  = "fs_id"
+    value = aws_fsx_lustre_file_system.fs.id
+  }
+
+  set {
+    name  = "mount_name"
+    value = aws_fsx_lustre_file_system.fs.mount_name
+  }
+
+  set {
+    name  = "dns_name"
+    value = aws_fsx_lustre_file_system.fs.dns_name
+  }
+
+  depends_on = [ aws_fsx_data_repository_association.this ]
+}

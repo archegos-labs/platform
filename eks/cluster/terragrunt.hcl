@@ -114,6 +114,7 @@ inputs = {
           effect = "NO_SCHEDULE"
         }
 
+        # We read and write training data and models to & from FSx for Lustre so it needs to be ready
         fsx = {
           key    = "fsx.csi.aws.com/agent-not-ready"
           effect = "NO_EXECUTE"
