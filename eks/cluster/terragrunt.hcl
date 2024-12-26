@@ -115,7 +115,7 @@ inputs = {
         }
 
         fsx = {
-          key = "fsx.csi.aws.com/agent-not-ready"
+          key    = "fsx.csi.aws.com/agent-not-ready"
           effect = "NO_EXECUTE"
         }
       }

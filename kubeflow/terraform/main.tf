@@ -45,7 +45,7 @@ resource "helm_release" "training_operator" {
 #######################################
 
 resource "aws_security_group" "fsx_lustre_sg" {
-  name = "${var.cluster_name}-fsx-lustre-sg"
+  name        = "${var.cluster_name}-fsx-lustre-sg"
   description = "Security group for fsx lustre clients in vpc"
   vpc_id      = var.vpc_id
 
@@ -70,7 +70,7 @@ resource "aws_fsx_lustre_file_system" "fs" {
   storage_capacity = "1200GiB"
   subnet_ids       = [var.private_subnets[0]]
 
-  deployment_type  = "SCRATCH_2"
+  deployment_type = "SCRATCH_2"
 
   security_group_ids = [aws_security_group.fsx_lustre_sg.id]
 
