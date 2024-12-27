@@ -19,6 +19,7 @@ dependencies {
   paths = [
     "${dirname(find_in_parent_folders())}/vpc",
     "${dirname(find_in_parent_folders())}/eks/cluster",
+    "${dirname(find_in_parent_folders())}/eks/addons/fsx-csi",
     "${dirname(find_in_parent_folders())}/istio",
   ]
 }

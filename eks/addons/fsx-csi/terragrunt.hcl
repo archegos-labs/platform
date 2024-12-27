@@ -1,3 +1,6 @@
+/**
+ Docs: https://github.com/kubernetes-sigs/aws-fsx-csi-driver/tree/master
+ */
 include "root" {
   path = find_in_parent_folders()
 }
