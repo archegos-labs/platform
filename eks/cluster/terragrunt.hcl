@@ -99,6 +99,7 @@ inputs = {
       max_size       = 3
       desired_size   = 2
       ami_type       = "AL2_x86_64_GPU"
+      disk_size      = 50
       subnet_ids     = dependency.vpc.outputs.private_subnets
 
       labels = {
