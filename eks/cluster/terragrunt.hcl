@@ -95,12 +95,23 @@ inputs = {
     gpus = {
       name           = "ondemand-gpu"
       instance_types = ["g4dn.xlarge"]
+      ami_type       = "AL2_x86_64_GPU"
+      subnet_ids     = dependency.vpc.outputs.private_subnets
       min_size       = 1
       max_size       = 3
       desired_size   = 2
-      ami_type       = "AL2_x86_64_GPU"
-      disk_size      = 50
-      subnet_ids     = dependency.vpc.outputs.private_subnets
+
+      ebs_optimized = true
+      # This block device is used only for root volume. Adjust volume according to your size.
+      block_device_mappings = {
+        xvda = {
+          device_name = "/dev/xvda"
+          ebs = {
+            volume_size = 100
+            volume_type = "gp3"
+          }
+        }
+      }
 
       labels = {
         "nvidia.com/gpu.present" = "true"
