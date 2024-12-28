@@ -32,7 +32,7 @@ jobs:
   deploy:
     name: Infra - Deploy
     runs-on: ubuntu-latest
-    timeout-minutes: 30 # Avoid using GitHub Runners time
+    timeout-minutes: 60 # Avoid using GitHub Runners time
     defaults:
       run:
         shell: bash

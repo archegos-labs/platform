@@ -95,14 +95,20 @@ inputs = {
     gpus = {
       name           = "ondemand-gpu"
       instance_types = ["g4dn.xlarge"]
-      ami_type       = "AL2_x86_64_GPU"
+      ami_type       = "AL2023_x86_64_NVIDIA" #"AL2_x86_64_GPU"
       subnet_ids     = dependency.vpc.outputs.private_subnets
       min_size       = 1
       max_size       = 3
       desired_size   = 2
 
       ebs_optimized = true
-      # This block device is used only for root volume. Adjust volume according to your size.
+      /**
+       * Best Practice: Use EBS gp3 volumes for GPU workloads
+       * https://docs.aws.amazon.com/eks/latest/best-practices/cost-opt-storage.html#_ephemeral_volumes
+       *
+       * This block device is used only for root volume. Adjust volume according to your size. We need to
+       * ensure that the root volume is large enough to accommodate the docker images, GPU drivers and other software.
+       */
       block_device_mappings = {
         xvda = {
           device_name = "/dev/xvda"
