@@ -107,7 +107,8 @@ inputs = {
         xvda = {
           device_name = "/dev/xvda"
           ebs = {
-            volume_size = 100
+            delete_on_termination = true
+            volume_size = 50
             volume_type = "gp3"
           }
         }
