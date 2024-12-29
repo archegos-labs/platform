@@ -40,9 +40,10 @@ If you're following along, at a minimum you'll need the following,
 7. [Docker](https://docs.docker.com/get-started/get-docker/) - for containerization.
 
 I typically manage installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
-asdf, there is a `.tool-versions` file in the root of the project that you can use for installing.
+asdf, there is a `.tool-versions` file in the root of the project, which can be used to 
+install all the required tools by running `asdf install`. After doing this refresh your shell by running `exec $SHELL`. 
 
-Verify you have the prequisites installed by running the following,
+Verify you have the pre-requisites installed by running the following,
 
 ```shell
 make

@@ -9,6 +9,8 @@ export DEPLOYMENT=$(platform_env)-$(region)
 
 default:
 	aws --version
+	kubectl version --client
+	docker --version
 	gh version
 	terraform -v
 	terragrunt -v
