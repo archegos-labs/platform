@@ -3,7 +3,7 @@
 
 ## Overview
 
-This repository serves a playground and exercise in how to build out an ML focused application platform 
+This repository serves as a playground and exercise in how to build out an ML focused application platform 
 from scratch on top of AWS EKS that adheres to Infrastructure as Code (IaC) and GitOps practices using tools like Terraform,
 Terragrunt, Kubernetes, GitHub Actions and Kubeflow. 
 
@@ -37,6 +37,8 @@ If you're following along, at a minimum you'll need the following,
 4. [Terraform](https://www.terraform.io) - for infrastructure as code.
 5. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
 6. [Kubectl](https://kubernetes.io/docs/tasks/tools/) - for managing Kubernetes clusters.
+7. [Docker](https://docs.docker.com/get-started/get-docker/) - for containerization.
+
 I typically manage installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
 asdf, there is a `.tool-versions` file in the root of the project that you can use for installing.
 
@@ -65,7 +67,7 @@ This runs Terragrunt / Terraform plan on all the modules in the repository.
 
 ## Networking
 
-Our first step is to set up a Virtual Private Cloud (VPC) and subnets where our EKS cluster will live. The VPC will
+Our first step is to set up a Virtual Private Cloud (VPC) and its subnets where our EKS cluster will live. The VPC will
 look like the following,
 
 ![eks-ready-vpc.drawio.svg](vpc/docs/eks-ready-vpc.drawio.svg)
@@ -74,7 +76,7 @@ The notable features of the VPC setup are,
 
 * There are sufficient IP addresses for the cluster and apps on it. The IP CIDR block is `10.0.0.0 / 16`.
 * Subnets in multiple availability zones (AZ) for high availability. 
-* There are private and public subnets in each availability zone for granular control inbound and outbound traffic. 
+* There are private and public subnets in each availability zone for granular control of inbound and outbound traffic. 
   Private subnets are for the EKS nodes with no direct internet access and public subnets for receiving and managing 
   internet traffic. 
 * NAT Gateways in each public subnet of each availability zone to ensure zone-independent architecture 
@@ -225,18 +227,62 @@ to support [Kubeflow](https://www.kubeflow.org/),
 * [NVida GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/amazon-eks.html) - 
   The NVIDIA GPU Operator simplifies the deployment and management of GPU-accelerated applications on Kubernetes.
 
-### FSx for Lustre
+### Training Operator
+
+The [Kubeflow Training Operator](https://www.kubeflow.org/docs/components/training/overview/) allows you to use
+Kubernetes workloads to train large models with Kubernetes Custom Resources APIs or using the Training Operator Python SDK.
+The operators primary use case is the ability to run *distributed training and fine-tuning*. After installing the operator 
+we'll demonstrate how to run a training job.
+
+Before running the example you'll need to,
+
+* Have Kubectl installed. 
+* Run `make add-cluster` to add the dev cluster created above to your kubeconfig.
+* Have Docker installed. 
+
+With the above in place let's go through a few examples. 
+
+#### Example 1: Distributed Training Using Python SDK
+
+We're going to run a Jupyter notebook through Docker locally to submit and monitor 
+a distributed Pytorch training job. To run the Jupyter notebook,
+
+1. Run the following at the root of the project,
+```shell
+docker run --rm -p 8888:8888 -e JUPYTER_ENABLE_LAB=yes -e GRANT_SUDO=yes \
+  --user root \
+  -v ~/.kube:/home/jovyan/.kube \
+  -v ~/.aws:/home/jovyan/.aws \
+  -v ./examples:/home/jovyan/work \
+  quay.io/jupyter/pytorch-notebook 
+```
+
+2. Navigate to the URL provided in the output of the command above. For example,
+
+```
+...
+Or copy and paste one of these URLs:
+        http://e16d3018c90e:8888/lab?token=161c548d8a560266b0e76323276322a1f3ecaf8da32d1de2
+        http://127.0.0.1:8888/lab?token=161c548d8a560266b0e76323276322a1f3ecaf8da32d1de2
+```
+
+3. Open the notebook at `work/training-operator/pytorchjobs/python-sdk-distributed-training.ipynb` and follow the instructions.
+ 
+That's it! You've run your first distributed training job using the Kubeflow Training Operator.
+
+#### References
+
+
+* [Kubeflow Training Operator](https://www.kubeflow.org/docs/components/training/overview/)
+
+### FSx for Lustre (Coming Soon)
 
 We make use of FSx for Lustre to provide a high-performance file system for Kubeflow. This supports the performance of 
 loading large datasets for model training.
 
 TODO: How does this get leveraged in jobs?
 
-### Training Operator
 
-Before running the training example you'll need to ensure,
-
-* You have kubectl configured. Running `make add-cluster` will add the dev cluster created above to your kubeconfig. 
 
 ## Github Actions
 

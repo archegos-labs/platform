@@ -35,6 +35,9 @@ out/
 /nbdist/
 /.nb-gradle/
 
+### Jupyter Notebook ###
+.ipynb_checkpoints
+
 ### VS Code ###
 .vscode/
 
