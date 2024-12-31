@@ -32,16 +32,18 @@ If you're following along, at a minimum you'll need the following,
 1. [AWS Account](https://aws.amazon.com/resources/create-account/) with the following service quotas,
    * Amazon EC2 Instances - Running On-Demand G and VT instances = 32
    * Amazon EC2 Instances - All Demand G and VT Spot Instance Requests = 32
-2. [AWS CLI](https://aws.amazon.com/cli/) - setup with administrative access to make demonstration easy. 
-3. [Github CLI](https://cli.github.com/) - for managing GitHub resources.
-4. [Terraform](https://www.terraform.io) - for infrastructure as code.
-5. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
-6. [Kubectl](https://kubernetes.io/docs/tasks/tools/) - for managing Kubernetes clusters.
-7. [Docker](https://docs.docker.com/get-started/get-docker/) - for containerization.
+2. [Docker](https://docs.docker.com/get-started/get-docker/) - for containerization.
 
-I typically manage installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
-asdf, there is a `.tool-versions` file in the root of the project, which can be used to 
-install all the required tools by running `asdf install`. After doing this refresh your shell by running `exec $SHELL`. 
+I manage tool installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
+asdf, there is a `.tool-versions` file in the root of the project, which can be used to
+install all the listed below by running `asdf install`. After doing this refresh your shell by running `exec $SHELL`.
+
+3. [AWS CLI](https://aws.amazon.com/cli/) - setup with administrative access to make demonstration easy. 
+4. [Github CLI](https://cli.github.com/) - for managing GitHub resources.
+5. [Terraform](https://www.terraform.io) - for infrastructure as code.
+6. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
+7. [Kubectl](https://kubernetes.io/docs/tasks/tools/) - for managing Kubernetes clusters.
+
 
 Verify you have the pre-requisites installed by running the following,
 
@@ -59,7 +61,7 @@ Let's first fork and clone the repo,
 gh repo fork archegos-labs/platform --clone ~/projects/platform; cd ~/projects/platform
 ```
 
-Let's validate that the prequisites are installed by running,
+Next validate that the IaC setup will run with,
 
 ```shell
 make plan-all org_name="ExampleOrg"
@@ -134,6 +136,12 @@ In addition to node and security layout above, the following addons are installe
     * [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/)
     * [External DNS](https://kubernetes-sigs.github.io/external-dns/latest/)
     * [Cert Manager](https://cert-manager.io/docs/)
+
+To deploy the EKS cluster run the following,
+    
+```shell
+make deploy-eks
+```
 
 ### Access
 
@@ -271,17 +279,20 @@ Or copy and paste one of these URLs:
  
 That's it! You've run your first distributed training job using the Kubeflow Training Operator.
 
+#### Example 2: Fine-Tune an LLM
+
+
+### FSx for Lustre (Coming Soon)
+
+We make use of FSx for Lustre to provide a high-performance file system for Kubeflow. This supports the performance of
+loading large datasets for model training.
+
+TODO: How does this get leveraged in jobs?
+
 #### References
 
 
 * [Kubeflow Training Operator](https://www.kubeflow.org/docs/components/training/overview/)
-
-### FSx for Lustre (Coming Soon)
-
-We make use of FSx for Lustre to provide a high-performance file system for Kubeflow. This supports the performance of 
-loading large datasets for model training.
-
-TODO: How does this get leveraged in jobs?
 
 
 

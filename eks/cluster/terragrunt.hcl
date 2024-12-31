@@ -27,6 +27,7 @@ dependency "vpc" {
 
 locals {
   eks_admin_user = "archegos-admin"
+  deployment_user = "tf-deployer"
 }
 
 inputs = {
@@ -34,7 +35,6 @@ inputs = {
   cluster_version = "1.31"
 
   cluster_endpoint_public_access           = true
-  enable_cluster_creator_admin_permissions = true
 
   vpc_id                   = dependency.vpc.outputs.vpc_id
   subnet_ids               = concat(dependency.vpc.outputs.private_subnets, dependency.vpc.outputs.public_subnets)
@@ -47,6 +47,19 @@ inputs = {
     archegos-admin = {
       principal_arn = "arn:aws:iam::${dependency.account.outputs.account_id}:user/${local.eks_admin_user}"
       user_name     = local.eks_admin_user
+      policy_associations = {
+        eks-admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+
+    deployer = {
+      principal_arn = "arn:aws:iam::${dependency.account.outputs.account_id}:role/${local.deployment_user}"
+      role_name     = local.deployment_user
       policy_associations = {
         eks-admin = {
           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"

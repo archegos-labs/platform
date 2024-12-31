@@ -9,6 +9,7 @@ locals {
     vpc_id          = "mock-vpc-1234567890abcdef0"
     private_subnets = ["mock-subnet-1234567890abcdef0", "mock-subnet-1234567890abcdef1", "mock-subnet-1234567890abcdef2"]
     public_subnets  = ["mock-subnet-1234567890abcdef3", "mock-subnet-1234567890abcdef4", "mock-subnet-1234567890abcdef5"]
+    vpc_cidr_block  = "10.0.0.0/16"
   }
 
   eks = {

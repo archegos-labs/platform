@@ -6,6 +6,7 @@ org_name ?= Archegos
 
 export ORG_NAME=$(shell echo $(org_name) | tr '[:upper:]' '[:lower:]')
 export DEPLOYMENT=$(platform_env)-$(region)
+export TF_VAR_kube_data_auth_enabled=true
 
 default:
 	aws --version
@@ -26,20 +27,36 @@ plan-all:
 
 deploy-vpc:
 	echo "Applying all VPC resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	TF_VAR_kube_data_auth_enabled=true \
-		terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir vpc
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir vpc
 
 destroy-vpc:
 	echo "Destroying all VPC resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	TF_VAR_kube_data_auth_enabled=true \
-		terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir vpc
+	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir vpc
 
 deploy-eks:
 	echo "Applying all EKS resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	TF_VAR_kube_data_auth_enabled=true \
-		terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir eks/cluster
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir eks/cluster
 
 destroy-eks:
 	echo "Destroying all EKS resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	TF_VAR_kube_data_auth_enabled=true \
-		terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir eks/cluster
+	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir eks/cluster
+
+deploy-eks-addon:
+	echo "Applying EKS addon $(addon) for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir eks/addons/$(addon)
+
+destroy-eks-addon:
+	echo "Destroying EKS addon $(addon) for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir eks/addons/$(addon)
+
+deploy-istio:
+	echo "Applying Istio to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir istio
+
+destroy-istio:
+	echo "Destroying Istio to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir istio
+
+deploy-kubeflow:
+	echo "Applying Kubeflow to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir kubeflow
