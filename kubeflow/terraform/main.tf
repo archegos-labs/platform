@@ -21,6 +21,9 @@ resource "helm_release" "kubeflow_issuer" {
   depends_on = [kubernetes_namespace.kubeflow]
 }
 
+#######################################
+# Kubeflow Training Operator
+#######################################
 resource "helm_release" "training_operator" {
   name        = "kubeflow-training-operator"
   description = "A Helm chart to deploy kubeflow-trianing-operator"
@@ -131,4 +134,38 @@ resource "helm_release" "pv_fsx" {
   }
 
   depends_on = [ aws_fsx_data_repository_association.this ]
+}
+
+#######################################
+# Kubeflow Pipelines
+#######################################
+resource "random_string" "minio_access_key" {
+  length           = 16
+  special          = false
+}
+
+resource "random_password" "minio_secret_key" {
+  length           = 32
+  special          = false
+}
+
+resource "helm_release" "kubeflow-pipelines" {
+  name       = "kubeflow-pipelines"
+  chart      = "../charts/pipelines"
+  version  = "1.0.0"
+  namespace = kubernetes_namespace.kubeflow.metadata[0].name
+
+  values = [
+    <<-EOT
+      kubeflow:
+        namespace: "${kubernetes_namespace.kubeflow.metadata[0].name}"
+      ingress:
+        namespace: "istio-ingress"
+        gateway: "ingress-gateway"
+        sa: "istio-ingressgateway-sa"
+      minio:
+        access_key: "${random_string.minio_access_key.result}"
+        secret_key: "${random_password.minio_secret_key.result}"
+    EOT
+  ]
 }
