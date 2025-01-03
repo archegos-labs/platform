@@ -91,9 +91,9 @@ resource "aws_s3_bucket" "ml_platform" {
 }
 
 resource "aws_fsx_data_repository_association" "this" {
-  file_system_id       = aws_fsx_lustre_file_system.fs.id
-  data_repository_path = "s3://${aws_s3_bucket.ml_platform.id}"
-  file_system_path     = "/${var.cluster_name}-ml-platform"
+  file_system_id                   = aws_fsx_lustre_file_system.fs.id
+  data_repository_path             = "s3://${aws_s3_bucket.ml_platform.id}"
+  file_system_path                 = "/${var.cluster_name}-ml-platform"
   batch_import_meta_data_on_create = true
 
   s3 {
@@ -108,9 +108,9 @@ resource "aws_fsx_data_repository_association" "this" {
 }
 
 resource "helm_release" "pv_fsx" {
-  chart = "../charts/pv-fsx"
-  name = "pv-fsx"
-  version = "1.1.0"
+  chart     = "../charts/pv-fsx"
+  name      = "pv-fsx"
+  version   = "1.1.0"
   namespace = kubernetes_namespace.kubeflow.metadata[0].name
 
   set {
@@ -133,26 +133,26 @@ resource "helm_release" "pv_fsx" {
     value = aws_fsx_lustre_file_system.fs.dns_name
   }
 
-  depends_on = [ aws_fsx_data_repository_association.this ]
+  depends_on = [aws_fsx_data_repository_association.this]
 }
 
 #######################################
 # Kubeflow Pipelines
 #######################################
 resource "random_string" "minio_access_key" {
-  length           = 16
-  special          = false
+  length  = 16
+  special = false
 }
 
 resource "random_password" "minio_secret_key" {
-  length           = 32
-  special          = false
+  length  = 32
+  special = false
 }
 
 resource "helm_release" "kubeflow-pipelines" {
-  name       = "kubeflow-pipelines"
-  chart      = "../charts/pipelines"
-  version  = "1.0.0"
+  name      = "kubeflow-pipelines"
+  chart     = "../charts/pipelines"
+  version   = "1.0.0"
   namespace = kubernetes_namespace.kubeflow.metadata[0].name
 
   values = [

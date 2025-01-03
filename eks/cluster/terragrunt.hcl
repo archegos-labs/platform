@@ -26,7 +26,7 @@ dependency "vpc" {
 }
 
 locals {
-  eks_admin_user = "archegos-admin"
+  eks_admin_user  = "archegos-admin"
   deployment_user = "tf-deployer"
 }
 
@@ -34,7 +34,7 @@ inputs = {
   cluster_name    = "${dependency.account.outputs.resource_prefix}-eks"
   cluster_version = "1.31"
 
-  cluster_endpoint_public_access           = true
+  cluster_endpoint_public_access = true
 
   vpc_id                   = dependency.vpc.outputs.vpc_id
   subnet_ids               = concat(dependency.vpc.outputs.private_subnets, dependency.vpc.outputs.public_subnets)
@@ -127,8 +127,8 @@ inputs = {
           device_name = "/dev/xvda"
           ebs = {
             delete_on_termination = true
-            volume_size = 50
-            volume_type = "gp3"
+            volume_size           = 50
+            volume_type           = "gp3"
           }
         }
       }
