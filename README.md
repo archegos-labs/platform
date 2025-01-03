@@ -282,6 +282,12 @@ That's it! You've run your first distributed training job using the Kubeflow Tra
 #### Example 2: Fine-Tune an LLM
 
 
+
+### Pipelines
+
+Coming Soon
+
+
 ### FSx for Lustre (Coming Soon)
 
 We make use of FSx for Lustre to provide a high-performance file system for Kubeflow. This supports the performance of
