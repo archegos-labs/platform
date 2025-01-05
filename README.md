@@ -127,29 +127,30 @@ The most notable features of the EKS cluster setup are,
  * Two node groups, one for general purpose workloads and one for GPU workloads.
  * API server endpoint access is public and private.
  * Appropriate security groups attached to network interfaces.
+ * A default set of addons fundamental to the operation of the cluster.
+   * [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-id-how-it-works.html) -
+     Allows you to assign IAM roles to Kubernetes service accounts. And is the preferred way to manage security.
+   * [VPC CNI](https://docs.aws.amazon.com/eks/latest/best-practices/vpc-cni.html) - 
+     Provides native integration with AWS VPC and works in underlay mode. In underlay mode, Pods and hosts are located 
+     at the same network layer and share the network namespace. The IP address of the Pod is consistent from the cluster and VPC perspective.
+   * [Kube Proxy](https://aws-quickstart.github.io/cdk-eks-blueprints/addons/kube-proxy/) - 
+     Provides network proxy and load balancing between a service and its pods on a single worker node.
+   * [CoreDNS](https://aws-quickstart.github.io/cdk-eks-blueprints/addons/coredns/) - 
+     Provides service discovery and DNS resolution for Kubernetes.
 
-In addition to node and security layout above, the following addons are installed,
+### Deployment
 
-* [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-id-how-it-works.html) is used where applicable and possible.
-* In addition to the default addons (kube-proxy, core-dns), the following are installed all using EKS Pod Identity:
-    * [VPC CNI](https://docs.aws.amazon.com/eks/latest/best-practices/vpc-cni.html)
-    * [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/)
-    * [External DNS](https://kubernetes-sigs.github.io/external-dns/latest/)
-    * [Cert Manager](https://cert-manager.io/docs/)
-
-To deploy the EKS cluster run the following,
+1. To deploy the EKS cluster run the following,
     
 ```shell
 make deploy-eks
 ```
 
-### Access
-
-Run the following to retrieve credentials for your cluster and configure `kubectl`,
+2. Configure `kubectl` for access to the cluster by running,
 ```shell
 make add-cluster
 ```
-Let's verify that we can access the cluster by running `kubectl cluster-info`. You should see output similiar to,
+3. Lastly, let's verify that we can access the cluster by running `kubectl cluster-info`. You should see output similiar to,
 
 ```
 Kubernetes control plane is running at https://7D3A825AA8E29A730955A485709E89D2.gr7.us-east-1.eks.amazonaws.com
@@ -158,10 +159,29 @@ CoreDNS is running at https://7D3A825AA8E29A730955A485709E89D2.gr7.us-east-1.eks
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-#### References
+Congratulations! You've deployed a barebones EKS cluster.
+
+### Addons
+
+
+In addition to the barebones EKS cluster, we'll need additional functionality in the form of addons on our
+road to getting Kubeflow up and running. 
+
+* [Cert Manager](https://cert-manager.io/docs/) -
+  Cert-manager creates TLS certificates for workloads in your Kubernetes or OpenShift cluster and renews the certificates before they expire.
+* [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/) -
+  Help manage Elastic Load Balancers for a Kubernetes cluster.
+* [External DNS](https://kubernetes-sigs.github.io/external-dns/latest/) -
+  Makes Kubernetes resources discoverable via public DNS servers. Unlike KubeDNS, however, it’s not a DNS server 
+  itself, but merely configures other DNS providers accordingly—e.g. AWS Route 53 or Google Cloud DNS.
+
+```shell
+make deploy-eks-addons addons='vpc-cni cert-manager awslb-controller external-dns'
+```
+
+### References
 * [Managed Node Groups](https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html)
 * [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)
-
 
 
 ## Service Mesh
