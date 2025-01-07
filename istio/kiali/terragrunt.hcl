@@ -29,26 +29,12 @@ dependency "eks" {
   mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
 }
 
-dependency "prometheus" {
-  config_path = "${dirname(find_in_parent_folders())}/prometheus"
-
-  mock_outputs                            = include.mocks.locals.prometheus
-  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
-}
-
-dependency "istio" {
-  config_path = "${dirname(find_in_parent_folders())}/istio/system"
-
-  mock_outputs                            = include.mocks.locals.istio
-  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
-}
-
 terraform {
   source = ".//terraform"
 }
 
 inputs = {
   cluster_name         = dependency.eks.outputs.cluster_name
-  istio_namespace      = "istio-system" #dependency.istio.outputs.namespace
-  prometheus_namespace = dependency.prometheus.outputs.namespace
+  istio_namespace      = var.istio_namespace
+  prometheus_namespace = var.prometheus_namespace
 }

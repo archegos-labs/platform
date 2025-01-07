@@ -61,6 +61,7 @@ resource "kubernetes_ingress_v1" "kiali_ingress" {
     annotations = {
       "external-dns.alpha.kubernetes.io/hostname"      = local.app_domain
       "kubernetes.io/ingress.class"                    = "alb"
+      "alb.ingress.kubernetes.io/group.name"           = "my-team.awesome-group"
       "alb.ingress.kubernetes.io/target-type"          = "ip"
       "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
       "alb.ingress.kubernetes.io/listen-ports"         = jsonencode([{ "HTTP" : 80 }, { "HTTPS" : 443 }])

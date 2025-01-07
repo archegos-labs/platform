@@ -5,13 +5,14 @@ variable "cluster_name" {
 
 variable "istio_namespace" {
   description = "Istio ingress namespace"
-  default     = "istio-ingress"
   type        = string
+  default     = "istio-system"
 }
 
 variable "prometheus_namespace" {
   description = "Prometheus namespace"
   type        = string
+  default     = "monitoring"
 }
 
 variable "kube_data_auth_enabled" {
