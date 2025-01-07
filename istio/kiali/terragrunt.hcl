@@ -35,6 +35,4 @@ terraform {
 
 inputs = {
   cluster_name         = dependency.eks.outputs.cluster_name
-  istio_namespace      = var.istio_namespace
-  prometheus_namespace = var.prometheus_namespace
 }
