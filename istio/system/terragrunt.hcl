@@ -32,18 +32,10 @@ dependency "eks" {
   mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
 }
 
-dependency "prometheus" {
-  config_path = "${dirname(find_in_parent_folders())}/prometheus"
-
-  mock_outputs                            = include.mocks.locals.prometheus
-  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
-}
-
 terraform {
   source = ".//terraform"
 }
 
 inputs = {
-  cluster_name         = dependency.eks.outputs.cluster_name
-  prometheus_namespace = dependency.prometheus.outputs.namespace
+  cluster_name = dependency.eks.outputs.cluster_name
 }

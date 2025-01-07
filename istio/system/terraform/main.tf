@@ -30,7 +30,7 @@ module "istio_base" {
   wait_for_jobs = true
 }
 
-// https://istio.io/latest/docs/ambient/install/helm/#istiod-control-plane
+# // https://istio.io/latest/docs/ambient/install/helm/#istiod-control-plane
 module "istio_istiod" {
   source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
@@ -74,7 +74,7 @@ module "istio_istiod" {
   depends_on = [module.istio_base]
 }
 
-// https://istio.io/latest/docs/setup/additional-setup/cni/
+# // https://istio.io/latest/docs/setup/additional-setup/cni/
 module "istio_cni" {
   source  = "aws-ia/eks-blueprints-addon/aws"
   version = "1.1.1"
@@ -119,97 +119,6 @@ module "istio_ztunnel" {
 
   wait          = true
   wait_for_jobs = true
-
-  depends_on = [module.istio_cni]
-}
-
-resource "kubernetes_namespace" "istio_ingress" {
-  metadata {
-    labels = {
-      istio-injection = "enabled"
-    }
-
-    name = var.ingress_namespace
-  }
-}
-
-/**
-   Remember to run the following after installing the istio-ingress gateway:
-
-   ```bash
-   kubectl rollout restart deployment istio-ingress -n istio-ingress
-    ```
- */
-// https://istio.io/latest/docs/setup/additional-setup/gateway/
-module "istio_ingress" {
-  source  = "aws-ia/eks-blueprints-addon/aws"
-  version = "1.1.1"
-
-  name          = "istio-ingress"
-  description   = "Provides Envoy proxies running at the edge of the mesh, providing fine-grained control over traffic entering and leaving the mesh."
-  namespace     = kubernetes_namespace.istio_ingress.metadata[0].name
-  chart         = "gateway"
-  chart_version = local.istio_repo_version
-  repository    = local.istio_repo_url
-
-  values = [
-    yamlencode(
-      {
-        labels = {
-          istio = "ingressgateway"
-        }
-        service = {
-          annotations = {
-            "service.beta.kubernetes.io/aws-load-balancer-backend-protocol" = "http"
-            "service.beta.kubernetes.io/aws-load-balancer-type"             = "external"
-            "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"  = "ip"
-            "service.beta.kubernetes.io/aws-load-balancer-scheme"           = "internet-facing"
-            "service.beta.kubernetes.io/aws-load-balancer-attributes"       = "load_balancing.cross_zone.enabled=true"
-          }
-        }
-      }
-    )
-  ]
-
-  depends_on = [module.istio_ztunnel, module.istio_cni]
-}
-
-
-
-/**
- * https://kiali.io/docs/installation/installation-guide/creating-updating-kiali-cr/
- *
- * The Kiali Operator watches the Kiali Custom Resource (Kiali CR), a custom resource that contains the
- * Kiali Server deployment configuration. Creating, updating, or removing a Kiali CR will trigger the Kiali Operator
- * to install, update, or remove Kiali.
- */
-module "kiali_operator" {
-  source  = "aws-ia/eks-blueprints-addon/aws"
-  version = "1.1.1"
-
-  name             = "kiali-operator"
-  description      = "Kiali is a console for Istio service mesh"
-  namespace        = "kiali-operator"
-  create_namespace = true
-  chart            = "kiali-operator"
-  chart_version    = "v2.2.0"
-  repository       = "https://kiali.org/helm-charts"
-
-  // CR spec: https://kiali.io/docs/configuration/kialis.kiali.io/
-  values = [
-    <<-EOF
-    cr:
-      create: true
-      namespace: ${kubernetes_namespace.istio_system.metadata[0].name}
-      spec:
-        auth:
-          strategy: anonymous
-        istio_namespace: ${kubernetes_namespace.istio_system.metadata[0].name}
-        external_services:
-          prometheus:
-            url: "http://prometheus-operated.${var.prometheus_namespace}:9090"
-    EOF
-  ]
 
   depends_on = [module.istio_cni]
 }

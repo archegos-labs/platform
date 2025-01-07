@@ -202,11 +202,30 @@ This installation of Istio has been setup in [ambient mode](https://istio.io/lat
 
 ### Installation
 
-Installation is done via Terraform and Terragrunt. After the EKS cluster is setup and Istio is installed on the cluster. 
-The following needs to be run,
+1. Istio and a number of components we will be installing depend on [Prometheus](https://prometheus.io/) for monitoring.
+We won't be covering that in depth here only installing it. Run,
 
 ```shell
-kubectl rollout restart deployment istio-ingress -n istio-ingress
+make deploy-prometheus
+```
+
+Prometheus was installed in the monitoring namespace. Verify the pods are running,
+
+```shell
+kubectl -n monitoring get pods
+```
+
+
+2. To deploy Istio to our EKS cluster run,
+
+```shell
+make deploy-istio
+``` 
+
+After the installation is complete, you can verify that the Istio control plane is up with, 
+
+```shell
+kubectl get pods -n istio-system
 ```
 
 #### References

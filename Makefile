@@ -43,7 +43,7 @@ destroy-eks:
 
 addons ?=
 deploy-eks-addons:
-	echo "Applying EKS addons $(addons) for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	echo "Applying EKS addons for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	@if [ -z "$(addons)" ]; then \
 		echo "Error: Please specify addons. Example: make apply addons='folder1 folder2'"; \
 		exit 1; \
@@ -57,16 +57,42 @@ deploy-eks-addons:
 	done
 
 destroy-eks-addons:
-	echo "Destroying EKS addon $(addon) for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir eks/addons/$(addon) --terragrunt-strict-include
+	echo "Destroying EKS addons for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	@if [ -z "$(addons)" ]; then \
+		echo "Error: Please specify addons. Example: make apply addons='folder1 folder2'"; \
+		exit 1; \
+	fi
+	@for a in $(addons); do \
+	  echo "Destorying Terragrunt in directory: $$a" ; \
+	  terragrunt run-all destroy \
+	    --terragrunt-non-interactive \
+	    --terragrunt-include-dir eks/addons/$$a \
+	    --terragrunt-strict-include ; \
+	done
+
+deploy-prometheus:
+	echo "Applying Prometheus to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir prometheus --terragrunt-strict-include
+
+destroy-prometheus:
+	echo "Destroying Prometheus to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir prometheus --terragrunt-strict-include
 
 deploy-istio:
 	echo "Applying Istio to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir istio
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir istio/system --terragrunt-strict-include
 
 destroy-istio:
 	echo "Destroying Istio to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir istio
+	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir istio/system --terragrunt-strict-include
+
+deploy-kiali:
+	echo "Applying Kiali to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir istio/kiali --terragrunt-strict-include
+
+destroy-kiali:
+	echo "Destroying Kiali to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir istio/kiali --terragrunt-strict-include
 
 deploy-kubeflow:
 	echo "Applying Kubeflow to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
