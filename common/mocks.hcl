@@ -23,5 +23,9 @@ locals {
     namespace = "mock-namespace"
   }
 
+  istio = {
+    namespace = "mock-namespace"
+  }
+
   commands = ["init", "validate", "plan"]
 }
