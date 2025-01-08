@@ -22,6 +22,13 @@ dependencies {
   ]
 }
 
+dependency "account" {
+  config_path = "${dirname(find_in_parent_folders())}/account"
+
+  mock_outputs                            = include.mocks.locals.account
+  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
+}
+
 dependency "eks" {
   config_path = "${dirname(find_in_parent_folders())}/eks/cluster"
 
@@ -34,5 +41,6 @@ terraform {
 }
 
 inputs = {
-  cluster_name         = dependency.eks.outputs.cluster_name
+  cluster_name    = dependency.eks.outputs.cluster_name
+  resource_prefix = dependency.account.outputs.resource_prefix
 }

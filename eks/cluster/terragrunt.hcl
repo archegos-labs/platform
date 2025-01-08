@@ -88,21 +88,38 @@ inputs = {
   eks_managed_node_group_defaults = {
     ami_type       = "AL2_x86_64"
     instance_types = ["t3.large"]
+    capacity_type = "SPOT"
   }
 
   eks_managed_node_groups = {
     cpus_group_one = {
       name         = "ondemand-cpu"
-      min_size     = 1
-      max_size     = 3
+      min_size     = 0
+      max_size     = 6
       desired_size = 2
+
+      taints = {
+        spotInstance = {
+          key    = "spotInstance"
+          value  = "true"
+          effect = "PREFER_NO_SCHEDULE"
+        }
+      }
     }
 
     cpus_group_two = {
       name         = "ondemand-cpu"
-      min_size     = 1
-      max_size     = 3
+      min_size     = 0
+      max_size     = 6
       desired_size = 2
+
+      taints = {
+        spotInstance = {
+          key    = "spotInstance"
+          value  = "true"
+          effect = "PREFER_NO_SCHEDULE"
+        }
+      }
     }
 
     gpus = {
