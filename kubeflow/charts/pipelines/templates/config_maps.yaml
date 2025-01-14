@@ -486,22 +486,32 @@ metadata:
 ---
 apiVersion: v1
 data:
-  ConMaxLifeTime: 120s
+  warning: |
+    1. Do not use kubectl to edit this configmap, because some values are used
+    during kustomize build. Instead, change the configmap and apply the entire
+    kustomize manifests again.
+    2. After updating the configmap, some deployments may need to be restarted
+    until the changes take effect. A quick way to restart all deployments in a
+    namespace: `kubectl rollout restart deployment -n <your-namespace>`.
+  appName: pipeline
+  appVersion: 2.3.0
+  dbHost: mysql  # relic to be removed after release
+  dbPort: '3306' # relic to be removed after release
+  dbType: mysql
+  mysqlHost: mysql
+  mysqlPort: "3306"
+  mlmdDb: metadb
+  cacheDb: cachedb
+  pipelineDb: mlpipeline
+  bucketName: mlpipeline
+  defaultPipelineRoot: ''
+  autoUpdatePipelineDefaultVersion: 'true'
+  cronScheduleTimezone: UTC
+  cacheImage: gcr.io/google-containers/busybox
   DEFAULT_CACHE_STALENESS: ''
   MAXIMUM_CACHE_STALENESS: ''
-  appName: pipeline
-  appVersion: 2.0.1
-  autoUpdatePipelineDefaultVersion: 'true'
-  bucketName: mlpipeline
-  cacheDb: cachedb
-  cacheImage: gcr.io/google-containers/busybox
   cacheNodeRestrictions: 'false'
-  cronScheduleTimezone: UTC
-  dbHost: mysql
-  dbPort: '3306'
-  defaultPipelineRoot: ''
-  mlmdDb: metadb
-  pipelineDb: mlpipeline
+  ConMaxLifeTime: 120s
 kind: ConfigMap
 metadata:
   labels:
@@ -513,10 +523,26 @@ metadata:
 ---
 apiVersion: v1
 data:
+  # References:
+  # * https://github.com/argoproj/argo-workflows/blob/v3.4.17/config/config.go
+  # * https://github.com/argoproj/argo-workflows/blob/v3.4.17/docs/workflow-controller-configmap.md
+  # * https://github.com/argoproj/argo-workflows/blob/v3.4.17/docs/workflow-controller-configmap.yaml
+
+  # Choice of an executor is deprecated in favor of emissary executor
+  executor: |
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 0.01
+        memory: 32Mi
+      limits:
+        cpu: 0.5
+        memory: 512Mi
+
   artifactRepository: |
     archiveLogs: true
     s3:
-      endpoint: "minio-service.kubeflow:9000"
+      endpoint: "minio-service.{{ .Values.kubeflow.namespace }}:9000"
       bucket: "mlpipeline"
       # keyFormat is a format pattern to define how artifacts will be organized in a bucket.
       # It can reference workflow metadata variables such as workflow.namespace, workflow.name,
@@ -538,16 +564,6 @@ data:
       secretKeySecret:
         name: mlpipeline-minio-artifact
         key: secretkey
-  containerRuntimeExecutor: emissary
-  executor: |
-    imagePullPolicy: IfNotPresent
-    resources:
-      requests:
-        cpu: 0.01
-        memory: 32Mi
-      limits:
-        cpu: 0.5
-        memory: 512Mi
 kind: ConfigMap
 metadata:
   labels:

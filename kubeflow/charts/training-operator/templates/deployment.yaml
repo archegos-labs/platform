@@ -20,16 +20,13 @@ spec:
       containers:
         - command:
             - /manager
-          args:
-          - --enable-scheme=tfjob
-          - --enable-scheme=pytorchjob
-          - --enable-scheme=mxjob
-          - --enable-scheme=paddlejob
-          - --enable-scheme=xgboostjob
-          image: kubeflow/training-operator:v1-98d40be
+          image: kubeflow/training-operator:v1-be2e29e
           name: training-operator
           ports:
             - containerPort: 8080
+            - containerPort: 9443
+              name: webhook-server
+              protocol: TCP
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:
@@ -41,6 +38,10 @@ spec:
                   fieldPath: metadata.name
           securityContext:
             allowPrivilegeEscalation: false
+          volumeMounts:
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: cert
+              readOnly: true
           livenessProbe:
             httpGet:
               path: /healthz
@@ -57,3 +58,8 @@ spec:
             timeoutSeconds: 3
       serviceAccountName: training-operator
       terminationGracePeriodSeconds: 10
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: training-operator-webhook-cert

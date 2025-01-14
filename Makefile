@@ -25,6 +25,14 @@ plan-all:
 	TF_VAR_kube_data_auth_enabled=false \
 		terragrunt run-all plan --terragrunt-non-interactive
 
+apply-all:
+	echo "Apply all resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all apply --terragrunt-non-interactive
+
+destroy-all:
+	echo "Destroying all resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all destroy --terragrunt-non-interactive
+
 deploy-vpc:
 	echo "Applying all VPC resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir vpc
