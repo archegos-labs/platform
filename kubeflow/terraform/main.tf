@@ -1,3 +1,6 @@
+
+
+
 resource "kubernetes_namespace" "kubeflow" {
   metadata {
     labels = {
@@ -19,6 +22,28 @@ resource "helm_release" "kubeflow_issuer" {
   wait_for_jobs = true
 
   depends_on = [kubernetes_namespace.kubeflow]
+}
+
+resource "helm_release" "istio-ingress" {
+  name       = "istio-ingress"
+  chart      = "../charts/istio-ingress"
+  version    = "1.0.0"
+  namespace     = "ingress"
+
+  values = [
+    <<-EOT
+      ingress:
+        namespace: "ingress"
+        gateway: "ingress-gateway"
+      healthcheck:
+        port: 8080
+        path: "/healthcheck"
+      cluster_issuer:
+        name: "cluster-self-signing-issuer"
+    EOT
+  ]
+
+  depends_on = [helm_release.kubeflow_issuer]
 }
 
 #######################################
