@@ -152,7 +152,7 @@ resource "random_password" "minio_secret_key" {
 resource "helm_release" "kubeflow-pipelines" {
   name      = "kubeflow-pipelines"
   chart     = "../charts/pipelines"
-  version   = "1.0.0"
+  version   = "1.0.1"
   namespace = kubernetes_namespace.kubeflow.metadata[0].name
 
   values = [
@@ -160,7 +160,7 @@ resource "helm_release" "kubeflow-pipelines" {
       kubeflow:
         namespace: "${kubernetes_namespace.kubeflow.metadata[0].name}"
       ingress:
-        namespace: "istio-ingress"
+        namespace: "ingress"
         gateway: "ingress-gateway"
         sa: "istio-ingressgateway-sa"
       minio:
