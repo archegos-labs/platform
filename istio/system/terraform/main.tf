@@ -171,7 +171,7 @@ module "istio_ingress" {
     )
   ]
 
-  wait          = true
+  wait = true
 
   depends_on = [module.istio_ztunnel, module.istio_cni]
 }

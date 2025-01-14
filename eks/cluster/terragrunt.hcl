@@ -88,7 +88,7 @@ inputs = {
   eks_managed_node_group_defaults = {
     ami_type       = "AL2_x86_64"
     instance_types = ["t3.large"]
-    capacity_type = "SPOT"
+    capacity_type  = "SPOT"
   }
 
   eks_managed_node_groups = {
