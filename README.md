@@ -178,7 +178,11 @@ road to getting Kubeflow up and running.
 ```shell
 make deploy-eks-addons addons='vpc-cni cert-manager awslb-controller external-dns'
 ```
+After the addons are deployed ExternalDNS requires a restart. I'm not sure entirely way. Run
 
+```shell
+kubectl rollout restart deployment/external-dns -n kube-system
+```
 ### References
 * [Managed Node Groups](https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html)
 * [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)

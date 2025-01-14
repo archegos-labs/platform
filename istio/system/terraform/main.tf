@@ -122,3 +122,57 @@ module "istio_ztunnel" {
 
   depends_on = [module.istio_cni]
 }
+
+resource "kubernetes_namespace" "istio_ingress" {
+  metadata {
+    labels = {
+      istio-injection = "enabled"
+    }
+
+    name = "ingress"
+  }
+}
+
+/**
+   Remember to run the following after installing the istio-ingress gateway:
+
+   ```bash
+   kubectl rollout restart deployment istio-ingress -n ingress
+    ```
+ */
+// https://istio.io/latest/docs/setup/additional-setup/gateway/
+module "istio_ingress" {
+  source  = "aws-ia/eks-blueprints-addon/aws"
+  version = "1.1.1"
+
+  name          = "istio-ingressgateway"
+  description   = "Provides Envoy proxies running at the edge of the mesh, providing fine-grained control over traffic entering and leaving the mesh."
+  namespace     = kubernetes_namespace.istio_ingress.metadata[0].name
+  chart         = "gateway"
+  chart_version = local.istio_repo_version
+  repository    = local.istio_repo_url
+
+  values = [
+    yamlencode(
+      {
+        labels = {
+          istio = "ingressgateway"
+        }
+        service = {
+          annotations = {
+            "service.beta.kubernetes.io/aws-load-balancer-backend-protocol" = "http"
+            "service.beta.kubernetes.io/aws-load-balancer-type"             = "external"
+            "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"  = "ip"
+            "service.beta.kubernetes.io/aws-load-balancer-scheme"           = "internet-facing"
+            "service.beta.kubernetes.io/aws-load-balancer-attributes"       = "load_balancing.cross_zone.enabled=true"
+          }
+        }
+      }
+    )
+  ]
+
+  wait          = true
+
+  depends_on = [module.istio_ztunnel, module.istio_cni]
+}
+

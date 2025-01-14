@@ -40,7 +40,7 @@ resource "helm_release" "training_operator" {
     value = kubernetes_namespace.kubeflow.metadata[0].name
   }
 
-  depends_on = [kubernetes_namespace.kubeflow]
+  depends_on = [kubernetes_namespace.kubeflow, helm_release.kubeflow_issuer]
 }
 
 #######################################
@@ -168,4 +168,6 @@ resource "helm_release" "kubeflow-pipelines" {
         secret_key: "${random_password.minio_secret_key.result}"
     EOT
   ]
+
+  depends_on = [kubernetes_namespace.kubeflow, helm_release.pv_fsx]
 }
