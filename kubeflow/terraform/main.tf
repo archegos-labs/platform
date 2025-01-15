@@ -187,7 +187,7 @@ resource "helm_release" "kubeflow-pipelines" {
       ingress:
         namespace: "ingress"
         gateway: "ingress-gateway"
-        sa: "istio-ingressgateway-sa"
+        sa: "istio-ingressgateway"
       minio:
         access_key: "${random_string.minio_access_key.result}"
         secret_key: "${random_password.minio_secret_key.result}"
