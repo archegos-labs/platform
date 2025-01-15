@@ -177,7 +177,7 @@ resource "random_password" "minio_secret_key" {
 resource "helm_release" "kubeflow-pipelines" {
   name      = "kubeflow-pipelines"
   chart     = "../charts/pipelines"
-  version   = "1.0.1"
+  version   = "1.0.2"
   namespace = kubernetes_namespace.kubeflow.metadata[0].name
 
   values = [

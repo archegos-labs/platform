@@ -446,7 +446,7 @@ metadata:
 apiVersion: v1
 data:
   viewer-pod-template.json: |
-    { "spec": { "serviceAccountName": "default-editor" } }
+    { "spec": { "serviceAccountName": "kubeflow-pipelines-viewer" } }
 kind: ConfigMap
 metadata:
   labels:
