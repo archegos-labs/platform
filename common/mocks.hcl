@@ -19,6 +19,10 @@ locals {
     cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=="
   }
 
+  eks_setup = {
+    vpc_cni_pod_identity_arn = "arn:aws:iam::123456789012:role/mock-eks-role"
+  }
+
   prometheus = {
     namespace = "mock-namespace"
   }

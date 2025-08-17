@@ -1,6 +1,6 @@
 locals {
   istio_repo_url     = "https://istio-release.storage.googleapis.com/charts"
-  istio_repo_version = "1.24.1"
+  istio_repo_version = "1.27.0"
 }
 
 resource "kubernetes_namespace" "istio_system" {

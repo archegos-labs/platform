@@ -8,7 +8,7 @@ include "mocks" {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/eks/aws?version=20.28.0"
+  source = "tfr:///terraform-aws-modules/eks/aws?version=21.1.0"
 }
 
 dependency "account" {
@@ -25,16 +25,23 @@ dependency "vpc" {
   mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
 }
 
+dependency "eks_setup" {
+  config_path = "${dirname(find_in_parent_folders())}/eks/setup"
+
+  mock_outputs                            = include.mocks.locals.eks_setup
+  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
+}
+
 locals {
   eks_admin_user  = "archegos-admin"
   deployment_user = "tf-deployer"
 }
 
 inputs = {
-  cluster_name    = "${dependency.account.outputs.resource_prefix}-eks"
-  cluster_version = "1.31"
+  name    = "${dependency.account.outputs.resource_prefix}-eks"
+  kubernetes_version = "1.33"
 
-  cluster_endpoint_public_access = true
+  endpoint_public_access = true
 
   vpc_id                   = dependency.vpc.outputs.vpc_id
   subnet_ids               = concat(dependency.vpc.outputs.private_subnets, dependency.vpc.outputs.public_subnets)
@@ -72,28 +79,29 @@ inputs = {
   }
 
   # For more, https://docs.aws.amazon.com/eks/latest/userguide/eks-add-ons.html
-  cluster_addons = {
-    eks-pod-identity-agent = {
+  addons = {
+    eks-pod-identity-agent = { most_recent = true, before_compute = true }
+    vpc-cni                = {
       most_recent = true
+      before_compute = true
+      pod_identity_association = [{
+        role_arn = dependency.eks_setup.outputs.vpc_cni_pod_identity_arn
+        service_account = "aws-node"
+      }]
     }
-
-    kube-proxy = {
-      most_recent = true
-    }
-    coredns = {
-      most_recent = true
-    }
+    kube-proxy             = { most_recent = true }
+    coredns                = { most_recent = true }
   }
 
   eks_managed_node_group_defaults = {
-    ami_type       = "AL2_x86_64"
+    ami_type       = "AL2023_x86_64"
     instance_types = ["t3.large"]
     capacity_type  = "SPOT"
   }
 
   eks_managed_node_groups = {
     cpus_group_one = {
-      name         = "ondemand-cpu"
+      name         = "cpu-group-one"
       min_size     = 0
       max_size     = 6
       desired_size = 2
@@ -108,7 +116,7 @@ inputs = {
     }
 
     cpus_group_two = {
-      name         = "ondemand-cpu"
+      name         = "cpu-group-two"
       min_size     = 0
       max_size     = 6
       desired_size = 2

@@ -1,7 +1,7 @@
 .SILENT:
 
-region ?= us-east-1
 platform_env ?= dev
+region ?= us-east-1
 org_name ?= Archegos
 
 export ORG_NAME=$(shell echo $(org_name) | tr '[:upper:]' '[:lower:]')
@@ -43,7 +43,7 @@ destroy-vpc:
 
 deploy-eks:
 	echo "Applying all EKS resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir eks/cluster --terragrunt-strict-include
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir eks/setup --terragrunt-include-dir eks/cluster --terragrunt-strict-include
 
 destroy-eks:
 	echo "Destroying all EKS resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"

@@ -159,7 +159,7 @@ CoreDNS is running at https://7D3A825AA8E29A730955A485709E89D2.gr7.us-east-1.eks
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-Congratulations! You've deployed a barebones EKS cluster.
+Congratulations! You've successfully deployed an EKS cluster on AWS.
 
 ### Addons
 
@@ -176,9 +176,9 @@ road to getting Kubeflow up and running.
   itself, but merely configures other DNS providers accordingly—e.g. AWS Route 53 or Google Cloud DNS.
 
 ```shell
-make deploy-eks-addons addons='vpc-cni cert-manager awslb-controller external-dns'
+make deploy-eks-addons addons='cert-manager awslb-controller external-dns'
 ```
-After the addons are deployed ExternalDNS requires a restart. I'm not sure entirely way. Run
+After the addons are deployed ExternalDNS requires a restart. I'm not entirely sure why. Run
 
 ```shell
 kubectl rollout restart deployment/external-dns -n kube-system
@@ -244,8 +244,12 @@ In addition to the Istio control plane, the following tools are installed to sup
 * [Prometheus](https://prometheus.io/) - Prometheus is an open-source systems monitoring and alerting toolkit.
 
 #### Kiali
+To deploy Kiali run the following,
 
-To access the Kiali dashboard, run the following,
+```shell
+make deploy-kiali
+```
+Kiali is installed in the `istio-system` namespace. You can verify that Kiali is running by running,
 
 ```shell
 kubectl port-forward svc/kiali 20001:20001 -n istio-system

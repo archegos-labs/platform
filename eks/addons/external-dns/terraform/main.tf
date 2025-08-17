@@ -4,7 +4,7 @@ locals {
 
 module "external_dns_pod_identity" {
   source  = "terraform-aws-modules/eks-pod-identity/aws"
-  version = "1.6.1"
+  version = "2.0.0"
 
   name = var.service_account
 
@@ -34,7 +34,7 @@ module "external_dns" {
   namespace        = local.namespace
   create_namespace = false
   chart            = "external-dns"
-  chart_version    = "1.15.0"
+  chart_version    = "1.18.0"
   repository       = "https://kubernetes-sigs.github.io/external-dns/"
   values           = ["provider: aws", "source: ingress"]
 

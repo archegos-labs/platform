@@ -16,7 +16,7 @@ module "nvidia_gpu_operator" {
   namespace        = local.namespace
   create_namespace = true
   chart            = local.addon_name
-  chart_version    = "v24.9.1"
+  chart_version    = "v25.3.2"
   repository       = "https://helm.ngc.nvidia.com/nvidia"
 
   wait          = true

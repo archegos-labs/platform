@@ -26,12 +26,17 @@ generate "versions" {
   if_exists = "overwrite"
   contents  = <<EOF
     terraform {
-      required_version = ">= 1.0"
+      required_version = ">= 1.5.7"
 
       required_providers {
         aws = {
           source = "hashicorp/aws"
-          version = ">= 5.80.0"
+          version = "~> 6.0"
+        }
+
+        helm = {
+          source = "hashicorp/helm"
+          version = "2.17.0"
         }
       }
     }

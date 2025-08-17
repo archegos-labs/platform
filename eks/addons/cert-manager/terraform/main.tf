@@ -30,7 +30,7 @@ module "cert_manager" {
   namespace        = local.namespace
   create_namespace = true
   chart            = "cert-manager"
-  chart_version    = "v1.14.3"
+  chart_version    = "v1.18.2"
   repository       = "https://charts.jetstack.io"
 
   wait          = true

@@ -5,7 +5,7 @@ locals {
 
 module "aws_fsx_lustre_controller_pod_identity" {
   source  = "terraform-aws-modules/eks-pod-identity/aws"
-  version = "1.6.1"
+  version = "2.0.0"
 
   name = "aws-fsx-lustre-csi-controller"
 
@@ -23,7 +23,7 @@ module "aws_fsx_lustre_controller_pod_identity" {
 
 module "aws_fsx_lustre_node_pod_identity" {
   source  = "terraform-aws-modules/eks-pod-identity/aws"
-  version = "1.6.1"
+  version = "2.0.0"
 
   name = "aws-fsx-lustre-csi-node"
 

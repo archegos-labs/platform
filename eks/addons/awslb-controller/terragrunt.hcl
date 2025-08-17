@@ -48,4 +48,5 @@ inputs = {
   cluster_name    = dependency.eks.outputs.cluster_name
   vpc_id          = dependency.vpc.outputs.vpc_id
   service_account = "aws-load-balancer-controller-sa"
+  monitoring_namespace = "monitoring"
 }

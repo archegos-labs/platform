@@ -13,6 +13,11 @@ variable "service_account" {
   type        = string
 }
 
+variable "monitoring_namespace" {
+  description = "The name of the namespace to deploy the service monitor in"
+  type        = string
+}
+
 variable "kube_data_auth_enabled" {
   type        = bool
   default     = false

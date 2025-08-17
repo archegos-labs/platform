@@ -5,7 +5,7 @@ locals {
 
 module "aws_lb_controller_pod_identity" {
   source  = "terraform-aws-modules/eks-pod-identity/aws"
-  version = "1.6.1"
+  version = "2.0.0"
 
   name = var.service_account
 
@@ -28,7 +28,7 @@ module "eks_blueprints_addon" {
   description = "A Helm chart to deploy aws-load-balancer-controller"
 
   chart            = "aws-load-balancer-controller"
-  chart_version    = "1.11.0"
+  chart_version    = "1.13.4"
   repository       = "https://aws.github.io/eks-charts"
   namespace        = local.namespace
   create_namespace = false
@@ -60,6 +60,14 @@ module "eks_blueprints_addon" {
     {
       name  = "enableServiceMutatorWebhook"
       value = "false"
+    },
+    {
+      name  = "serviceMonitor.enabled"
+      value = "true"
+    },
+    {
+      name  = "serviceMonitor.namespace"
+      value = var.monitoring_namespace
     }
   ]
 }

@@ -1,23 +1,14 @@
 locals {
-  namespace  = "kube-system"
   addon_name = "aws-efs-csi-driver"
 }
 
 module "aws_efs_csi_pod_identity" {
   source  = "terraform-aws-modules/eks-pod-identity/aws"
-  version = "1.6.1"
+  version = "2.0.0"
 
   name = var.service_account
 
   attach_aws_efs_csi_policy = true
-
-  associations = {
-    "efs-csi-driver" = {
-      cluster_name    = var.cluster_name
-      namespace       = local.namespace
-      service_account = var.service_account
-    }
-  }
 }
 
 data "aws_eks_addon_version" "latest" {
@@ -34,5 +25,8 @@ resource "aws_eks_addon" "aws_efs_csi" {
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
 
-  depends_on = [module.aws_efs_csi_pod_identity]
+  pod_identity_association {
+    role_arn        = module.aws_efs_csi_pod_identity.iam_role_arn
+    service_account = var.service_account
+  }
 }
