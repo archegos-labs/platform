@@ -7,6 +7,10 @@ include "mocks" {
   expose = true
 }
 
+include "kube_provider" {
+  path = "${dirname(find_in_parent_folders())}/common/kube-provider.hcl"
+}
+
 include "helm_provider" {
   path = "${dirname(find_in_parent_folders())}/common/helm-provider.hcl"
 }
@@ -14,7 +18,15 @@ include "helm_provider" {
 dependencies {
   paths = [
     "${dirname(find_in_parent_folders())}/eks/cluster",
+    "${dirname(find_in_parent_folders())}/eks/addons/awslb-controller",
   ]
+}
+
+dependency "account" {
+  config_path = "${dirname(find_in_parent_folders())}/account"
+
+  mock_outputs                            = include.mocks.locals.account
+  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
 }
 
 dependency "eks" {
@@ -30,4 +42,5 @@ terraform {
 
 inputs = {
   cluster_name = dependency.eks.outputs.cluster_name
+  resource_prefix = dependency.account.outputs.resource_prefix
 }

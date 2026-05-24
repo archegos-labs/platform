@@ -25,7 +25,7 @@ plan-all:
 	TF_VAR_kube_data_auth_enabled=false \
 		terragrunt run-all plan --terragrunt-non-interactive
 
-apply-all:
+deploy-all:
 	echo "Apply all resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	terragrunt run-all apply --terragrunt-non-interactive
 
@@ -47,7 +47,7 @@ deploy-eks:
 
 destroy-eks:
 	echo "Destroying all EKS resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir eks/cluster --terragrunt-strict-include
+	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir eks/setup --terragrunt-include-dir eks/cluster --terragrunt-strict-include
 
 addons ?=
 deploy-eks-addons:
@@ -104,4 +104,8 @@ destroy-kiali:
 
 deploy-kubeflow:
 	echo "Applying Kubeflow to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir kubeflow
+	terragrunt run-all apply --terragrunt-non-interactive --terragrunt-include-dir kubeflow --terragrunt-strict-include
+
+destroy-kubeflow:
+	echo "Destroying Kubeflow to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-include-dir kubeflow --terragrunt-strict-include

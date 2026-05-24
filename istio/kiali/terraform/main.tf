@@ -30,6 +30,10 @@ module "kiali_operator" {
         external_services:
           prometheus:
             url: "http://prometheus-operated.${var.prometheus_namespace}:9090"
+          grafana:
+            enabled: true
+            internal_url: "http://prometheus-grafana.${var.prometheus_namespace}:80"
+            external_url: "https://grafana.admin.aedenjameson.com"
     EOF
   ]
 }
@@ -61,6 +65,8 @@ resource "kubernetes_ingress_v1" "kiali_ingress" {
     annotations = {
       "external-dns.alpha.kubernetes.io/hostname"      = local.app_domain
       "kubernetes.io/ingress.class"                    = "alb"
+      "alb.ingress.kubernetes.io/healthcheck-path"     = "/kiali/healthz"
+      "alb.ingress.kubernetes.io/success-codes"        = "200"
       "alb.ingress.kubernetes.io/group.name"           = "${var.resource_prefix}-alb"
       "alb.ingress.kubernetes.io/target-type"          = "ip"
       "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
@@ -80,6 +86,8 @@ resource "kubernetes_ingress_v1" "kiali_ingress" {
 
     // taken from https://www.stacksimplify.com/aws-eks/aws-alb-ingress/learn-to-enable-ssl-redirect-in-alb-ingress-service-on-aws-eks/
     rule {
+      host = local.app_domain
+
       http {
         path {
           path      = "/"
@@ -99,6 +107,8 @@ resource "kubernetes_ingress_v1" "kiali_ingress" {
     }
 
     rule {
+      host = local.app_domain
+
       http {
         path {
           path      = "/"

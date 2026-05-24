@@ -178,15 +178,27 @@ road to getting Kubeflow up and running.
 ```shell
 make deploy-eks-addons addons='cert-manager awslb-controller external-dns'
 ```
-After the addons are deployed ExternalDNS requires a restart. I'm not entirely sure why. Run
-
-```shell
-kubectl rollout restart deployment/external-dns -n kube-system
-```
 ### References
 * [Managed Node Groups](https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html)
 * [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)
 
+
+### Prometheus
+
+Lastly, a number of components we will be installing on our cluster depend on [Prometheus](https://prometheus.io/) for monitoring.
+We won't be covering that in depth here only installing it. Run,
+
+```shell
+make deploy-prometheus
+```
+
+Prometheus was installed in the monitoring namespace. Verify the pods are running,
+
+```shell
+kubectl -n monitoring get pods
+```
+
+* [Prometheus](https://prometheus.io/) - Prometheus is an open-source systems monitoring and alerting toolkit.
 
 ## Service Mesh
 
@@ -206,21 +218,8 @@ This installation of Istio has been setup in [ambient mode](https://istio.io/lat
 
 ### Installation
 
-1. Istio and a number of components we will be installing depend on [Prometheus](https://prometheus.io/) for monitoring.
-We won't be covering that in depth here only installing it. Run,
 
-```shell
-make deploy-prometheus
-```
-
-Prometheus was installed in the monitoring namespace. Verify the pods are running,
-
-```shell
-kubectl -n monitoring get pods
-```
-
-
-2. To deploy Istio to our EKS cluster run,
+To deploy Istio to our EKS cluster run,
 
 ```shell
 make deploy-istio
@@ -241,7 +240,6 @@ kubectl get pods -n istio-system
 In addition to the Istio control plane, the following tools are installed to support the service mesh,
 
 * [Kiali](https://kiali.io/) - Configure, visualize, validate and troubleshoot your mesh! Kiali is a console for Istio service mesh.
-* [Prometheus](https://prometheus.io/) - Prometheus is an open-source systems monitoring and alerting toolkit.
 
 #### Kiali
 To deploy Kiali run the following,

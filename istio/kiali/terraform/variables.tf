@@ -28,3 +28,4 @@ variable "kube_data_auth_enabled" {
     EOT
   nullable    = false
 }
+

@@ -35,6 +35,24 @@ dependency "eks_setup" {
 locals {
   eks_admin_user  = "archegos-admin"
   deployment_user = "tf-deployer"
+
+  cpu_group_defaults = {
+    name         = "cpu-group-one"
+    ami_type       = "AL2023_x86_64_STANDARD"
+    instance_types = ["t3.xlarge", "t3a.xlarge", "m5.xlarge", "m5a.xlarge", "m6i.xlarge", "m7i-flex.xlarge"]
+    capacity_type  = "SPOT"
+    min_size     = 0
+    max_size     = 6
+    desired_size = 2
+
+    taints = {
+      spotInstance = {
+        key    = "spotInstance"
+        value  = "true"
+        effect = "PREFER_NO_SCHEDULE"
+      }
+    }
+  }
 }
 
 inputs = {
@@ -93,42 +111,9 @@ inputs = {
     coredns                = { most_recent = true }
   }
 
-  eks_managed_node_group_defaults = {
-    ami_type       = "AL2023_x86_64"
-    instance_types = ["t3.large"]
-    capacity_type  = "SPOT"
-  }
-
   eks_managed_node_groups = {
-    cpus_group_one = {
-      name         = "cpu-group-one"
-      min_size     = 0
-      max_size     = 6
-      desired_size = 2
-
-      taints = {
-        spotInstance = {
-          key    = "spotInstance"
-          value  = "true"
-          effect = "PREFER_NO_SCHEDULE"
-        }
-      }
-    }
-
-    cpus_group_two = {
-      name         = "cpu-group-two"
-      min_size     = 0
-      max_size     = 6
-      desired_size = 2
-
-      taints = {
-        spotInstance = {
-          key    = "spotInstance"
-          value  = "true"
-          effect = "PREFER_NO_SCHEDULE"
-        }
-      }
-    }
+    cpus_group_one = local.cpu_group_defaults
+    cpus_group_two = local.cpu_group_defaults
 
     gpus = {
       name           = "ondemand-gpu"
