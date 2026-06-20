@@ -8,7 +8,7 @@ ingress:
   namespace: ingress
   gateway: ingress-gateway
 
-dashboard_host: dashboard.admin.aedenjameson.com
+dashboard_host: ""
 
 oidc:
   issuer_url: ""

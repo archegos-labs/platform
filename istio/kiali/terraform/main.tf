@@ -37,7 +37,7 @@ module "kiali_operator" {
           grafana:
             enabled: true
             internal_url: "http://prometheus-grafana.${var.prometheus_namespace}:80"
-            external_url: "https://grafana.admin.aedenjameson.com"
+            external_url: "https://grafana.admin.${local.root_domain}"
     EOF
   ]
 }
@@ -54,11 +54,11 @@ resource "kubernetes_secret_v1" "kiali_oidc" {
 }
 
 locals {
-  root_domain = "aedenjameson.com"
+  root_domain = var.root_domain
   app_domain  = "kiali.admin.${local.root_domain}"
 }
 
-data "aws_route53_zone" "aedenjameson_com" {
+data "aws_route53_zone" "root" {
   name         = local.root_domain
   private_zone = false
 }
@@ -68,7 +68,7 @@ module "acm" {
   version = "~> 4.0"
 
   domain_name = local.app_domain
-  zone_id     = data.aws_route53_zone.aedenjameson_com.zone_id
+  zone_id     = data.aws_route53_zone.root.zone_id
 
   validation_method = "DNS"
 }

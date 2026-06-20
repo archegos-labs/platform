@@ -40,3 +40,8 @@ variable "dex_issuer_uri" {
   type        = string
 }
 
+variable "root_domain" {
+  description = "Root DNS zone for admin-facing hostnames (e.g. kiali/grafana). Provided by the account module."
+  type        = string
+}
+

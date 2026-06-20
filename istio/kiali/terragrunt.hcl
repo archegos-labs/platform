@@ -56,4 +56,5 @@ inputs = {
   resource_prefix          = dependency.account.outputs.resource_prefix
   kiali_oidc_client_secret = dependency.dex.outputs.oidc_client_secrets["kiali"]
   dex_issuer_uri           = dependency.dex.outputs.dex_issuer_uri
+  root_domain              = dependency.account.outputs.root_domain
 }

@@ -6,7 +6,7 @@ controller_image: ghcr.io/kubeflow/dashboard/profile-controller
 
 userid_header: kubeflow-userid
 userid_prefix: ""
-admin_email: admin@aedenjameson.com
+admin_email: ""
 admin_profile_namespace: kubeflow-admin
 
 ingress:
