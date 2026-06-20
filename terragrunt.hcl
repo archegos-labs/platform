@@ -2,9 +2,11 @@ locals {
   deployment  = get_env("DEPLOYMENT")
   deploy_vars = read_terragrunt_config("${get_parent_terragrunt_dir()}/deployments/${local.deployment}.hcl")
 
-  org    = lower(local.deploy_vars.locals.organization)
-  region = local.deploy_vars.locals.region
-  env    = local.deploy_vars.locals.env
+  org         = lower(local.deploy_vars.locals.organization)
+  region      = local.deploy_vars.locals.region
+  env         = local.deploy_vars.locals.env
+  root_domain = local.deploy_vars.locals.root_domain
+  admin_email = local.deploy_vars.locals.admin_email
 }
 
 remote_state {
@@ -37,6 +39,16 @@ generate "versions" {
         helm = {
           source = "hashicorp/helm"
           version = "2.17.0"
+        }
+
+        kubernetes = {
+          source = "hashicorp/kubernetes"
+          version = "~> 2.30"
+        }
+
+        random = {
+          source = "hashicorp/random"
+          version = "~> 3.6"
         }
       }
     }

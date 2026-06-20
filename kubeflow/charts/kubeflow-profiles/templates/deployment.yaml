@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profiles-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: profile-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profile-controller
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: profile-controller
+    spec:
+      serviceAccountName: profiles-controller-service-account
+      containers:
+      - name: access-management
+        image: {{ .Values.kfam_image }}:{{ .Values.image_tag }}
+        imagePullPolicy: IfNotPresent
+        command:
+        - /access-management
+        - -cluster-admin
+        - $(ADMIN)
+        - -userid-header
+        - $(USERID_HEADER)
+        - -userid-prefix
+        - $(USERID_PREFIX)
+        envFrom:
+        - configMapRef:
+            name: profiles-config
+        ports:
+        - containerPort: 8081
+          name: http-kfam
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+      - name: manager
+        image: {{ .Values.controller_image }}:{{ .Values.image_tag }}
+        imagePullPolicy: IfNotPresent
+        command:
+        - /manager
+        - -userid-header
+        - $(USERID_HEADER)
+        - -userid-prefix
+        - $(USERID_PREFIX)
+        - -workload-identity
+        - $(WORKLOAD_IDENTITY)
+        args:
+        - --leader-elect
+        - --health-probe-bind-address=:9876
+        - --metrics-bind-address=0
+        envFrom:
+        - configMapRef:
+            name: profiles-config
+        ports:
+        - containerPort: 9876
+          name: http
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9876
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 9876
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - mountPath: /etc/profile-controller
+          name: namespace-labels
+          readOnly: true
+      volumes:
+      - name: namespace-labels
+        configMap:
+          name: profiles-namespace-labels-data

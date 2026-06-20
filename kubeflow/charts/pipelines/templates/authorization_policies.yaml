@@ -48,10 +48,7 @@ metadata:
   namespace: {{ .Values.kubeflow.namespace }}
 spec:
   rules:
-  - from:
-    - source:
-        principals:
-        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/{{ .Values.ingress.sa }}
+  - {}
   selector:
     matchLabels:
       app: ml-pipeline-ui

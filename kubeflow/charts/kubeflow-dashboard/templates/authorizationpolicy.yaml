@@ -1,0 +1,15 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: dashboard
+  namespace: {{ .Values.namespace }}
+spec:
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
+  selector:
+    matchLabels:
+      app: kubeflow-dashboard

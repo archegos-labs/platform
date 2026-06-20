@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy
+  namespace: {{ .Values.namespace }}
+data:
+  oauth2-proxy.cfg: |
+    provider = "oidc"
+    oidc_issuer_url = "{{ .Values.oidc.issuer_url }}"
+    skip_oidc_discovery = true
+    login_url = "{{ .Values.oidc.issuer_url }}/auth"
+    redeem_url = "http://{{ .Values.upstreams.dex_service }}/dex/token"
+    oidc_jwks_url = "http://{{ .Values.upstreams.dex_service }}/dex/keys"
+
+    redirect_url = "https://{{ .Values.dashboard_host }}/oauth2/callback"
+
+    email_domains = ["*"]
+    scope = "openid profile email groups"
+
+    cookie_name = "oauth2_proxy"
+    cookie_secure = true
+    cookie_samesite = "lax"
+    cookie_expire = "168h"
+    cookie_refresh = "0"
+
+    set_xauthrequest = true
+    set_authorization_header = true
+    pass_authorization_header = true
+    pass_access_token = true
+    pass_user_headers = true
+    reverse_proxy = true
+    skip_provider_button = true
+    silence_ping_logging = true
+
+    http_address = "0.0.0.0:4180"
+    real_client_ip_header = "X-Forwarded-For"
+
+    skip_auth_routes = [
+      "^/healthcheck$",
+    ]
+
+    upstreams = [
+      "http://{{ .Values.upstreams.kfam_service }}/kfam/",
+      "http://{{ .Values.upstreams.pipeline_service }}/pipeline/",
+      "http://{{ .Values.upstreams.metadata_envoy_service }}/ml_metadata.MetadataStoreService/",
+      "http://{{ .Values.upstreams.dashboard_service }}/",
+    ]

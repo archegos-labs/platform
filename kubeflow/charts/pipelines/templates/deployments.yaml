@@ -152,6 +152,14 @@ spec:
             configMapKeyRef:
               key: appVersion
               name: pipeline-install-config
+        # Override the default frontend_image/tag (gcr.io/ml-pipeline/frontend:2.3.0
+        # — published image does not exist). The Google-mirrored variant
+        # gcr.io/ml-pipeline/google/pipelines/frontend:2.3 is the working
+        # equivalent and is what the main ml-pipeline-ui deployment uses.
+        - name: FRONTEND_IMAGE
+          value: gcr.io/ml-pipeline/google/pipelines/frontend
+        - name: FRONTEND_TAG
+          value: "2.3"
         - name: KFP_DEFAULT_PIPELINE_ROOT
           valueFrom:
             configMapKeyRef:
@@ -651,7 +659,7 @@ spec:
         - name: KUBEFLOW_USERID_PREFIX
           value: ""
         - name: MULTIUSER
-          value: "true"
+          value: "false"
         - name: CRON_SCHEDULE_TIMEZONE
           valueFrom:
             configMapKeyRef:
@@ -702,7 +710,7 @@ spec:
         - name: ARTIFACTS_SERVICE_PROXY_ENABLED
           value: 'true'
         - name: ENABLE_AUTHZ
-          value: 'true'
+          value: 'false'
         - name: KUBEFLOW_USERID_HEADER
           value: x-auth-request-email
         - name: KUBEFLOW_USERID_PREFIX
@@ -722,6 +730,8 @@ spec:
               key: secretkey
               name: mlpipeline-minio-artifact
         - name: ALLOW_CUSTOM_VISUALIZATIONS
+          value: 'true'
+        - name: DISABLE_GKE_METADATA
           value: 'true'
         image: gcr.io/ml-pipeline/google/pipelines/frontend:2.3
         imagePullPolicy: IfNotPresent

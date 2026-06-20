@@ -29,3 +29,14 @@ variable "kube_data_auth_enabled" {
   nullable    = false
 }
 
+variable "kiali_oidc_client_secret" {
+  description = "OIDC client secret for Kiali, registered with Dex"
+  type        = string
+  sensitive   = true
+}
+
+variable "dex_issuer_uri" {
+  description = "Dex OIDC issuer URI"
+  type        = string
+}
+

@@ -1,3 +1,12 @@
+locals {
+  dashboard_host = "dashboard.admin.${var.root_domain}"
+}
+
+data "aws_route53_zone" "root" {
+  name         = var.root_domain
+  private_zone = false
+}
+
 resource "kubernetes_namespace" "kubeflow" {
   metadata {
     labels = {
@@ -14,7 +23,7 @@ resource "kubernetes_namespace" "kubeflow" {
 resource "kubernetes_namespace" "kubeflow_system" {
   metadata {
     labels = {
-      control-plane = "kubeflow"
+      control-plane                        = "kubeflow"
       "pod-security.kubernetes.io/enforce" = "baseline"
     }
 
@@ -208,4 +217,169 @@ resource "helm_release" "kubeflow_pipelines" {
   ]
 
   depends_on = [helm_release.istio_ingress]
+}
+
+#######################################
+# Kubeflow Central Dashboard + OIDC
+#######################################
+
+# oauth2-proxy requires cookie_secret to be exactly 16, 24, or 32 raw bytes
+# (one of the AES key sizes). 32 random alphanumeric chars = 32 bytes raw.
+resource "random_password" "oauth2_proxy_cookie" {
+  length  = 32
+  special = false
+}
+
+resource "helm_release" "oauth2_proxy" {
+  name      = "oauth2-proxy"
+  chart     = "../charts/oauth2-proxy"
+  namespace = kubernetes_namespace.kubeflow.metadata[0].name
+
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 300
+
+  values = [
+    yamlencode({
+      namespace      = kubernetes_namespace.kubeflow.metadata[0].name
+      dashboard_host = local.dashboard_host
+      ingress = {
+        namespace = "ingress"
+        gateway   = "ingress-gateway"
+      }
+      oidc = {
+        issuer_url    = var.dex_issuer_uri
+        client_id     = "kubeflow-oidc-authservice"
+        client_secret = var.kubeflow_oidc_client_secret
+      }
+      upstreams = {
+        dex_service = var.dex_internal_url
+      }
+      cookie_secret = random_password.oauth2_proxy_cookie.result
+      userid_header = "X-Auth-Request-Email"
+    })
+  ]
+}
+
+resource "helm_release" "kubeflow_profiles" {
+  name      = "kubeflow-profiles"
+  chart     = "../charts/kubeflow-profiles"
+  namespace = kubernetes_namespace.kubeflow.metadata[0].name
+
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 600
+
+  values = [
+    yamlencode({
+      namespace               = kubernetes_namespace.kubeflow.metadata[0].name
+      image_tag               = "v2.0.0-rc.1"
+      admin_email             = var.admin_email
+      admin_profile_namespace = "kubeflow-admin"
+      userid_header           = "X-Auth-Request-Email"
+    })
+  ]
+
+  depends_on = [helm_release.kubeflow_pipelines]
+}
+
+resource "helm_release" "kubeflow_dashboard" {
+  name      = "kubeflow-dashboard"
+  chart     = "../charts/kubeflow-dashboard"
+  namespace = kubernetes_namespace.kubeflow.metadata[0].name
+
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 600
+
+  values = [
+    yamlencode({
+      namespace = kubernetes_namespace.kubeflow.metadata[0].name
+      image = {
+        repository = "ghcr.io/kubeflow/dashboard/dashboard"
+        tag        = "v2.0.0-rc.1"
+      }
+      userid_header     = "X-Auth-Request-Email"
+      registration_flow = "false"
+      logout_url        = "/oauth2/sign_out"
+    })
+  ]
+
+  depends_on = [helm_release.kubeflow_profiles]
+}
+
+module "acm_dashboard" {
+  source  = "terraform-aws-modules/acm/aws"
+  version = "~> 6.0"
+
+  domain_name       = local.dashboard_host
+  zone_id           = data.aws_route53_zone.root.zone_id
+  validation_method = "DNS"
+}
+
+resource "kubernetes_ingress_v1" "dashboard_ingress" {
+  metadata {
+    name      = "dashboard-ingress"
+    namespace = "ingress"
+    annotations = {
+      "external-dns.alpha.kubernetes.io/hostname"      = local.dashboard_host
+      "kubernetes.io/ingress.class"                    = "alb"
+      "alb.ingress.kubernetes.io/healthcheck-path"     = "/healthcheck"
+      "alb.ingress.kubernetes.io/success-codes"        = "200"
+      "alb.ingress.kubernetes.io/group.name"           = "${var.resource_prefix}-alb"
+      "alb.ingress.kubernetes.io/target-type"          = "ip"
+      "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
+      "alb.ingress.kubernetes.io/listen-ports"         = jsonencode([{ "HTTP" : 80 }, { "HTTPS" : 443 }])
+      "alb.ingress.kubernetes.io/actions.ssl-redirect" = jsonencode({ "Type" : "redirect", "RedirectConfig" : { "Protocol" : "HTTPS", "Port" : "443", "StatusCode" : "HTTP_301" } })
+      "alb.ingress.kubernetes.io/inbound-cidrs"        = "0.0.0.0/0"
+    }
+  }
+
+  spec {
+    ingress_class_name = "alb"
+
+    tls {
+      hosts = [local.dashboard_host]
+    }
+
+    rule {
+      host = local.dashboard_host
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "ssl-redirect"
+              port { name = "use-annotation" }
+            }
+          }
+        }
+      }
+    }
+
+    rule {
+      host = local.dashboard_host
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "istio-ingressgateway"
+              port { number = 80 }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  wait_for_load_balancer = true
+  depends_on             = [module.acm_dashboard, helm_release.kubeflow_dashboard]
+}
+
+output "dashboard_url" {
+  description = "URL for the Kubeflow Central Dashboard"
+  value       = "https://${local.dashboard_host}"
 }

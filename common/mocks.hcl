@@ -3,6 +3,8 @@ locals {
     account_id      = "123456789012"
     resource_prefix = "mock-prefix"
     available_azs   = ["us-west-2a", "us-west-2b", "us-west-2c"]
+    root_domain     = "mock.example.com"
+    admin_email     = "admin@mock.example.com"
   }
 
   vpc = {

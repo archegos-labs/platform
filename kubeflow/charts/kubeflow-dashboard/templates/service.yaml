@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: kubeflow-dashboard
+spec:
+  type: ClusterIP
+  selector:
+    app: kubeflow-dashboard
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8082

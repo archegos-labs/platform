@@ -3,4 +3,4 @@ appVersion: 2.3.0
 description: A Helm chart for Kubeflow pipelines
 name: kubeflow-pipelines
 type: application
-version: 1.0.2
+version: 1.0.7

@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+data:
+  config.yaml: |
+    issuer: {{ .Values.issuer }}
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+    web:
+      http: 0.0.0.0:5556
+    logger:
+      level: info
+      format: text
+    oauth2:
+      skipApprovalScreen: true
+    enablePasswordDB: true
+    staticPasswords:
+    - email: {{ .Values.admin.email }}
+      hash: {{ .Values.admin.hash | quote }}
+      username: {{ .Values.admin.username }}
+      userID: {{ .Values.admin.username }}
+    staticClients:
+    {{- range .Values.staticClients }}
+    - idEnv: OIDC_CLIENT_{{ .id | upper | replace "-" "_" }}_ID
+      secretEnv: OIDC_CLIENT_{{ .id | upper | replace "-" "_" }}_SECRET
+      name: {{ .name | quote }}
+      redirectURIs:
+      {{- range .redirectURIs }}
+      - {{ . | quote }}
+      {{- end }}
+    {{- end }}

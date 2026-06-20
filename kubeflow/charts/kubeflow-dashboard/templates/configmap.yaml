@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-config
+  namespace: {{ .Values.namespace }}
+data:
+  settings: |-
+    {
+      "DASHBOARD_FORCE_IFRAME": true
+    }
+  links: |-
+    {
+      "menuLinks": [
+        {
+          "icon": "kubeflow:pipeline-centered",
+          "items": [
+            {"link": "/pipeline/#/pipelines",     "text": "Pipelines",      "type": "item"},
+            {"link": "/pipeline/#/experiments",   "text": "Experiments",    "type": "item"},
+            {"link": "/pipeline/#/runs",          "text": "Runs",           "type": "item"},
+            {"link": "/pipeline/#/recurringruns", "text": "Recurring Runs", "type": "item"},
+            {"link": "/pipeline/#/artifacts",     "text": "Artifacts",      "type": "item"},
+            {"link": "/pipeline/#/executions",    "text": "Executions",     "type": "item"}
+          ],
+          "text": "Pipelines",
+          "type": "section"
+        }
+      ],
+      "externalLinks": [],
+      "documentationItems": [
+        {"desc": "The Kubeflow website",                       "link": "https://www.kubeflow.org/",                                "text": "Kubeflow Website"},
+        {"desc": "Documentation for Kubeflow Pipelines",       "link": "https://www.kubeflow.org/docs/components/pipelines/",      "text": "Kubeflow Pipelines Documentation"}
+      ],
+      "quickLinks": [
+        {"desc": "Kubeflow Pipelines", "link": "/pipeline/#/pipelines", "text": "Upload a Pipeline"},
+        {"desc": "Pipelines",          "link": "/pipeline/#/runs",      "text": "View Pipeline Runs"}
+      ]
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-parameters
+  namespace: {{ .Values.namespace }}
+data:
+  COLLECT_METRICS: "true"
+  REGISTRATION_FLOW: {{ .Values.registration_flow | quote }}
+  USERID_HEADER: {{ .Values.userid_header | quote }}
+  USERID_PREFIX: {{ .Values.userid_prefix | quote }}

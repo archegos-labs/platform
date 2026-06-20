@@ -1,0 +1,19 @@
+namespace: auth
+
+image:
+  repository: ghcr.io/dexidp/dex
+  tag: v2.39.1
+
+issuer: ""
+
+admin:
+  email: ""
+  username: admin
+  hash: ""
+
+# List of static OIDC clients to register. Each entry:
+#   id:           OIDC client_id (string)
+#   name:         human-readable name shown on the Dex consent screen
+#   secret:       OIDC client_secret
+#   redirectURIs: list of registered redirect URIs
+staticClients: []

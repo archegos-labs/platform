@@ -25,7 +25,11 @@ module "kiali_operator" {
       namespace: ${var.istio_namespace}
       spec:
         auth:
-          strategy: anonymous
+          strategy: openid
+          openid:
+            client_id: "kiali"
+            issuer_uri: "${var.dex_issuer_uri}"
+            disable_rbac: true
         istio_namespace: ${var.istio_namespace}
         external_services:
           prometheus:
@@ -36,6 +40,17 @@ module "kiali_operator" {
             external_url: "https://grafana.admin.aedenjameson.com"
     EOF
   ]
+}
+
+resource "kubernetes_secret_v1" "kiali_oidc" {
+  metadata {
+    name      = "kiali"
+    namespace = var.istio_namespace
+  }
+
+  data = {
+    "oidc-secret" = var.kiali_oidc_client_secret
+  }
 }
 
 locals {
@@ -132,5 +147,5 @@ resource "kubernetes_ingress_v1" "kiali_ingress" {
 
   wait_for_load_balancer = true
 
-  depends_on = [module.acm, module.kiali_operator]
+  depends_on = [module.acm, module.kiali_operator, kubernetes_secret_v1.kiali_oidc]
 }

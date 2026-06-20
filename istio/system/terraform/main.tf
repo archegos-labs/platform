@@ -166,6 +166,13 @@ module "istio_ingress" {
             "service.beta.kubernetes.io/aws-load-balancer-scheme"           = "internet-facing"
             "service.beta.kubernetes.io/aws-load-balancer-attributes"       = "load_balancing.cross_zone.enabled=true"
           }
+          # Envoy runs as UID 1337 inside the pod and cannot bind privileged
+          # ports, so it listens on 8080/8443. Override targetPort to match.
+          ports = [
+            { name = "status-port", port = 15021, protocol = "TCP", targetPort = 15021 },
+            { name = "http2", port = 80, protocol = "TCP", targetPort = 8080 },
+            { name = "https", port = 443, protocol = "TCP", targetPort = 8443 },
+          ]
         }
       }
     )

@@ -1,0 +1,16 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: profiles-kfam
+  namespace: {{ .Values.namespace }}
+spec:
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.namespace }}/sa/dashboard
+        - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
+  selector:
+    matchLabels:
+      app: profile-controller
