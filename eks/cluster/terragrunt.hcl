@@ -116,8 +116,9 @@ inputs = {
     cpus_group_two = local.cpu_group_defaults
 
     gpus = {
-      name           = "ondemand-gpu"
-      instance_types = ["g4dn.xlarge"]
+      name           = "spot-gpu"
+      instance_types = ["g4dn.xlarge", "g5.xlarge", "g6.xlarge"]
+      capacity_type  = "SPOT"
       ami_type       = "AL2023_x86_64_NVIDIA"
       subnet_ids     = dependency.vpc.outputs.private_subnets
       min_size       = 1
