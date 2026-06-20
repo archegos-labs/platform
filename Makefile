@@ -3,10 +3,33 @@
 platform_env ?= dev
 region ?= us-east-1
 org_name ?= Archegos
+root_domain ?= $(ROOT_DOMAIN)
+admin_email ?= $(ADMIN_EMAIL)
 
 export ORG_NAME=$(shell echo $(org_name) | tr '[:upper:]' '[:lower:]')
 export DEPLOYMENT=$(platform_env)-$(region)
+export ROOT_DOMAIN := $(root_domain)
+export ADMIN_EMAIL := $(admin_email)
 export TF_VAR_kube_data_auth_enabled=true
+
+require-deploy-vars:
+	@if [ -z "$(ROOT_DOMAIN)" ]; then \
+		echo "Error: ROOT_DOMAIN is not set. Pass 'root_domain=<domain>' or export ROOT_DOMAIN."; \
+		exit 1; \
+	fi
+	@if [ -z "$(ADMIN_EMAIL)" ]; then \
+		echo "Error: ADMIN_EMAIL is not set. Pass 'admin_email=<email>' or export ADMIN_EMAIL."; \
+		exit 1; \
+	fi
+
+plan-all deploy-all destroy-all \
+deploy-vpc destroy-vpc \
+deploy-eks destroy-eks \
+deploy-eks-addons destroy-eks-addons \
+deploy-prometheus destroy-prometheus \
+deploy-istio destroy-istio \
+deploy-kiali destroy-kiali \
+deploy-kubeflow destroy-kubeflow: require-deploy-vars
 
 default:
 	aws --version
