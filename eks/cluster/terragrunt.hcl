@@ -37,7 +37,6 @@ locals {
   deployment_user = "tf-deployer"
 
   cpu_group_defaults = {
-    name           = "cpu-group-one"
     ami_type       = "AL2023_x86_64_STANDARD"
     instance_types = ["t3.xlarge", "t3a.xlarge", "m5.xlarge", "m5a.xlarge", "m6i.xlarge", "m7i-flex.xlarge"]
     capacity_type  = "SPOT"
