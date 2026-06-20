@@ -54,7 +54,7 @@ resource "helm_release" "prometheus" {
             allow_assign_grafana_admin = true
             # Single-admin setup: the configured admin email becomes GrafanaAdmin,
             # everyone else lands as Viewer. Refine when more users exist.
-            role_attribute_path = "contains(email, '${var.admin_email}') && 'GrafanaAdmin' || 'Viewer'"
+            role_attribute_path = "email == '${var.admin_email}' && 'GrafanaAdmin' || 'Viewer'"
           }
         }
       }
