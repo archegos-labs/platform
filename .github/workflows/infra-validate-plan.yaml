@@ -23,7 +23,7 @@ permissions:
   contents: read  # allow read repository's content by steps
 
 env:
-  tf_version: '1.9.8'
+  tofu_version: '1.9.8'
   tg_version: '0.68.6'
   working_dir: '.'
 
@@ -64,7 +64,7 @@ jobs:
         id: lint
         uses: gruntwork-io/terragrunt-action@5e86476ca61eaf74adb9c0525745f29f921f2199 # v3.1.0
         with:
-          tf_version: ${{ env.tf_version }}
+          tofu_version: ${{ env.tofu_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: 'hclfmt --terragrunt-check --terragrunt-diff'
@@ -72,7 +72,7 @@ jobs:
       - name: Init
         uses: gruntwork-io/terragrunt-action@5e86476ca61eaf74adb9c0525745f29f921f2199 # v3.1.0
         with:
-          tf_version: ${{ env.tf_version }}
+          tofu_version: ${{ env.tofu_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
@@ -87,7 +87,7 @@ jobs:
         id: validate
         uses: gruntwork-io/terragrunt-action@5e86476ca61eaf74adb9c0525745f29f921f2199 # v3.1.0
         with:
-          tf_version: ${{ env.tf_version }}
+          tofu_version: ${{ env.tofu_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
@@ -102,7 +102,7 @@ jobs:
         id: plan
         uses: gruntwork-io/terragrunt-action@5e86476ca61eaf74adb9c0525745f29f921f2199 # v3.1.0
         with:
-          tf_version: ${{ env.tf_version }}
+          tofu_version: ${{ env.tofu_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: | 

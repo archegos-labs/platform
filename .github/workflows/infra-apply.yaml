@@ -24,7 +24,7 @@ permissions:
   pull-requests: write # allow adding comments in a pull request
 
 env:
-  tf_version: '1.9.8'
+  tofu_version: '1.9.8'
   tg_version: '0.68.6'
   working_dir: '.'
 
@@ -65,7 +65,7 @@ jobs:
         id: apply
         uses: gruntwork-io/terragrunt-action@5e86476ca61eaf74adb9c0525745f29f921f2199 # v3.1.0
         with:
-          tf_version: ${{ env.tf_version }}
+          tofu_version: ${{ env.tofu_version }}
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
