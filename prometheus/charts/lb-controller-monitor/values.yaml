@@ -1,3 +1,2 @@
-# Namespace for the ServiceMonitor (the Prometheus namespace). Overridden by the
-# prometheus Terraform module via the helm_release values.
-namespace: monitoring
+# No configurable values. The ServiceMonitor namespace derives from the Helm release
+# namespace (.Release.Namespace), set by the prometheus Terraform module.

@@ -70,12 +70,6 @@ resource "helm_release" "lb_controller_monitor" {
   chart     = "../charts/lb-controller-monitor"
   namespace = var.prometheus_namespace
 
-  values = [
-    yamlencode({
-      namespace = var.prometheus_namespace
-    })
-  ]
-
   depends_on = [helm_release.prometheus]
 }
 
