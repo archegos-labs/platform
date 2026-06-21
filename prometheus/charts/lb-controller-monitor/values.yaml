@@ -1,0 +1,2 @@
+# No configurable values. The ServiceMonitor namespace derives from the Helm release
+# namespace (.Release.Namespace), set by the prometheus Terraform module.

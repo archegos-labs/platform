@@ -120,6 +120,3 @@ jobs:
           DEPLOYMENT: ${{ matrix.infra_env }}-${{ matrix.region }}
           ROOT_DOMAIN: ${{ vars.ROOT_DOMAIN }}
           ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
-          # Plan runs against mocked dependencies (no cluster exists yet), so the
-          # aws_eks_cluster data source must stay disabled; matches `make plan-all`.
-          TF_VAR_kube_data_auth_enabled: false

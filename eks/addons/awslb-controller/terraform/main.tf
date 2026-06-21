@@ -60,14 +60,6 @@ module "eks_blueprints_addon" {
     {
       name  = "enableServiceMutatorWebhook"
       value = "false"
-    },
-    {
-      name  = "serviceMonitor.enabled"
-      value = "true"
-    },
-    {
-      name  = "serviceMonitor.namespace"
-      value = var.monitoring_namespace
     }
   ]
 }

@@ -52,10 +52,12 @@ terraform {
 }
 
 inputs = {
-  cluster_name             = dependency.eks.outputs.cluster_name
-  resource_prefix          = dependency.account.outputs.resource_prefix
-  kiali_oidc_client_secret = dependency.dex.outputs.oidc_client_secrets["kiali"]
-  dex_issuer_uri           = dependency.dex.outputs.dex_issuer_uri
-  root_domain              = dependency.account.outputs.root_domain
-  root_zone_id             = dependency.account.outputs.root_zone_id
+  cluster_name                       = dependency.eks.outputs.cluster_name
+  cluster_endpoint                   = dependency.eks.outputs.cluster_endpoint
+  cluster_certificate_authority_data = dependency.eks.outputs.cluster_certificate_authority_data
+  resource_prefix                    = dependency.account.outputs.resource_prefix
+  kiali_oidc_client_secret           = dependency.dex.outputs.oidc_client_secrets["kiali"]
+  dex_issuer_uri                     = dependency.dex.outputs.dex_issuer_uri
+  root_domain                        = dependency.account.outputs.root_domain
+  root_zone_id                       = dependency.account.outputs.root_zone_id
 }

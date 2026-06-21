@@ -1,0 +1,5 @@
+apiVersion: v2
+name: lb-controller-monitor
+description: Metrics Service + ServiceMonitor for the AWS Load Balancer Controller, deployed on the Prometheus side so the monitoring.coreos.com CRDs exist first.
+type: application
+version: 0.1.0
