@@ -22,7 +22,9 @@ require-deploy-vars:
 	fi
 
 plan-all deploy-all destroy-all \
+deploy-account destroy-account \
 deploy-vpc destroy-vpc \
+deploy-dex destroy-dex \
 deploy-eks destroy-eks \
 deploy-eks-addons destroy-eks-addons \
 deploy-prometheus destroy-prometheus \
@@ -53,6 +55,22 @@ deploy-all:
 destroy-all:
 	echo "Destroying all resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	terragrunt destroy --all --non-interactive
+
+deploy-account:
+	echo "Applying Account resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt apply --all --non-interactive --queue-include-dir account --queue-strict-include
+
+destroy-account:
+	echo "Destroying Account resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt destroy --all --non-interactive --queue-include-dir account --queue-strict-include
+
+deploy-dex:
+	echo "Applying Dex (auth) to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt apply --all --non-interactive --queue-include-dir auth/dex --queue-strict-include
+
+destroy-dex:
+	echo "Destroying Dex (auth) from EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt destroy --all --non-interactive --queue-include-dir auth/dex --queue-strict-include
 
 deploy-vpc:
 	echo "Applying all VPC resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
