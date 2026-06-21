@@ -10,7 +10,6 @@ export ORG_NAME=$(shell echo $(org_name) | tr '[:upper:]' '[:lower:]')
 export DEPLOYMENT=$(platform_env)-$(region)
 export ROOT_DOMAIN := $(root_domain)
 export ADMIN_EMAIL := $(admin_email)
-export TF_VAR_kube_data_auth_enabled=true
 
 require-deploy-vars:
 	@if [ -z "$(ROOT_DOMAIN)" ]; then \
@@ -45,8 +44,7 @@ add-cluster:
 
 plan-all:
 	echo "Planning all resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
-	TF_VAR_kube_data_auth_enabled=false \
-		terragrunt plan --all --non-interactive
+	terragrunt plan --all --non-interactive
 
 deploy-all:
 	echo "Apply all resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"

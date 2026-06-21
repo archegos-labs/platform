@@ -8,13 +8,12 @@ variable "cluster_version" {
   type        = string
 }
 
-variable "kube_data_auth_enabled" {
-  type        = bool
-  default     = false
-  description = <<-eot
-    If `true`, authenticate to the EKS cluster via the `aws_eks_cluster` data source
-    (endpoint/CA) plus an `aws eks get-token` exec credential. If `false`, fall back to
-    the local kubeconfig context (the `make plan-all` path).
-    eot
-  nullable    = false
+variable "cluster_endpoint" {
+  description = "EKS cluster API endpoint. Provided by the eks/cluster module."
+  type        = string
+}
+
+variable "cluster_certificate_authority_data" {
+  description = "Base64-encoded EKS cluster CA certificate. Provided by the eks/cluster module."
+  type        = string
 }

@@ -43,11 +43,13 @@ terraform {
 }
 
 inputs = {
-  cluster_name    = dependency.eks.outputs.cluster_name
-  resource_prefix = dependency.account.outputs.resource_prefix
-  root_domain     = dependency.account.outputs.root_domain
-  root_zone_id    = dependency.account.outputs.root_zone_id
-  admin_email     = dependency.account.outputs.admin_email
+  cluster_name                       = dependency.eks.outputs.cluster_name
+  cluster_endpoint                   = dependency.eks.outputs.cluster_endpoint
+  cluster_certificate_authority_data = dependency.eks.outputs.cluster_certificate_authority_data
+  resource_prefix                    = dependency.account.outputs.resource_prefix
+  root_domain                        = dependency.account.outputs.root_domain
+  root_zone_id                       = dependency.account.outputs.root_zone_id
+  admin_email                        = dependency.account.outputs.admin_email
 
   # Static OIDC clients registered with Dex. Redirect URIs are kept here (not
   # derived from consumer modules) so consumers can depend on Dex without

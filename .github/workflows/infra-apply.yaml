@@ -83,4 +83,3 @@ jobs:
           DEPLOYMENT:  ${{ matrix.infra_env }}-${{ matrix.region }}
           ROOT_DOMAIN: ${{ vars.ROOT_DOMAIN }}
           ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
-          TF_VAR_kube_data_auth_enabled: true
