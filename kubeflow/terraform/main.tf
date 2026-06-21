@@ -331,7 +331,7 @@ resource "kubernetes_ingress_v1" "dashboard_ingress" {
       "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
       "alb.ingress.kubernetes.io/listen-ports"         = jsonencode([{ "HTTP" : 80 }, { "HTTPS" : 443 }])
       "alb.ingress.kubernetes.io/actions.ssl-redirect" = jsonencode({ "Type" : "redirect", "RedirectConfig" : { "Protocol" : "HTTPS", "Port" : "443", "StatusCode" : "HTTP_301" } })
-      "alb.ingress.kubernetes.io/inbound-cidrs" = "0.0.0.0/0"
+      "alb.ingress.kubernetes.io/inbound-cidrs"        = "0.0.0.0/0"
     }
   }
 
