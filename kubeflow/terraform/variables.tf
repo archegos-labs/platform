@@ -42,7 +42,9 @@ variable "kube_data_auth_enabled" {
   type        = bool
   default     = false
   description = <<-EOT
-    If `true`, use an `aws_eks_cluster_auth` data source to authenticate to the EKS cluster.
+    If `true`, authenticate to the EKS cluster via the `aws_eks_cluster` data source
+    (endpoint/CA) plus an `aws eks get-token` exec credential. If `false`, fall back to
+    the local kubeconfig context (the `make plan-all` path).
     EOT
   nullable    = false
 }
