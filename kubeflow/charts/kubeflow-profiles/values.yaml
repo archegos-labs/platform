@@ -1,0 +1,14 @@
+namespace: kubeflow
+
+image_tag: v2.0.0-rc.1
+kfam_image: ghcr.io/kubeflow/dashboard/access-management
+controller_image: ghcr.io/kubeflow/dashboard/profile-controller
+
+userid_header: kubeflow-userid
+userid_prefix: ""
+admin_email: ""
+admin_profile_namespace: kubeflow-admin
+
+ingress:
+  namespace: ingress
+  gateway: ingress-gateway

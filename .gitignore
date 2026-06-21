@@ -79,3 +79,14 @@ crash.*.log
 .terraform.lock.hcl
 terragrunt.iml
 .terragrunt-cache
+
+# Terragrunt-generated root stubs (regenerated per-module under .terragrunt-cache)
+/versions.tf
+/aws_provider.tf
+/backend.tf
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+.beads/proxieddb/

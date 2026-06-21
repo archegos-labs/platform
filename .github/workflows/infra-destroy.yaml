@@ -30,7 +30,7 @@ permissions:
 
 env:
   tf_version: '1.9.8'
-  tg_version: '0.68.6'
+  tg_version: '0.86.2'
   working_dir: '.'
 
 jobs:
@@ -60,16 +60,26 @@ jobs:
           role-session-name: github-actions-oidc-session
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
+      # Install HashiCorp Terraform on PATH (the terragrunt-action only installs OpenTofu
+      # via tofu_version). Terragrunt runs this binary via tf_path: terraform below.
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: ${{ env.tf_version }}
+          terraform_wrapper: false
+
       - name: Destory
         id: destroy
         uses: gruntwork-io/terragrunt-action@4ed5b7344c80315e5357f28f36159fc980bc2d5a # v3.4.0
         with:
-          tf_version: ${{ env.tf_version }}
+          tf_path: terraform
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
-            run-all destroy --terragrunt-non-interactive
+            destroy --all --non-interactive
         env:
           ORG_NAME: ${{ vars.ORG_NAME }}
           DEPLOYMENT:  ${{ inputs.infra_env }}-${{ inputs.region }}
+          ROOT_DOMAIN: ${{ vars.ROOT_DOMAIN }}
+          ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
           TF_VAR_kube_data_auth_enabled: true

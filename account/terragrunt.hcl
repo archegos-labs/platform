@@ -4,9 +4,11 @@ include "root" {
 }
 
 locals {
-  org    = include.root.locals.org
-  region = include.root.locals.region
-  env    = include.root.locals.env
+  org         = include.root.locals.org
+  region      = include.root.locals.region
+  env         = include.root.locals.env
+  root_domain = include.root.locals.root_domain
+  admin_email = include.root.locals.admin_email
 }
 
 terraform {
@@ -14,7 +16,9 @@ terraform {
 }
 
 inputs = {
-  org    = local.org
-  env    = local.env
-  region = local.region
+  org         = local.org
+  env         = local.env
+  region      = local.region
+  root_domain = local.root_domain
+  admin_email = local.admin_email
 }

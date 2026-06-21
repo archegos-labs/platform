@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: kubeflow-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubeflow-dashboard
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: dashboard
+      labels:
+        app: kubeflow-dashboard
+        sidecar.istio.io/inject: "true"
+    spec:
+      serviceAccountName: dashboard
+      containers:
+      - name: dashboard
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PROFILES_KFAM_SERVICE_HOST
+          value: profiles-kfam.{{ .Values.namespace }}
+        - name: DASHBOARD_CONFIGMAP
+          value: dashboard-config
+        - name: LOGOUT_URL
+          value: {{ .Values.logout_url | quote }}
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        envFrom:
+        - configMapRef:
+            name: dashboard-parameters
+        ports:
+        - containerPort: 8082
+          name: http
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8082
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8082
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+          runAsNonRoot: true
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault

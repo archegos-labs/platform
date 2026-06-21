@@ -19,6 +19,7 @@ dependencies {
   paths = [
     "${dirname(find_in_parent_folders())}/eks/cluster",
     "${dirname(find_in_parent_folders())}/istio/system",
+    "${dirname(find_in_parent_folders())}/auth/dex",
   ]
 }
 
@@ -36,11 +37,25 @@ dependency "eks" {
   mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
 }
 
+dependency "dex" {
+  config_path = "${dirname(find_in_parent_folders())}/auth/dex"
+
+  mock_outputs = {
+    dex_issuer_uri      = "https://dex.admin.mock.com/dex"
+    oidc_client_secrets = { kiali = "mock-secret" }
+  }
+  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
+}
+
 terraform {
   source = ".//terraform"
 }
 
 inputs = {
-  cluster_name    = dependency.eks.outputs.cluster_name
-  resource_prefix = dependency.account.outputs.resource_prefix
+  cluster_name             = dependency.eks.outputs.cluster_name
+  resource_prefix          = dependency.account.outputs.resource_prefix
+  kiali_oidc_client_secret = dependency.dex.outputs.oidc_client_secrets["kiali"]
+  dex_issuer_uri           = dependency.dex.outputs.dex_issuer_uri
+  root_domain              = dependency.account.outputs.root_domain
+  root_zone_id             = dependency.account.outputs.root_zone_id
 }

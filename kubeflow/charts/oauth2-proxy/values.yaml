@@ -1,0 +1,31 @@
+namespace: kubeflow
+
+image:
+  repository: quay.io/oauth2-proxy/oauth2-proxy
+  tag: v7.6.0
+
+ingress:
+  namespace: ingress
+  gateway: ingress-gateway
+
+dashboard_host: ""
+
+oidc:
+  issuer_url: ""
+  client_id: kubeflow-oidc-authservice
+  client_secret: ""
+
+cookie_secret: ""
+
+# Upstream services oauth2-proxy proxies to (path → service).
+# Order matters: more specific paths must come first.
+# dex_service is used for server-to-server redeem_url and oidc_jwks_url calls;
+# it is overridden by the kubeflow terraform module from the auth/dex output.
+upstreams:
+  dex_service: dex-new.auth.svc.cluster.local:5556
+  kfam_service: profiles-kfam.kubeflow.svc.cluster.local:8081
+  pipeline_service: ml-pipeline-ui.kubeflow.svc.cluster.local:80
+  metadata_envoy_service: metadata-envoy-service.kubeflow.svc.cluster.local:9090
+  dashboard_service: dashboard.kubeflow.svc.cluster.local:80
+
+userid_header: X-Auth-Request-Email

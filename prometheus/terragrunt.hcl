@@ -7,6 +7,10 @@ include "mocks" {
   expose = true
 }
 
+include "kube_provider" {
+  path = "${dirname(find_in_parent_folders())}/common/kube-provider.hcl"
+}
+
 include "helm_provider" {
   path = "${dirname(find_in_parent_folders())}/common/helm-provider.hcl"
 }
@@ -14,7 +18,16 @@ include "helm_provider" {
 dependencies {
   paths = [
     "${dirname(find_in_parent_folders())}/eks/cluster",
+    "${dirname(find_in_parent_folders())}/eks/addons/awslb-controller",
+    "${dirname(find_in_parent_folders())}/auth/dex",
   ]
+}
+
+dependency "account" {
+  config_path = "${dirname(find_in_parent_folders())}/account"
+
+  mock_outputs                            = include.mocks.locals.account
+  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
 }
 
 dependency "eks" {
@@ -24,10 +37,26 @@ dependency "eks" {
   mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
 }
 
+dependency "dex" {
+  config_path = "${dirname(find_in_parent_folders())}/auth/dex"
+
+  mock_outputs = {
+    dex_issuer_uri      = "https://dex.admin.mock.com/dex"
+    oidc_client_secrets = { grafana = "mock-secret" }
+  }
+  mock_outputs_allowed_terraform_commands = include.mocks.locals.commands
+}
+
 terraform {
   source = ".//terraform"
 }
 
 inputs = {
-  cluster_name = dependency.eks.outputs.cluster_name
+  cluster_name               = dependency.eks.outputs.cluster_name
+  resource_prefix            = dependency.account.outputs.resource_prefix
+  root_domain                = dependency.account.outputs.root_domain
+  root_zone_id               = dependency.account.outputs.root_zone_id
+  admin_email                = dependency.account.outputs.admin_email
+  dex_issuer_uri             = dependency.dex.outputs.dex_issuer_uri
+  grafana_oidc_client_secret = dependency.dex.outputs.oidc_client_secrets["grafana"]
 }

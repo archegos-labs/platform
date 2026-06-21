@@ -458,7 +458,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  MULTIUSER: 'true'
+  MULTIUSER: 'false'
 kind: ConfigMap
 metadata:
   labels:
@@ -471,7 +471,7 @@ metadata:
 apiVersion: v1
 data:
   DEFAULTPIPELINERUNNERSERVICEACCOUNT: default-editor
-  MULTIUSER: 'true'
+  MULTIUSER: 'false'
   VISUALIZATIONSERVICE_NAME: ml-pipeline-visualizationserver
   VISUALIZATIONSERVICE_PORT: '8888'
   TOKEN_REVIEW_AUDIENCE: 'pipelines.kubeflow.org'

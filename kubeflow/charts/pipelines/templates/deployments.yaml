@@ -152,6 +152,14 @@ spec:
             configMapKeyRef:
               key: appVersion
               name: pipeline-install-config
+        # Override the default frontend_image/tag (gcr.io/ml-pipeline/frontend:2.3.0
+        # — published image does not exist). The Google-mirrored variant
+        # gcr.io/ml-pipeline/google/pipelines/frontend:2.3 is the working
+        # equivalent and is what the main ml-pipeline-ui deployment uses.
+        - name: FRONTEND_IMAGE
+          value: gcr.io/ml-pipeline/google/pipelines/frontend
+        - name: FRONTEND_TAG
+          value: "2.3"
         - name: KFP_DEFAULT_PIPELINE_ROOT
           valueFrom:
             configMapKeyRef:
@@ -360,7 +368,7 @@ spec:
             secretKeyRef:
               key: secretkey
               name: mlpipeline-minio-artifact
-        image: gcr.io/ml-pipeline/minio:RELEASE.2019-08-14T20-37-41Z-license-compliance
+        image: minio/minio:RELEASE.2019-08-14T20-37-41Z
         name: minio
         ports:
         - containerPort: 9000
@@ -375,7 +383,7 @@ spec:
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: pv-fsx
+          claimName: minio-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -651,7 +659,7 @@ spec:
         - name: KUBEFLOW_USERID_PREFIX
           value: ""
         - name: MULTIUSER
-          value: "true"
+          value: "false"
         - name: CRON_SCHEDULE_TIMEZONE
           valueFrom:
             configMapKeyRef:
@@ -702,7 +710,7 @@ spec:
         - name: ARTIFACTS_SERVICE_PROXY_ENABLED
           value: 'true'
         - name: ENABLE_AUTHZ
-          value: 'true'
+          value: 'false'
         - name: KUBEFLOW_USERID_HEADER
           value: x-auth-request-email
         - name: KUBEFLOW_USERID_PREFIX
@@ -723,7 +731,9 @@ spec:
               name: mlpipeline-minio-artifact
         - name: ALLOW_CUSTOM_VISUALIZATIONS
           value: 'true'
-        image: gcr.io/ml-pipeline/frontend:2.3.0
+        - name: DISABLE_GKE_METADATA
+          value: 'true'
+        image: gcr.io/ml-pipeline/google/pipelines/frontend:2.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
@@ -919,7 +929,7 @@ spec:
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
-          claimName: pv-fsx
+          claimName: mysql-pv-claim
 ---
 apiVersion: apps/v1
 kind: Deployment

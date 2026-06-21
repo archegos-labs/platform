@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: v2.39.1
+description: Dex OIDC provider (identity layer for the platform)
+name: dex
+type: application
+version: 1.0.0
