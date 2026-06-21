@@ -63,7 +63,7 @@ jobs:
 
       - name: Apply
         id: apply
-        uses: gruntwork-io/terragrunt-action@5e86476ca61eaf74adb9c0525745f29f921f2199 # v3.1.0
+        uses: gruntwork-io/terragrunt-action@4ed5b7344c80315e5357f28f36159fc980bc2d5a # v3.4.0
         with:
           tf_version: ${{ env.tf_version }}
           tg_version: ${{ env.tg_version }}
