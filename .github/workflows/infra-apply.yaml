@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
         with:
           aws-region: ${{ matrix.region }}
           role-session-name: github-actions-oidc-session
@@ -63,7 +63,7 @@ jobs:
 
       - name: Apply
         id: apply
-        uses: gruntwork-io/terragrunt-action@5e86476ca61eaf74adb9c0525745f29f921f2199 # v3.1.0
+        uses: gruntwork-io/terragrunt-action@4ed5b7344c80315e5357f28f36159fc980bc2d5a # v3.4.0
         with:
           tofu_version: ${{ env.tofu_version }}
           tg_version: ${{ env.tg_version }}
