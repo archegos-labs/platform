@@ -87,7 +87,7 @@ resource "kubernetes_ingress_v1" "kiali_ingress" {
       "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
       "alb.ingress.kubernetes.io/listen-ports"         = jsonencode([{ "HTTP" : 80 }, { "HTTPS" : 443 }])
       "alb.ingress.kubernetes.io/actions.ssl-redirect" = jsonencode({ "Type" : "redirect", "RedirectConfig" : { "Protocol" : "HTTPS", "Port" : "443", "StatusCode" : "HTTP_301" } })
-      "alb.ingress.kubernetes.io/inbound-cidrs"        = "0.0.0.0/0" # NOTE: this is highly recommended when using an internet-facing ALB
+      "alb.ingress.kubernetes.io/inbound-cidrs" = "0.0.0.0/0"
       # No need to declare certificate: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/ingress/cert_discovery/
     }
   }
