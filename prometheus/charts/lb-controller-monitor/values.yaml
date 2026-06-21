@@ -1,0 +1,3 @@
+# Namespace for the ServiceMonitor (the Prometheus namespace). Overridden by the
+# prometheus Terraform module via the helm_release values.
+namespace: monitoring

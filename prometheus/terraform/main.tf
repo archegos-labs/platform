@@ -62,6 +62,23 @@ resource "helm_release" "prometheus" {
   ]
 }
 
+# Metrics Service + ServiceMonitor for the AWS LB Controller. Lives here (not in the
+# awslb-controller addon) because the addon applies before the Prometheus Operator CRDs
+# exist; depends_on the stack so monitoring.coreos.com/v1 is available at apply time.
+resource "helm_release" "lb_controller_monitor" {
+  name      = "lb-controller-monitor"
+  chart     = "../charts/lb-controller-monitor"
+  namespace = var.prometheus_namespace
+
+  values = [
+    yamlencode({
+      namespace = var.prometheus_namespace
+    })
+  ]
+
+  depends_on = [helm_release.prometheus]
+}
+
 module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "~> 6.0"

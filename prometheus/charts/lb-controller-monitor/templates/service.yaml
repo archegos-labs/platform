@@ -1,0 +1,18 @@
+# Metrics Service for the AWS Load Balancer Controller. The chart's own metrics Service is
+# only created when serviceMonitor.enabled=true (which we disable to avoid the CRD-ordering
+# failure), so we recreate it here. Lives in kube-system to select the controller pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: aws-load-balancer-controller-metrics
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-load-balancer-controller
+spec:
+  ports:
+    - name: metrics-server
+      port: 8080
+      targetPort: metrics-server
+  selector:
+    app.kubernetes.io/name: aws-load-balancer-controller
+    app.kubernetes.io/instance: aws-load-balancer-controller
