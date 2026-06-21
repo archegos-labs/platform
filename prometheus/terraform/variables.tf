@@ -13,6 +13,11 @@ variable "root_domain" {
   type        = string
 }
 
+variable "root_zone_id" {
+  description = "Route 53 hosted zone ID for root_domain, looked up in the account module so this module makes no live zone lookup at plan time."
+  type        = string
+}
+
 variable "prometheus_namespace" {
   description = "Prometheus name space"
   type        = string

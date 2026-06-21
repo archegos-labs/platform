@@ -46,6 +46,7 @@ inputs = {
   cluster_name    = dependency.eks.outputs.cluster_name
   resource_prefix = dependency.account.outputs.resource_prefix
   root_domain     = dependency.account.outputs.root_domain
+  root_zone_id    = dependency.account.outputs.root_zone_id
   admin_email     = dependency.account.outputs.admin_email
 
   # Static OIDC clients registered with Dex. Redirect URIs are kept here (not

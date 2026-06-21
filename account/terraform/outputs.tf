@@ -38,6 +38,11 @@ output "root_domain" {
   value       = var.root_domain
 }
 
+output "root_zone_id" {
+  description = "Route 53 hosted zone ID for root_domain. Looked up here so consumers don't each query the zone (keeps their plans mock-friendly)."
+  value       = data.aws_route53_zone.root.zone_id
+}
+
 output "admin_email" {
   description = "Email of the platform admin."
   value       = var.admin_email

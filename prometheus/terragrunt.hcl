@@ -55,6 +55,7 @@ inputs = {
   cluster_name               = dependency.eks.outputs.cluster_name
   resource_prefix            = dependency.account.outputs.resource_prefix
   root_domain                = dependency.account.outputs.root_domain
+  root_zone_id               = dependency.account.outputs.root_zone_id
   admin_email                = dependency.account.outputs.admin_email
   dex_issuer_uri             = dependency.dex.outputs.dex_issuer_uri
   grafana_oidc_client_secret = dependency.dex.outputs.oidc_client_secrets["grafana"]

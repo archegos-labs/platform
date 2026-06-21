@@ -2,11 +2,6 @@ locals {
   dashboard_host = "dashboard.admin.${var.root_domain}"
 }
 
-data "aws_route53_zone" "root" {
-  name         = var.root_domain
-  private_zone = false
-}
-
 resource "kubernetes_namespace" "kubeflow" {
   metadata {
     labels = {
@@ -313,7 +308,7 @@ module "acm_dashboard" {
   version = "~> 6.0"
 
   domain_name       = local.dashboard_host
-  zone_id           = data.aws_route53_zone.root.zone_id
+  zone_id           = var.root_zone_id
   validation_method = "DNS"
 }
 

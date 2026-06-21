@@ -5,6 +5,7 @@ locals {
     available_azs   = ["us-west-2a", "us-west-2b", "us-west-2c"]
     root_domain     = "mock.example.com"
     admin_email     = "admin@mock.example.com"
+    root_zone_id    = "Z00000000000000000MCK"
   }
 
   vpc = {

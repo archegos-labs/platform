@@ -58,17 +58,12 @@ locals {
   app_domain  = "kiali.admin.${local.root_domain}"
 }
 
-data "aws_route53_zone" "root" {
-  name         = local.root_domain
-  private_zone = false
-}
-
 module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "~> 4.0"
 
   domain_name = local.app_domain
-  zone_id     = data.aws_route53_zone.root.zone_id
+  zone_id     = var.root_zone_id
 
   validation_method = "DNS"
 }

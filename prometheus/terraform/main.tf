@@ -62,17 +62,12 @@ resource "helm_release" "prometheus" {
   ]
 }
 
-data "aws_route53_zone" "root" {
-  name         = var.root_domain
-  private_zone = false
-}
-
 module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "~> 6.0"
 
   domain_name = local.app_domain
-  zone_id     = data.aws_route53_zone.root.zone_id
+  zone_id     = var.root_zone_id
 
   validation_method = "DNS"
 }
