@@ -30,7 +30,7 @@ permissions:
 
 env:
   tf_version: '1.9.8'
-  tg_version: '0.68.6'
+  tg_version: '0.86.2'
   working_dir: '.'
 
 jobs:
@@ -76,7 +76,7 @@ jobs:
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
-            run-all destroy --terragrunt-non-interactive
+            destroy --all --non-interactive
         env:
           ORG_NAME: ${{ vars.ORG_NAME }}
           DEPLOYMENT:  ${{ inputs.infra_env }}-${{ inputs.region }}
