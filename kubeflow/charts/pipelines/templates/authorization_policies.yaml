@@ -47,8 +47,12 @@ metadata:
   name: ml-pipeline-ui
   namespace: {{ .Values.kubeflow.namespace }}
 spec:
+  action: ALLOW
   rules:
-  - {}
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/oauth2-proxy
   selector:
     matchLabels:
       app: ml-pipeline-ui

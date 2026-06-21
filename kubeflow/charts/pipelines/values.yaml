@@ -3,7 +3,6 @@ kubeflow:
 ingress:
   namespace: ingress
   gateway: ingress-gateway
-  sa: 
 minio:
   access_key:
   secret_key:
