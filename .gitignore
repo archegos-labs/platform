@@ -85,6 +85,9 @@ terragrunt.iml
 /aws_provider.tf
 /backend.tf
 
+# Local clone of upstream kubeflow/dashboard; deployment uses the GHCR image, not this source.
+/dashboard/
+
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db
