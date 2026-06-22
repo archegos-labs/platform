@@ -958,7 +958,7 @@ spec:
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
-          claimName: mysql-pv-claim
+          claimName: mysql-pv-claim-v2
 ---
 apiVersion: apps/v1
 kind: Deployment
