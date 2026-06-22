@@ -29,8 +29,16 @@ spec:
         - /usr/bin/metacontroller
         - --zap-log-level=4
         - --discovery-interval=3600s
-        image: docker.io/metacontrollerio/metacontroller:v2.0.5
+        image: ghcr.io/metacontroller/metacontroller:v4.11.22
         name: metacontroller
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
         resources:
           limits:
             cpu: '1'
@@ -47,5 +55,11 @@ spec:
           readOnlyRootFilesystem: true
           runAsNonRoot: true
           runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: meta-controller-service
   volumeClaimTemplates: []

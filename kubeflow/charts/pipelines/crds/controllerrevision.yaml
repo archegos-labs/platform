@@ -3,6 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: unapproved, request not yet submitted
+    controller-gen.kubebuilder.io/version: v0.13.0
   labels:
     application-crd-id: kubeflow-pipelines
     kustomize.component: metacontroller
@@ -19,6 +20,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
+        description: ControllerRevision
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -51,6 +53,7 @@ spec:
             type: object
           parentPatch:
             type: object
+            x-kubernetes-preserve-unknown-fields: true
         required:
         - metadata
         - parentPatch
@@ -59,9 +62,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ''
-    plural: ''
-  conditions: []
-  storedVersions: []
