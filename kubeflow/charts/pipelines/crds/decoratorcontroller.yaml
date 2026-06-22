@@ -3,6 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: unapproved, request not yet submitted
+    controller-gen.kubebuilder.io/version: v0.13.0
   labels:
     application-crd-id: kubeflow-pipelines
     kustomize.component: metacontroller
@@ -22,6 +23,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
+        description: DecoratorController
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -47,6 +49,12 @@ spec:
                     updateStrategy:
                       properties:
                         method:
+                          enum:
+                          - OnDelete
+                          - Recreate
+                          - InPlace
+                          - RollingRecreate
+                          - RollingInPlace
                           type: string
                       type: object
                   required:
@@ -58,9 +66,34 @@ spec:
                 properties:
                   customize:
                     properties:
+                      version:
+                        default: v1
+                        enum:
+                        - v1
+                        - v2
+                        type: string
                       webhook:
                         properties:
+                          etag:
+                            properties:
+                              cacheCleanupSeconds:
+                                format: int32
+                                type: integer
+                              cacheTimeoutSeconds:
+                                format: int32
+                                type: integer
+                              enabled:
+                                type: boolean
+                            type: object
                           path:
+                            type: string
+                          responseUnMarshallMode:
+                            description: Sets the json unmarshall mode. One of the
+                              'loose' or 'strict'. In 'strict' mode additional checks
+                              are performed to detect unknown and duplicated fields.
+                            enum:
+                            - loose
+                            - strict
                             type: string
                           service:
                             properties:
@@ -78,6 +111,7 @@ spec:
                             - namespace
                             type: object
                           timeout:
+                            format: duration
                             type: string
                           url:
                             type: string
@@ -85,9 +119,34 @@ spec:
                     type: object
                   finalize:
                     properties:
+                      version:
+                        default: v1
+                        enum:
+                        - v1
+                        - v2
+                        type: string
                       webhook:
                         properties:
+                          etag:
+                            properties:
+                              cacheCleanupSeconds:
+                                format: int32
+                                type: integer
+                              cacheTimeoutSeconds:
+                                format: int32
+                                type: integer
+                              enabled:
+                                type: boolean
+                            type: object
                           path:
+                            type: string
+                          responseUnMarshallMode:
+                            description: Sets the json unmarshall mode. One of the
+                              'loose' or 'strict'. In 'strict' mode additional checks
+                              are performed to detect unknown and duplicated fields.
+                            enum:
+                            - loose
+                            - strict
                             type: string
                           service:
                             properties:
@@ -105,6 +164,7 @@ spec:
                             - namespace
                             type: object
                           timeout:
+                            format: duration
                             type: string
                           url:
                             type: string
@@ -112,9 +172,34 @@ spec:
                     type: object
                   sync:
                     properties:
+                      version:
+                        default: v1
+                        enum:
+                        - v1
+                        - v2
+                        type: string
                       webhook:
                         properties:
+                          etag:
+                            properties:
+                              cacheCleanupSeconds:
+                                format: int32
+                                type: integer
+                              cacheTimeoutSeconds:
+                                format: int32
+                                type: integer
+                              enabled:
+                                type: boolean
+                            type: object
                           path:
+                            type: string
+                          responseUnMarshallMode:
+                            description: Sets the json unmarshall mode. One of the
+                              'loose' or 'strict'. In 'strict' mode additional checks
+                              are performed to detect unknown and duplicated fields.
+                            enum:
+                            - loose
+                            - strict
                             type: string
                           service:
                             properties:
@@ -132,6 +217,7 @@ spec:
                             - namespace
                             type: object
                           timeout:
+                            format: duration
                             type: string
                           url:
                             type: string
@@ -226,6 +312,7 @@ spec:
                             only "value". The requirements are ANDed.
                           type: object
                       type: object
+                      x-kubernetes-map-type: atomic
                     resource:
                       type: string
                   required:
@@ -249,9 +336,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ''
-    plural: ''
-  conditions: []
-  storedVersions: []

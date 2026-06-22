@@ -1,3 +1,4 @@
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -6,124 +7,20 @@ metadata:
   name: argo-role
   namespace: {{ .Values.kubeflow.namespace }}
 rules:
-  - apiGroups:
-      - coordination.k8s.io
-    resources:
-      - leases
-    verbs:
-      - create
-      - get
-      - update
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-      - pods/exec
-    verbs:
-      - create
-      - get
-      - list
-      - watch
-      - update
-      - patch
-      - delete
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-    verbs:
-      - get
-      - watch
-      - list
-  - apiGroups:
-      - ""
-    resources:
-      - persistentvolumeclaims
-      - persistentvolumeclaims/finalizers
-    verbs:
-      - create
-      - update
-      - delete
-      - get
-  - apiGroups:
-      - argoproj.io
-    resources:
-      - workflows
-      - workflows/finalizers
-      - workflowtasksets
-      - workflowtasksets/finalizers
-    verbs:
-      - get
-      - list
-      - watch
-      - update
-      - patch
-      - delete
-      - create
-  - apiGroups:
-      - argoproj.io
-    resources:
-      - workflowtemplates
-      - workflowtemplates/finalizers
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - ""
-    resources:
-      - serviceaccounts
-    verbs:
-      - get
-      - list
-  - apiGroups:
-      - argoproj.io
-    resources:
-      - workflowtaskresults
-    verbs:
-      - list
-      - watch
-      - deletecollection
-  - apiGroups:
-      - ""
-    resources:
-      - serviceaccounts
-    verbs:
-      - get
-      - list
-  - apiGroups:
-      - ""
-    resources:
-      - secrets
-    verbs:
-      - get
-  - apiGroups:
-      - argoproj.io
-    resources:
-      - cronworkflows
-      - cronworkflows/finalizers
-    verbs:
-      - get
-      - list
-      - watch
-      - update
-      - patch
-      - delete
-  - apiGroups:
-      - ""
-    resources:
-      - events
-    verbs:
-      - create
-      - patch
-  - apiGroups:
-      - policy
-    resources:
-      - poddisruptionbudgets
-    verbs:
-      - create
-      - get
-      - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -137,7 +34,7 @@ metadata:
   namespace: {{ .Values.kubeflow.namespace }}
 rules:
 - apiGroups:
-  - ''
+  - ""
   resources:
   - pods
   verbs:
@@ -147,7 +44,7 @@ rules:
   - update
   - patch
 - apiGroups:
-  - ''
+  - ""
   resources:
   - configmaps
   verbs:
@@ -162,23 +59,6 @@ rules:
   - watch
   - update
   - patch
-- apiGroups:
-  - tekton.dev
-  resources:
-  - pipelineruns
-  - customruns
-  - taskruns
-  - conditions
-  - runs
-  - tasks
-  verbs:
-  - create
-  - get
-  - list
-  - watch
-  - update
-  - patch
-  - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -192,7 +72,7 @@ metadata:
   namespace: {{ .Values.kubeflow.namespace }}
 rules:
 - apiGroups:
-  - ''
+  - ""
   resources:
   - pods
   verbs:
@@ -202,7 +82,7 @@ rules:
   - update
   - patch
 - apiGroups:
-  - ''
+  - ""
   resources:
   - configmaps
   verbs:
@@ -230,7 +110,7 @@ metadata:
   namespace: {{ .Values.kubeflow.namespace }}
 rules:
 - apiGroups:
-  - ''
+  - ""
   resources:
   - pods
   - pods/log
@@ -262,6 +142,20 @@ rules:
   - patch
   - delete
 - apiGroups:
+  - kubeflow.org
+  resources:
+  - scheduledworkflows/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - pipelines.kubeflow.org
+  resources:
+  - pipelines
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - authorization.k8s.io
   resources:
   - subjectaccessreviews
@@ -273,35 +167,6 @@ rules:
   - tokenreviews
   verbs:
   - create
-- apiGroups:
-    - tekton.dev
-  resources:
-    - pipelineruns
-    - taskruns
-    - conditions
-    - runs
-    - tasks
-    - customruns
-  verbs:
-    - create
-    - get
-    - list
-    - watch
-    - update
-    - patch
-    - delete
-- apiGroups:
-  - custom.tekton.dev
-  resources:
-  - pipelineloops
-  verbs:
-  - create
-  - get
-  - list
-  - watch
-  - update
-  - patch
-  - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -343,35 +208,6 @@ rules:
   verbs:
   - reportMetrics
   - readArtifact
-- apiGroups:
-  - tekton.dev
-  resources:
-  - pipelineruns
-  - taskruns
-  - conditions
-  - runs
-  - tasks
-  - customruns
-  verbs:
-  - create
-  - get
-  - list
-  - watch
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - custom.tekton.dev
-  resources:
-  - pipelineloops
-  verbs:
-  - create
-  - get
-  - list
-  - watch
-  - update
-  - patch
-  - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -410,7 +246,13 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - ''
+  - pipelines.kubeflow.org
+  resources:
+  - runs
+  verbs:
+  - create
+- apiGroups:
+  - ""
   resources:
   - events
   verbs:
@@ -429,22 +271,23 @@ metadata:
   namespace: {{ .Values.kubeflow.namespace }}
 rules:
 - apiGroups:
-  - ''
+  - ""
   resources:
   - pods
   - pods/log
   verbs:
   - get
 - apiGroups:
-  - ''
+  - ""
   resources:
   - events
   verbs:
   - list
 - apiGroups:
-  - ''
+  - ""
   resources:
   - secrets
+  - configmaps
   verbs:
   - get
   - list
@@ -514,13 +357,13 @@ metadata:
   namespace: {{ .Values.kubeflow.namespace }}
 rules:
 - apiGroups:
-  - ''
+  - ""
   resources:
   - secrets
   verbs:
   - get
 - apiGroups:
-  - ''
+  - ""
   resources:
   - configmaps
   verbs:
@@ -528,7 +371,7 @@ rules:
   - watch
   - list
 - apiGroups:
-  - ''
+  - ""
   resources:
   - persistentvolumes
   - persistentvolumeclaims
@@ -553,7 +396,7 @@ rules:
   - update
   - patch
 - apiGroups:
-  - ''
+  - ""
   resources:
   - pods
   - pods/exec
@@ -562,7 +405,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - ''
+  - ""
   - apps
   - extensions
   resources:
@@ -589,32 +432,9 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-    - tekton.dev
+  - argoproj.io
   resources:
-    - pipelineruns
-    - taskruns
-    - conditions
-    - runs
-    - tasks
-    - customruns
+  - workflowtaskresults
   verbs:
-    - create
-    - get
-    - list
-    - watch
-    - update
-    - patch
-    - delete
-- apiGroups:
-    - custom.tekton.dev
-  resources:
-    - pipelineloops
-  verbs:
-    - create
-    - get
-    - list
-    - watch
-    - update
-    - patch
-    - delete
----
+  - create
+  - patch

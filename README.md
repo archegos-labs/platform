@@ -428,6 +428,19 @@ That's it! You've run your first distributed training job using the Kubeflow Tra
 
 Coming Soon
 
+#### Upgrading to KFP 2.16.1 (MySQL reset)
+
+The pipelines metadata store moved from MySQL 8.0.26 to MySQL 8.4 with the
+upstream datadir layout (`/var/lib/mysql`). To avoid MySQL 8.4 crash-looping on
+an existing volume that was initialized under the old `mysql-8.0.26/` subdir, the
+chart provisions a **fresh** MySQL PVC (`mysql-pv-claim-v2`) on upgrade. This is
+intentional: prior pipeline run and metadata history is **reset** by design (the
+DB is treated as greenfield).
+
+No manual cleanup is required: the Helm upgrade prunes the previous
+`mysql-pv-claim`, and its backing volume is reclaimed automatically (the `gp2`
+StorageClass uses the `Delete` reclaim policy).
+
 
 ### FSx for Lustre (Coming Soon)
 

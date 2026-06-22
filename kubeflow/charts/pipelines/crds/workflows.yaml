@@ -25,7 +25,8 @@ spec:
       jsonPath: .status.startedAt
       name: Age
       type: date
-    - description: Human readable message indicating details about why the workflow is in this condition.
+    - description: Human readable message indicating details about why the workflow
+        is in this condition.
       jsonPath: .status.message
       name: Message
       type: string
