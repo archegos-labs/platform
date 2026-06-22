@@ -2,16 +2,24 @@
 
 platform_env ?= dev
 region ?= us-east-1
-org_name ?= Archegos
+org_name ?= $(ORG_NAME)
 root_domain ?= $(ROOT_DOMAIN)
 admin_email ?= $(ADMIN_EMAIL)
 
-export ORG_NAME=$(shell echo $(org_name) | tr '[:upper:]' '[:lower:]')
+# `:=` (not `=`) is required here: with recursive `=`, this and `org_name ?= $(ORG_NAME)`
+# would reference each other and make would abort with a recursive-variable error.
+export ORG_NAME := $(shell echo $(org_name) | tr '[:upper:]' '[:lower:]')
 export DEPLOYMENT=$(platform_env)-$(region)
 export ROOT_DOMAIN := $(root_domain)
 export ADMIN_EMAIL := $(admin_email)
 
-require-deploy-vars:
+require-org:
+	@if [ -z "$(ORG_NAME)" ]; then \
+		echo "Error: ORG_NAME is not set. Pass 'org_name=<name>' or export ORG_NAME."; \
+		exit 1; \
+	fi
+
+require-deploy-vars: require-org
 	@if [ -z "$(ROOT_DOMAIN)" ]; then \
 		echo "Error: ROOT_DOMAIN is not set. Pass 'root_domain=<domain>' or export ROOT_DOMAIN."; \
 		exit 1; \
@@ -22,7 +30,9 @@ require-deploy-vars:
 	fi
 
 plan-all deploy-all destroy-all \
+deploy-account destroy-account \
 deploy-vpc destroy-vpc \
+deploy-dex destroy-dex \
 deploy-eks destroy-eks \
 deploy-eks-addons destroy-eks-addons \
 deploy-prometheus destroy-prometheus \
@@ -38,7 +48,7 @@ default:
 	terraform -v
 	terragrunt -v
 
-add-cluster:
+add-cluster: require-org
 	echo "Adding Kube cluster for ORG: $(org_name), REGION: $(region), ENV: $(platform_env)"
 	aws eks --region $(region) update-kubeconfig --name $(ORG_NAME)-$(platform_env)-eks
 
@@ -53,6 +63,22 @@ deploy-all:
 destroy-all:
 	echo "Destroying all resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
 	terragrunt destroy --all --non-interactive
+
+deploy-account:
+	echo "Applying Account resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt apply --all --non-interactive --queue-include-dir account --queue-strict-include
+
+destroy-account:
+	echo "Destroying Account resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt destroy --all --non-interactive --queue-include-dir account --queue-strict-include
+
+deploy-dex:
+	echo "Applying Dex (auth) to EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt apply --all --non-interactive --queue-include-dir auth/dex --queue-strict-include
+
+destroy-dex:
+	echo "Destroying Dex (auth) from EKS for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"
+	terragrunt destroy --all --non-interactive --queue-include-dir auth/dex --queue-strict-include
 
 deploy-vpc:
 	echo "Applying all VPC resources for ORG: $(org_name), DEPLOYMENT: $(DEPLOYMENT)"

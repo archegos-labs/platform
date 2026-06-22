@@ -10,10 +10,14 @@ Terragrunt, Kubernetes, GitHub Actions and Kubeflow.
 <!-- toc-begin -->
 * [Pre-requisites](#pre-requisites)
 * [Setup](#setup)
+* [Account & Domain](#account--domain)
 * [Networking](#networking)
 * [EKS](#eks)
+* [Authentication (Dex)](#authentication-dex)
+* [Monitoring](#monitoring)
 * [Service Mesh](#service-mesh)
 * [Kubeflow](#kubeflow)
+* [Teardown](#teardown)
 * [Github Actions](#github-actions)
 <!-- toc-end -->
 
@@ -32,24 +36,28 @@ If you're following along, at a minimum you'll need the following,
 1. [AWS Account](https://aws.amazon.com/resources/create-account/) with the following service quotas,
    * Amazon EC2 Instances - Running On-Demand G and VT instances = 32
    * Amazon EC2 Instances - All Demand G and VT Spot Instance Requests = 32
-2. [Docker](https://docs.docker.com/get-started/get-docker/) - for containerization.
+2. A **registered domain with a public [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html)
+   hosted zone** in the same AWS account. The hosted-zone name must match the `ROOT_DOMAIN` you deploy with — the
+   `account` module looks it up, and every admin UI is published at `*.admin.<ROOT_DOMAIN>` with ACM certificates and
+   Route 53 records created automatically (via `external-dns`).
+3. [Docker](https://docs.docker.com/get-started/get-docker/) - for containerization.
 
-I manage tool installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use,
+I manage tool installations using [asdf](https://asdf-vm.com/), but to each their own. If you do use
 asdf, there is a `.tool-versions` file in the root of the project, which can be used to
-install all the listed below by running `asdf install`. After doing this refresh your shell by running `exec $SHELL`.
+install everything listed below by running `asdf install`. After doing this refresh your shell by running `exec $SHELL`.
 
-3. [AWS CLI](https://aws.amazon.com/cli/) - setup with administrative access to make demonstration easy. 
-4. [Github CLI](https://cli.github.com/) - for managing GitHub resources.
-5. [Terraform](https://www.terraform.io) - for infrastructure as code.
-6. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform environments.
-7. [Kubectl](https://kubernetes.io/docs/tasks/tools/) - for managing Kubernetes clusters.
+4. [AWS CLI](https://aws.amazon.com/cli/) - setup with administrative access to make demonstration easy. 
+5. [Github CLI](https://cli.github.com/) - for managing GitHub resources.
+6. [Terraform](https://www.terraform.io) - for infrastructure as code.
+7. [Terragrunt](https://terragrunt.gruntwork.io/) - for managing multiple Terraform modules.
+8. [Kubectl](https://kubernetes.io/docs/tasks/tools/) - for managing Kubernetes clusters.
 
 
 Verify you have the pre-requisites installed by running the following,
 
 ```shell
 make
-````
+```
 
 You should see version output for each of the tools listed above.
 
@@ -61,12 +69,61 @@ Let's first fork and clone the repo,
 gh repo fork archegos-labs/platform --clone ~/projects/platform; cd ~/projects/platform
 ```
 
+Every `make` target that touches infrastructure requires the three inputs below. Each can be passed on the command
+line (`name=value`) or set as the matching environment variable:
+
+| Make param | Env var | Required | Description |
+|---|---|---|---|
+| `org_name` | `ORG_NAME` | **yes** | Organization name; used to prefix resources and the cluster name. |
+| `root_domain` | `ROOT_DOMAIN` | **yes** | Your Route 53 hosted-zone domain (e.g. `example.com`). Admin UIs live at `*.admin.<root_domain>`. |
+| `admin_email` | `ADMIN_EMAIL` | **yes** | Email of the initial platform admin (the Dex static-password user / Grafana admin). |
+
+> Targets fail fast with a clear error if any of `ORG_NAME`, `ROOT_DOMAIN`, or `ADMIN_EMAIL` is missing.
+
+The walkthrough below uses bare `make deploy-*` commands, so the simplest approach is to **export the three values
+once** and reuse them throughout your shell session:
+
+```shell
+export ORG_NAME="ExampleOrg" ROOT_DOMAIN="example.com" ADMIN_EMAIL="admin@example.com"
+```
+
 Next validate that the IaC setup will run with,
 
 ```shell
-make plan-all org_name="ExampleOrg"
+make plan-all
 ```
-This runs Terragrunt / Terraform plan on all the modules in the repository. 
+
+This runs Terragrunt / Terraform plan on all the modules in the repository.
+
+### Quickstart
+
+To stand up the entire stack in one shot (Terragrunt resolves the dependency order automatically), with the three
+values exported as above:
+
+```shell
+make deploy-all
+```
+
+Or follow the detailed, per-component walkthrough below. The components must be applied in this order
+(each `make deploy-*` applies only its own module, so earlier layers must already exist):
+
+```
+account → vpc → eks (+ add-cluster) → core addons (cert-manager, awslb-controller, external-dns)
+        → dex → prometheus → istio → kiali → kubeflow addons (ebs/efs/fsx/nvidia) → kubeflow
+```
+
+## Account & Domain
+
+The `account` module establishes account-wide values the rest of the platform depends on — the resource prefix,
+account id, and the **Route 53 hosted zone** for your `ROOT_DOMAIN`. Apply it first,
+
+```shell
+make deploy-account
+```
+
+Every admin-facing UI in this platform is published on an internet-facing ALB at `*.admin.<ROOT_DOMAIN>`
+(e.g. `dex.admin.example.com`, `grafana.admin.example.com`, `kiali.admin.example.com`,
+`dashboard.admin.example.com`) and is gated behind single sign-on (see [Authentication](#authentication-dex)).
 
 ## Networking
 
@@ -163,9 +220,8 @@ Congratulations! You've successfully deployed an EKS cluster on AWS.
 
 ### Addons
 
-
 In addition to the barebones EKS cluster, we'll need additional functionality in the form of addons on our
-road to getting Kubeflow up and running. 
+road to getting Kubeflow up and running. The first set are the **core** addons that everything else builds on,
 
 * [Cert Manager](https://cert-manager.io/docs/) -
   Cert-manager creates TLS certificates for workloads in your Kubernetes or OpenShift cluster and renews the certificates before they expire.
@@ -178,27 +234,54 @@ road to getting Kubeflow up and running.
 ```shell
 make deploy-eks-addons addons='cert-manager awslb-controller external-dns'
 ```
+
+> The Kubeflow-specific addons (EBS/EFS/FSx CSI drivers and the NVIDIA GPU operator) are deployed later, in the
+> [Kubeflow](#kubeflow) section.
+
 ### References
 * [Managed Node Groups](https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html)
 * [Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html)
 
+## Authentication (Dex)
 
-### Prometheus
+All admin UIs (Grafana, Kiali, the Kubeflow Central Dashboard) sit behind single sign-on rather than being exposed
+directly. [Dex](https://dexidp.io/) is the OpenID Connect (OIDC) identity provider, and an
+[oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) reverse-proxy in front of each service authenticates
+requests against it. Deploy Dex after the core addons (it needs cert-manager, the load balancer controller, and
+external-dns):
 
-Lastly, a number of components we will be installing on our cluster depend on [Prometheus](https://prometheus.io/) for monitoring.
-We won't be covering that in depth here only installing it. Run,
+```shell
+make deploy-dex
+```
+
+Dex is published at `https://dex.admin.<ROOT_DOMAIN>`. A single static admin user is seeded from `ADMIN_EMAIL`; its
+initial password is generated and stored in state. Retrieve it with,
+
+```shell
+cd auth/dex && terragrunt output -raw dex_admin_password
+```
+
+Use `ADMIN_EMAIL` + that password to sign in at any of the admin UIs below.
+
+## Monitoring
+
+A number of components we install depend on [Prometheus](https://prometheus.io/) for monitoring, with
+[Grafana](https://grafana.com/) for visualization. Deploy them with,
 
 ```shell
 make deploy-prometheus
 ```
 
-Prometheus was installed in the monitoring namespace. Verify the pods are running,
+The stack is installed into the `monitoring` namespace. Verify the pods are running,
 
 ```shell
 kubectl -n monitoring get pods
 ```
 
-* [Prometheus](https://prometheus.io/) - Prometheus is an open-source systems monitoring and alerting toolkit.
+Grafana is published at `https://grafana.admin.<ROOT_DOMAIN>` and signs in through Dex (basic auth is disabled — Dex
+is the only credential path). The `ADMIN_EMAIL` user is granted the Grafana admin role.
+
+* [Prometheus](https://prometheus.io/) - an open-source systems monitoring and alerting toolkit.
 
 ## Service Mesh
 
@@ -217,7 +300,6 @@ Istio. Below are some of the features Kubeflow leverages,
 This installation of Istio has been setup in [ambient mode](https://istio.io/latest/docs/ambient/overview/).
 
 ### Installation
-
 
 To deploy Istio to our EKS cluster run,
 
@@ -247,7 +329,8 @@ To deploy Kiali run the following,
 ```shell
 make deploy-kiali
 ```
-Kiali is installed in the `istio-system` namespace. You can verify that Kiali is running by running,
+Kiali is installed in the `istio-system` namespace and published at `https://kiali.admin.<ROOT_DOMAIN>` (sign in via
+Dex). Alternatively, for quick local access without going through the ingress, port-forward it,
 
 ```shell
 kubectl port-forward svc/kiali 20001:20001 -n istio-system
@@ -267,19 +350,32 @@ For more details on the CR see [Kiali CR](https://kiali.io/docs/installation/ins
 
 ## Kubeflow
 
-The installation of kubeflow is done leveraging the [Terraform](https://github.com/awslabs/kubeflow-manifests/tree/main/deployments/vanilla/terraform) 
-provided by AWS Labs on the [Kubeflow for AWS](https://awslabs.github.io/kubeflow-manifests/docs/deployment/vanilla/guide-terraform/) project.
-In addition to the addons installed for the baseline EKS cluster above, we're also setting up the following addons
-to support [Kubeflow](https://www.kubeflow.org/),
+In addition to the addons installed for the baseline EKS cluster above, [Kubeflow](https://www.kubeflow.org/) needs a
+few storage and GPU addons. Deploy them first,
 
 * [EBS-CSI Driver](https://github.com/kubernetes-sigs/aws-ebs-csi-driver) - Provides a CSI interface used by Container 
   Orchestrators to manage the lifecycle of Amazon EBS volumes.
 * [EFS-CSI Driver](https://github.com/kubernetes-sigs/aws-efs-csi-driver) - Provides a CSI interface used by Container 
   Orchestrators to manage the lifecycle of Amazon EFS volumes.
-* [FsX-CSI Driver](https://github.com/kubernetes-sigs/aws-fsx-csi-driver) - Provides a CSI specification for container 
+* [FSx-CSI Driver](https://github.com/kubernetes-sigs/aws-fsx-csi-driver) - Provides a CSI specification for container 
   orchestrators (CO) to manage lifecycle of Amazon FSx for Lustre filesystems.
-* [NVida GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/amazon-eks.html) - 
+* [NVIDIA GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/amazon-eks.html) - 
   The NVIDIA GPU Operator simplifies the deployment and management of GPU-accelerated applications on Kubernetes.
+
+```shell
+make deploy-eks-addons addons='ebs-csi efs-csi fsx-csi nvidia-gpu-operator'
+```
+
+Then deploy Kubeflow (this requires the core addons, Dex, and Istio to already be in place):
+
+```shell
+make deploy-kubeflow
+```
+
+This installs the Kubeflow Central Dashboard, profiles, pipelines, an oauth2-proxy front door, and the Training
+Operator. The dashboard is published at `https://dashboard.admin.<ROOT_DOMAIN>` (sign in via Dex). The platform
+deploys the dashboard from the published `ghcr.io/kubeflow/dashboard/dashboard` image — the `dashboard/` directory in
+the repo root is just a local clone of the upstream source and is gitignored (it is not part of any deploy).
 
 ### Training Operator
 
@@ -346,6 +442,19 @@ TODO: How does this get leveraged in jobs?
 * [Kubeflow Training Operator](https://www.kubeflow.org/docs/components/training/overview/)
 
 
+## Teardown
+
+To avoid ongoing AWS charges, tear the stack down when you're done. Each component has a `destroy-*` counterpart
+(`destroy-kubeflow`, `destroy-kiali`, `destroy-istio`, `destroy-prometheus`, `destroy-dex`, `destroy-eks-addons`,
+`destroy-eks`, `destroy-vpc`, `destroy-account`), or remove everything at once with,
+
+```shell
+make destroy-all
+```
+
+> ⚠️ Destroy using the **same** `ORG_NAME`, `ROOT_DOMAIN`, and `ADMIN_EMAIL` you deployed with — `ORG_NAME` is part of
+> the Terragrunt remote-state bucket name (`terraform-state-<org>-<region>`), so a mismatch targets a different state
+> and won't tear down your resources.
 
 ## Github Actions
 
@@ -358,9 +467,21 @@ once approved the infrastructure is deployed/applied on merge to main. The workf
 1. Reviews and approvals are applied. Once the PR is approved, the PR is merged into main
 1. IaC changes from the PR merge are then applied.
 
+### Configuration
+
+The workflows read the same deployment inputs from GitHub repository **variables** and **secrets**. Configure these
+under *Settings → Secrets and variables → Actions* (and per-environment where applicable):
+
+| Type | Name | Purpose |
+|---|---|---|
+| Variable | `ORG_NAME` | Organization name (resource prefix / cluster name). |
+| Variable | `ROOT_DOMAIN` | Route 53 hosted-zone domain. |
+| Variable | `ADMIN_EMAIL` | Initial platform admin email. |
+| Secret | `AWS_ROLE_ARN` | IAM role assumed via OIDC (must be created out-of-band). |
+| Secret | `SCORECARD_TOKEN` | Token used by the supply-chain (Scorecard) workflow. |
+
 ### Authentication & Authorization
 
 AWS is accessed from GitHub Actions using OpenID Connect. GitHub acts as an Identity Provider (IDP) and AWS as a Service Provider (SP).
 Authentication happens on GitHub, and then GitHub “passes” our user to an AWS account, saying that “this is really John Smith”,
 and AWS performs the “authorization“, that is, AWS checks whether this John Smith can create new resources. 
-
