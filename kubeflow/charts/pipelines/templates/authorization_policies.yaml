@@ -54,7 +54,7 @@ spec:
   - from:
     - source:
         principals:
-        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/{{ .Values.ingress.sa }}
+        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/istio-ingressgateway
   selector:
     matchLabels:
       app: ml-pipeline-ui
