@@ -49,10 +49,12 @@ metadata:
 spec:
   action: ALLOW
   rules:
+  # The /pipeline route is sent from the ingress gateway straight to ml-pipeline-ui
+  # (see the ml-pipeline-ui VirtualService), so the gateway SA is the direct caller.
   - from:
     - source:
         principals:
-        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/oauth2-proxy
+        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/istio-ingressgateway
   selector:
     matchLabels:
       app: ml-pipeline-ui
