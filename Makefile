@@ -2,16 +2,24 @@
 
 platform_env ?= dev
 region ?= us-east-1
-org_name ?= Archegos
+org_name ?= $(ORG_NAME)
 root_domain ?= $(ROOT_DOMAIN)
 admin_email ?= $(ADMIN_EMAIL)
 
-export ORG_NAME=$(shell echo $(org_name) | tr '[:upper:]' '[:lower:]')
+# `:=` (not `=`) is required here: with recursive `=`, this and `org_name ?= $(ORG_NAME)`
+# would reference each other and make would abort with a recursive-variable error.
+export ORG_NAME := $(shell echo $(org_name) | tr '[:upper:]' '[:lower:]')
 export DEPLOYMENT=$(platform_env)-$(region)
 export ROOT_DOMAIN := $(root_domain)
 export ADMIN_EMAIL := $(admin_email)
 
-require-deploy-vars:
+require-org:
+	@if [ -z "$(ORG_NAME)" ]; then \
+		echo "Error: ORG_NAME is not set. Pass 'org_name=<name>' or export ORG_NAME."; \
+		exit 1; \
+	fi
+
+require-deploy-vars: require-org
 	@if [ -z "$(ROOT_DOMAIN)" ]; then \
 		echo "Error: ROOT_DOMAIN is not set. Pass 'root_domain=<domain>' or export ROOT_DOMAIN."; \
 		exit 1; \
@@ -40,7 +48,7 @@ default:
 	terraform -v
 	terragrunt -v
 
-add-cluster:
+add-cluster: require-org
 	echo "Adding Kube cluster for ORG: $(org_name), REGION: $(region), ENV: $(platform_env)"
 	aws eks --region $(region) update-kubeconfig --name $(ORG_NAME)-$(platform_env)-eks
 

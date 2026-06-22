@@ -69,31 +69,39 @@ Let's first fork and clone the repo,
 gh repo fork archegos-labs/platform --clone ~/projects/platform; cd ~/projects/platform
 ```
 
-Every `make` target that touches infrastructure requires three inputs. Pass them on the command line (`name=value`)
-or export them in your shell:
+Every `make` target that touches infrastructure requires the three inputs below. Each can be passed on the command
+line (`name=value`) or set as the matching environment variable:
 
 | Make param | Env var | Required | Description |
 |---|---|---|---|
-| `org_name` | `ORG_NAME` | no (default `Archegos`) | Organization name; used to prefix resources and the cluster name. |
+| `org_name` | `ORG_NAME` | **yes** | Organization name; used to prefix resources and the cluster name. |
 | `root_domain` | `ROOT_DOMAIN` | **yes** | Your Route 53 hosted-zone domain (e.g. `example.com`). Admin UIs live at `*.admin.<root_domain>`. |
 | `admin_email` | `ADMIN_EMAIL` | **yes** | Email of the initial platform admin (the Dex static-password user / Grafana admin). |
 
-> Targets fail fast with a clear error if `ROOT_DOMAIN` or `ADMIN_EMAIL` is missing.
+> Targets fail fast with a clear error if any of `ORG_NAME`, `ROOT_DOMAIN`, or `ADMIN_EMAIL` is missing.
+
+The walkthrough below uses bare `make deploy-*` commands, so the simplest approach is to **export the three values
+once** and reuse them throughout your shell session:
+
+```shell
+export ORG_NAME="ExampleOrg" ROOT_DOMAIN="example.com" ADMIN_EMAIL="admin@example.com"
+```
 
 Next validate that the IaC setup will run with,
 
 ```shell
-make plan-all org_name="ExampleOrg" root_domain="example.com" admin_email="admin@example.com"
+make plan-all
 ```
 
 This runs Terragrunt / Terraform plan on all the modules in the repository.
 
 ### Quickstart
 
-To stand up the entire stack in one shot (Terragrunt resolves the dependency order automatically):
+To stand up the entire stack in one shot (Terragrunt resolves the dependency order automatically), with the three
+values exported as above:
 
 ```shell
-make deploy-all root_domain="example.com" admin_email="admin@example.com" org_name="ExampleOrg"
+make deploy-all
 ```
 
 Or follow the detailed, per-component walkthrough below. The components must be applied in this order
