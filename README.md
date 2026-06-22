@@ -449,8 +449,12 @@ To avoid ongoing AWS charges, tear the stack down when you're done. Each compone
 `destroy-eks`, `destroy-vpc`, `destroy-account`), or remove everything at once with,
 
 ```shell
-make destroy-all root_domain="example.com" admin_email="admin@example.com"
+make destroy-all
 ```
+
+> ⚠️ Destroy using the **same** `ORG_NAME`, `ROOT_DOMAIN`, and `ADMIN_EMAIL` you deployed with — `ORG_NAME` is part of
+> the Terragrunt remote-state bucket name (`terraform-state-<org>-<region>`), so a mismatch targets a different state
+> and won't tear down your resources.
 
 ## Github Actions
 
