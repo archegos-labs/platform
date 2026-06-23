@@ -15,9 +15,14 @@ metadata:
   name: profiles-namespace-labels-data
   namespace: {{ .Values.namespace }}
 data:
+  # Profile namespaces stay in SIDECAR mode (istio-injection is added by the
+  # profile-controller). Their ns-owner-access-istio policy relies on L7 rules
+  # (X-Auth-Request-Email header) that only a sidecar — or an ambient waypoint —
+  # can enforce. Do NOT add istio.io/dataplane-mode=ambient here until waypoints
+  # are deployed (platform-xd4); ambient without a waypoint drops those L7 rules
+  # and breaks per-namespace owner isolation.
   namespace-labels.yaml: |-
     app.kubernetes.io/part-of: "kubeflow-profile"
-    istio.io/dataplane-mode: "ambient"
     katib.kubeflow.org/metrics-collector-injection: "enabled"
     pipelines.kubeflow.org/enabled: "true"
     serving.kubeflow.org/inferenceservice: "enabled"
