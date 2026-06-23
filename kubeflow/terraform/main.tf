@@ -5,10 +5,18 @@ locals {
 resource "kubernetes_namespace" "kubeflow" {
   metadata {
     labels = {
-      control-plane   = "kubeflow"
-      istio-injection = "enabled"
-      # No PSS enforcement: Istio init containers require NET_ADMIN/NET_RAW
-      # which are blocked by both baseline and restricted.
+      control-plane = "kubeflow"
+      # Ambient mesh: ztunnel handles this namespace's pods. Do not add
+      # istio-injection=enabled here — that opts the namespace into sidecar
+      # injection, which conflicts with ambient (sidecars win and exclude the
+      # pods from ztunnel). Sidecar injection is used intentionally elsewhere,
+      # e.g. the `ingress` namespace for the gateway.
+      "istio.io/dataplane-mode" = "ambient"
+      # No PSS enforcement label here. In ambient mode istio-cni does traffic
+      # redirection at the node level, so these pods don't need the per-pod
+      # NET_ADMIN/NET_RAW init container that sidecar mode required — the
+      # original Istio blocker no longer applies. Revisit enabling baseline/
+      # restricted once the Kubeflow workloads here are confirmed compatible.
     }
 
     name = "kubeflow"

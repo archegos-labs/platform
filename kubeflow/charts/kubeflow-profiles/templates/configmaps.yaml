@@ -17,6 +17,7 @@ metadata:
 data:
   namespace-labels.yaml: |-
     app.kubernetes.io/part-of: "kubeflow-profile"
+    istio.io/dataplane-mode: "ambient"
     katib.kubeflow.org/metrics-collector-injection: "enabled"
     pipelines.kubeflow.org/enabled: "true"
     serving.kubeflow.org/inferenceservice: "enabled"
