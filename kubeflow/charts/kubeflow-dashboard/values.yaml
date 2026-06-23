@@ -8,7 +8,3 @@ userid_header: kubeflow-userid
 userid_prefix: ""
 registration_flow: "false"
 logout_url: /authservice/logout
-
-ingress:
-  namespace: ingress
-  gateway: ingress-gateway
