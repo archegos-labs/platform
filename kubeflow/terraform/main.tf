@@ -5,8 +5,10 @@ locals {
 resource "kubernetes_namespace" "kubeflow" {
   metadata {
     labels = {
-      control-plane   = "kubeflow"
-      istio-injection = "enabled"
+      control-plane = "kubeflow"
+      # Ambient mesh: ztunnel captures this namespace's pods (not sidecar
+      # injection). istio-injection=enabled is a no-op on this ambient install.
+      "istio.io/dataplane-mode" = "ambient"
       # No PSS enforcement: Istio init containers require NET_ADMIN/NET_RAW
       # which are blocked by both baseline and restricted.
     }
