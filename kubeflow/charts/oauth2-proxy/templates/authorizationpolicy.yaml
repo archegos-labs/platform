@@ -9,7 +9,7 @@ spec:
   - from:
     - source:
         principals:
-        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/istio-ingressgateway
+        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/{{ .Values.ingress.service_account }}
   selector:
     matchLabels:
       app: oauth2-proxy

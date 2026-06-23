@@ -12,4 +12,3 @@ logout_url: /authservice/logout
 ingress:
   namespace: ingress
   gateway: ingress-gateway
-  service_account: istio-ingressgateway
