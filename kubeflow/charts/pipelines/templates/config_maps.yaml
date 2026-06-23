@@ -125,6 +125,25 @@ data:
                         },
                         "data": {
                             "defaultPipelineRoot": kfp_default_pipeline_root,
+                            # KFP 2.16.1 defaults the minio:// endpoint to
+                            # seaweedfs.kubeflow:9000; this deployment keeps
+                            # standalone MinIO, so the per-namespace launcher
+                            # needs the same providers override as the central
+                            # kfp-launcher configmap.
+                            "providers": (
+                                "minio:\n"
+                                "  default:\n"
+                                "    endpoint: minio-service.kubeflow:9000\n"
+                                "    disableSSL: true\n"
+                                "    region: minio\n"
+                                "    forcePathStyle: true\n"
+                                "    credentials:\n"
+                                "      fromEnv: false\n"
+                                "      secretRef:\n"
+                                "        secretName: mlpipeline-minio-artifact\n"
+                                "        accessKeyKey: accesskey\n"
+                                "        secretKeyKey: secretkey\n"
+                            ),
                         },
                     }]
 
@@ -458,7 +477,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  MULTIUSER: 'false'
+  MULTIUSER: 'true'
 kind: ConfigMap
 metadata:
   labels:
@@ -471,7 +490,7 @@ metadata:
 apiVersion: v1
 data:
   DEFAULTPIPELINERUNNERSERVICEACCOUNT: default-editor
-  MULTIUSER: 'false'
+  MULTIUSER: 'true'
   VISUALIZATIONSERVICE_NAME: ml-pipeline-visualizationserver
   VISUALIZATIONSERVICE_PORT: '8888'
   TOKEN_REVIEW_AUDIENCE: 'pipelines.kubeflow.org'
@@ -504,7 +523,11 @@ data:
   cacheDb: cachedb
   pipelineDb: mlpipeline
   bucketName: mlpipeline
-  defaultPipelineRoot: ''
+  # Drives KFP_DEFAULT_PIPELINE_ROOT on the profile-controller; when non-empty
+  # the controller provisions a per-namespace kfp-launcher configmap so v2 runs
+  # in profile namespaces (multi-user) resolve their pipeline root. Must match
+  # the central kfp-launcher configmap's defaultPipelineRoot.
+  defaultPipelineRoot: 'minio://mlpipeline/v2/artifacts'
   autoUpdatePipelineDefaultVersion: 'true'
   cronScheduleTimezone: UTC
   cacheImage: gcr.io/google-containers/busybox

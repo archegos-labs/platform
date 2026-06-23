@@ -672,7 +672,7 @@ spec:
         - name: KUBEFLOW_USERID_PREFIX
           value: ""
         - name: MULTIUSER
-          value: "false"
+          value: "true"
         - name: CRON_SCHEDULE_TIMEZONE
           valueFrom:
             configMapKeyRef:
