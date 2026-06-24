@@ -49,6 +49,7 @@ resource "helm_release" "kubeflow_roles" {
   name        = "kubeflow-roles"
   description = "Kubeflow base aggregated ClusterRoles (kubeflow-admin/edit/view)"
   chart       = "../charts/kubeflow-roles"
+  namespace   = kubernetes_namespace.kubeflow.metadata[0].name
 
   wait          = true
   wait_for_jobs = true
