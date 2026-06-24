@@ -133,7 +133,7 @@ data:
                             "providers": (
                                 "minio:\n"
                                 "  default:\n"
-                                "    endpoint: minio-service.kubeflow:9000\n"
+                                "    endpoint: minio-service.{{ .Values.kubeflow.namespace }}:9000\n"
                                 "    disableSSL: true\n"
                                 "    region: minio\n"
                                 "    forcePathStyle: true\n"
@@ -171,7 +171,7 @@ data:
                         },
                         "data": {
                             "METADATA_GRPC_SERVICE_HOST":
-                                "metadata-grpc-service.kubeflow",
+                                "metadata-grpc-service.{{ .Values.kubeflow.namespace }}",
                             "METADATA_GRPC_SERVICE_PORT": "8080",
                         },
                     },
