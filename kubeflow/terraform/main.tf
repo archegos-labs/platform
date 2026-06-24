@@ -45,6 +45,17 @@ resource "helm_release" "kubeflow_issuer" {
   depends_on = [kubernetes_namespace.kubeflow]
 }
 
+resource "helm_release" "kubeflow_roles" {
+  name        = "kubeflow-roles"
+  description = "Kubeflow base aggregated ClusterRoles (kubeflow-admin/edit/view)"
+  chart       = "../charts/kubeflow-roles"
+
+  wait          = true
+  wait_for_jobs = true
+
+  depends_on = [kubernetes_namespace.kubeflow]
+}
+
 resource "random_password" "minio_access_key" {
   length  = 16
   special = false
