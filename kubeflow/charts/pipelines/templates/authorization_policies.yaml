@@ -9,6 +9,13 @@ metadata:
 spec:
   action: ALLOW
   rules:
+  # Allow-all (justified for now). Callers: metadata-envoy (fronts the external
+  # gateway /ml_metadata route, runs sa=default), metadata-writer, ml-pipeline,
+  # and pipeline step pods that log lineage. Under ambient most of these are
+  # now captured and have identities, so this can eventually be scoped — but
+  # the step-pod identity is still undecided (platform-02x) and the external
+  # gateway path complicates it. Tighten once platform-02x lands and a live
+  # run confirms the caller principals.
   - {}
   selector:
     matchLabels:
@@ -32,6 +39,15 @@ spec:
     - source:
         principals:
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-ui
+  # Allow-all (justified for now). minio holds artifact-store credentials, so
+  # this is the highest-value policy to scope. The catch-all currently makes
+  # the ml-pipeline / ml-pipeline-ui rules above redundant; it exists for the
+  # artifact-writing pipeline step pods, whose ServiceAccount is exactly the
+  # open decision in platform-02x (default-editor vs pipeline-runner vs
+  # multi-user). Cannot be safely scoped until platform-02x is resolved and a
+  # live run confirms the step-pod principal — wrong scoping breaks artifact
+  # writes mid-run. Once known, replace this with the step-pod SA (plus
+  # persistenceagent / visualizationserver / cache as needed).
   - {}
   selector:
     matchLabels:
@@ -145,6 +161,12 @@ metadata:
   namespace: {{ .Values.kubeflow.namespace }}
 spec:
   rules:
+  # Allow-all REQUIRED (permanent justification). cache-server backs the
+  # cache-webhook-kubeflow MutatingWebhookConfiguration, which is called by
+  # kube-apiserver — a control-plane component outside the mesh with no SPIFFE
+  # identity. A source-principals allow-list would 403 the webhook. This rule
+  # cannot be scoped to mesh principals; do not replace it with a principals
+  # block.
   - {}
   selector:
     matchLabels:
