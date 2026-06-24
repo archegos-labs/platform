@@ -1,0 +1,2 @@
+# No configurable values: this chart deploys cluster-scoped Kubeflow
+# aggregated ClusterRoles (kubeflow-admin/edit/view) verbatim from upstream.

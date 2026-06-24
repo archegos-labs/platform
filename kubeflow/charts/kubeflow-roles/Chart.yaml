@@ -1,0 +1,11 @@
+apiVersion: v2
+name: kubeflow-roles
+description: >-
+  Kubeflow base aggregated ClusterRoles (kubeflow-admin/edit/view) that the
+  profile-controller's per-namespace RoleBindings reference. Vendored from
+  kubeflow/manifests common/kubeflow-roles/base/cluster-roles.yaml. Without
+  these, owner/default-editor/default-viewer bindings in profile namespaces
+  dangle and the KFP api-server denies all multi-user access.
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
