@@ -12,3 +12,4 @@ admin_profile_namespace: kubeflow-admin
 ingress:
   namespace: ingress
   gateway: ingress-gateway
+  service_account: istio-ingressgateway

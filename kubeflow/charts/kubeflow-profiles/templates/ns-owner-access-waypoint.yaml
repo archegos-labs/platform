@@ -6,9 +6,9 @@
 # the namespace's waypoint Gateway, so the waypoint enforces them with L7 active.
 #
 # Differences from the upstream controller policy (intentional, for this deployment):
-#  - gateway principal uses the REAL ingress gateway SA (ingress/sa/istio-ingressgateway),
-#    not the controller's hardcoded istio-system/sa/istio-ingressgateway-service-account
-#    (which does not exist here — see platform-7d1);
+#  - gateway principal uses the REAL ingress gateway SA via the shared ingress.service_account
+#    value (mirrors oauth2-proxy's policy), not the controller's hardcoded
+#    istio-system/sa/istio-ingressgateway-service-account (which does not exist here);
 #  - oauth2-proxy is added, since user traffic is reverse-proxied through it (not straight
 #    from the gateway) in this deployment.
 # Keep in sync with kubeflow/dashboard profile_controller.go getAuthorizationPolicy.
@@ -29,7 +29,7 @@ spec:
   - from:
     - source:
         principals:
-        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/istio-ingressgateway
+        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/{{ .Values.ingress.service_account }}
         - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
         - cluster.local/ns/{{ .Values.namespace }}/sa/ml-pipeline-ui
     when:
