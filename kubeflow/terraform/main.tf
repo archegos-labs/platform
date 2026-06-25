@@ -1,5 +1,10 @@
 locals {
   dashboard_host = "dashboard.admin.${var.root_domain}"
+  # Single source of truth for the admin profile namespace. Used by the profiles
+  # release (Profile/namespace name) and the pipelines release (profile_namespaces,
+  # which scopes the ml-pipeline AuthorizationPolicy to that namespace's
+  # default-editor). Keep these in sync via this local.
+  admin_profile_namespace = "kubeflow-admin"
 }
 
 resource "kubernetes_namespace" "kubeflow" {
@@ -210,7 +215,7 @@ resource "helm_release" "kubeflow_trainer" {
 resource "helm_release" "kubeflow_pipelines" {
   name      = "kubeflow-pipelines"
   chart     = "../charts/pipelines"
-  version   = "1.1.3"
+  version   = "1.1.4"
   namespace = kubernetes_namespace.kubeflow.metadata[0].name
 
   timeout       = 600
@@ -228,6 +233,8 @@ resource "helm_release" "kubeflow_pipelines" {
       minio:
         access_key: "${random_password.minio_access_key.result}"
         secret_key: "${random_password.minio_secret_key.result}"
+      profile_namespaces:
+      - "${local.admin_profile_namespace}"
     EOT
   ]
 
@@ -290,7 +297,7 @@ resource "helm_release" "kubeflow_profiles" {
       namespace               = kubernetes_namespace.kubeflow.metadata[0].name
       image_tag               = "v2.0.0-rc.1"
       admin_email             = var.admin_email
-      admin_profile_namespace = "kubeflow-admin"
+      admin_profile_namespace = local.admin_profile_namespace
       userid_header           = "X-Auth-Request-Email"
     })
   ]
