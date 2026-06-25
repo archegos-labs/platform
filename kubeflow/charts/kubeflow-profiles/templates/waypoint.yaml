@@ -4,7 +4,7 @@
 # "waypoint" so the static istio.io/use-waypoint label (profiles-namespace-labels-data)
 # binds the namespace to it. Requires the Gateway API CRDs + istio-waypoint GatewayClass.
 # NOTE: only the admin profile namespace is templated here; profiles beyond admin need a
-# per-namespace waypoint provisioned by the dynamic-automation follow-up.
+# per-namespace waypoint provisioned by the dynamic-automation follow-up (platform-lyl).
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:

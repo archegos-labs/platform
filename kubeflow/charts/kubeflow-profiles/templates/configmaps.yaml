@@ -20,9 +20,13 @@ data:
   # by istio-cni and get a ztunnel identity — required for them to reach the
   # ml-pipeline backend in multi-user. ztunnel can't enforce the L7
   # ns-owner-access-istio owner-isolation rule (X-Auth-Request-Email), so the
-  # namespace is bound to an ambient waypoint (istio.io/use-waypoint=waypoint;
-  # the waypoint Gateway is created per profile namespace — see waypoint.yaml).
-  # Do NOT re-add istio-injection here: sidecar injection conflicts with ambient.
+  # namespace is bound to an ambient waypoint (istio.io/use-waypoint=waypoint).
+  # CAVEAT: this label is applied to ALL profile namespaces, but only the admin
+  # profile namespace's waypoint Gateway is templated today (see waypoint.yaml).
+  # Non-admin profiles get this label with NO matching waypoint Gateway, so their
+  # L7 ns-owner-access-istio owner isolation is NOT enforced until the dynamic
+  # per-profile waypoint automation lands (platform-lyl). Do not assume
+  # per-namespace coverage. Do NOT re-add istio-injection: it conflicts with ambient.
   namespace-labels.yaml: |-
     app.kubernetes.io/part-of: "kubeflow-profile"
     istio.io/dataplane-mode: "ambient"
