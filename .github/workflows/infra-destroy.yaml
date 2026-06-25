@@ -76,7 +76,7 @@ jobs:
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
-            destroy --all --non-interactive
+            destroy --all --non-interactive --provider-cache
         env:
           ORG_NAME: ${{ vars.ORG_NAME }}
           DEPLOYMENT:  ${{ inputs.infra_env }}-${{ inputs.region }}
