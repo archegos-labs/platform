@@ -347,6 +347,10 @@ data:
                                             {
                                                 "name": "KUBEFLOW_USERID_PREFIX",
                                                 "value": ""
+                                            },
+                                            {
+                                                "name": "FRONTEND_SERVER_NAMESPACE",
+                                                "value": namespace
                                             }
                                         ],
                                         "resources": {
