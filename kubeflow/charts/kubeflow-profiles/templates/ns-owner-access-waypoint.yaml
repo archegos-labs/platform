@@ -1,8 +1,8 @@
 # Enforce the L7 owner-isolation rules of the profile-controller's ns-owner-access-istio
 # AT THE WAYPOINT. The controller generates ns-owner-access-istio namespace-wide (no
 # targetRef), so in ambient mode Istio attaches it to ztunnel, which silently DROPS the
-# L7 rules (request.headers[X-Auth-Request-Email], paths, methods) — leaving per-namespace
-# owner isolation unenforced. This policy mirrors those rules but uses spec.targetRefs ->
+# L7 rules (the request.headers[<userid_header>] owner check, paths, methods) — leaving
+# per-namespace owner isolation unenforced. This policy mirrors those rules but uses spec.targetRefs ->
 # the namespace's waypoint Gateway, so the waypoint enforces them with L7 active.
 #
 # Differences from the upstream controller policy (intentional, for this deployment):
@@ -12,7 +12,7 @@
 #  - oauth2-proxy is added, since user traffic is reverse-proxied through it (not straight
 #    from the gateway) in this deployment.
 # Keep in sync with kubeflow/dashboard profile_controller.go getAuthorizationPolicy.
-apiVersion: security.istio.io/v1
+apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: ns-owner-access-waypoint
@@ -33,6 +33,9 @@ spec:
         - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
         - cluster.local/ns/{{ .Values.namespace }}/sa/ml-pipeline-ui
     when:
+    # userid_header is configured per-deployment (chart default "kubeflow-userid";
+    # this deployment's terraform sets it to "X-Auth-Request-Email", matching the
+    # profile-controller's USERID_HEADER and oauth2-proxy's emitted header).
     - key: request.headers[{{ .Values.userid_header }}]
       values:
       - {{ printf "%s%s" .Values.userid_prefix .Values.admin_email | quote }}
