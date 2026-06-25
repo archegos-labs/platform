@@ -84,7 +84,7 @@ jobs:
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
-            init --all --non-interactive
+            init --all --non-interactive --provider-cache
         env:
           ORG_NAME: ${{ vars.ORG_NAME }}
           DEPLOYMENT: ${{ matrix.infra_env }}-${{ matrix.region }}
@@ -99,7 +99,7 @@ jobs:
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
           tg_command: |
-            validate --all --non-interactive
+            validate --all --non-interactive --provider-cache
         env:
           ORG_NAME: ${{ vars.ORG_NAME }}
           DEPLOYMENT: ${{ matrix.infra_env }}-${{ matrix.region }}
@@ -113,8 +113,8 @@ jobs:
           tf_path: terraform
           tg_version: ${{ env.tg_version }}
           tg_dir: ${{ env.working_dir }}
-          tg_command: | 
-            plan --all --non-interactive
+          tg_command: |
+            plan --all --non-interactive --provider-cache
         env:
           ORG_NAME: ${{ vars.ORG_NAME }}
           DEPLOYMENT: ${{ matrix.infra_env }}-${{ matrix.region }}
