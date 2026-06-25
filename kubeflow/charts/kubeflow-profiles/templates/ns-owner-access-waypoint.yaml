@@ -34,8 +34,9 @@ spec:
         - cluster.local/ns/{{ .Values.namespace }}/sa/ml-pipeline-ui
     when:
     # userid_header is configured per-deployment (chart default "kubeflow-userid";
-    # this deployment's terraform sets it to "X-Auth-Request-Email", matching the
-    # profile-controller's USERID_HEADER and oauth2-proxy's emitted header).
+    # this deployment's terraform sets it to "X-Forwarded-Email" — the header
+    # oauth2-proxy actually emits upstream in reverse-proxy mode (pass_user_headers),
+    # matching the profile-controller's USERID_HEADER and the KFP components).
     - key: request.headers[{{ .Values.userid_header }}]
       values:
       - {{ printf "%s%s" .Values.userid_prefix .Values.admin_email | quote }}

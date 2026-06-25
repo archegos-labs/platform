@@ -19,7 +19,7 @@ data:
   # step/driver pods (which set sidecar.istio.io/inject=false) are still captured
   # by istio-cni and get a ztunnel identity — required for them to reach the
   # ml-pipeline backend in multi-user. ztunnel can't enforce the L7
-  # ns-owner-access-istio owner-isolation rule (X-Auth-Request-Email), so the
+  # ns-owner-access-istio owner-isolation rule (on the userid header), so the
   # namespace is bound to an ambient waypoint (istio.io/use-waypoint=waypoint).
   # CAVEAT: this label is applied to ALL profile namespaces, but only the admin
   # profile namespace's waypoint Gateway is templated today (see waypoint.yaml).
