@@ -28,5 +28,3 @@ upstreams:
   pipeline_service: ml-pipeline-ui.kubeflow.svc.cluster.local:80
   metadata_envoy_service: metadata-envoy-service.kubeflow.svc.cluster.local:9090
   dashboard_service: dashboard.kubeflow.svc.cluster.local:80
-
-userid_header: X-Forwarded-Email

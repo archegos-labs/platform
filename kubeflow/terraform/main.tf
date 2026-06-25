@@ -278,7 +278,6 @@ resource "helm_release" "oauth2_proxy" {
         dex_service = var.dex_internal_url
       }
       cookie_secret = random_password.oauth2_proxy_cookie.result
-      userid_header = "X-Forwarded-Email"
     })
   ]
 }

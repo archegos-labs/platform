@@ -37,7 +37,9 @@ spec:
     # this deployment's terraform sets it to "X-Forwarded-Email" — the header
     # oauth2-proxy actually emits upstream in reverse-proxy mode (pass_user_headers),
     # matching the profile-controller's USERID_HEADER and the KFP components).
-    - key: request.headers[{{ .Values.userid_header }}]
+    # Lowercased: Envoy normalizes header names to lowercase and Istio matches this
+    # key case-sensitively, so request.headers[X-Forwarded-Email] would never match.
+    - key: request.headers[{{ .Values.userid_header | lower }}]
       values:
       - {{ printf "%s%s" .Values.userid_prefix .Values.admin_email | quote }}
   # Workloads in the same namespace can reach each other.
