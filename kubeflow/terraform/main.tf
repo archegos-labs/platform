@@ -215,7 +215,7 @@ resource "helm_release" "kubeflow_trainer" {
 resource "helm_release" "kubeflow_pipelines" {
   name      = "kubeflow-pipelines"
   chart     = "../charts/pipelines"
-  version   = "1.1.4"
+  version   = "1.1.5"
   namespace = kubernetes_namespace.kubeflow.metadata[0].name
 
   timeout       = 600
@@ -278,7 +278,6 @@ resource "helm_release" "oauth2_proxy" {
         dex_service = var.dex_internal_url
       }
       cookie_secret = random_password.oauth2_proxy_cookie.result
-      userid_header = "X-Auth-Request-Email"
     })
   ]
 }
@@ -298,7 +297,7 @@ resource "helm_release" "kubeflow_profiles" {
       image_tag               = "v2.0.0-rc.1"
       admin_email             = var.admin_email
       admin_profile_namespace = local.admin_profile_namespace
-      userid_header           = "X-Auth-Request-Email"
+      userid_header           = "X-Forwarded-Email"
     })
   ]
 
@@ -321,7 +320,7 @@ resource "helm_release" "kubeflow_dashboard" {
         repository = "ghcr.io/kubeflow/dashboard/dashboard"
         tag        = "v2.0.0-rc.1"
       }
-      userid_header     = "X-Auth-Request-Email"
+      userid_header     = "X-Forwarded-Email"
       registration_flow = "false"
       logout_url        = "/oauth2/sign_out"
     })

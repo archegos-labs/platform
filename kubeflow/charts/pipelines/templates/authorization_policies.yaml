@@ -126,7 +126,7 @@ spec:
         - cluster.local/ns/{{ . }}/sa/default-editor
         {{- end }}
   - when:
-    - key: request.headers[x-auth-request-email]
+    - key: request.headers[x-forwarded-email]
       notValues:
       - '*'
   selector:

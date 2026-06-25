@@ -1,5 +1,5 @@
 # Ambient waypoint proxy for the admin profile namespace. Enforces the L7
-# ns-owner-access-istio AuthorizationPolicy (X-Auth-Request-Email owner isolation)
+# ns-owner-access-istio AuthorizationPolicy (owner isolation on the userid header)
 # that ztunnel cannot, now that profile namespaces run in ambient mode. Named
 # "waypoint" so the static istio.io/use-waypoint label (profiles-namespace-labels-data)
 # binds the namespace to it. Requires the Gateway API CRDs + istio-waypoint GatewayClass.

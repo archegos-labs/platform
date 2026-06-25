@@ -342,7 +342,7 @@ data:
                                             },
                                             {
                                                 "name": "KUBEFLOW_USERID_HEADER",
-                                                "value": "x-auth-request-email"
+                                                "value": "x-forwarded-email"
                                             },
                                             {
                                                 "name": "KUBEFLOW_USERID_PREFIX",
@@ -438,7 +438,7 @@ apiVersion: v1
 data:
   DISABLE_ISTIO_SIDECAR: 'false'
   ISTIO_GATEWAY: {{ .Values.ingress.namespace }}/{{ .Values.ingress.gateway }}
-  KUBEFLOW_USERID_HEADER: 'x-auth-request-email'
+  KUBEFLOW_USERID_HEADER: 'x-forwarded-email'
   KUBEFLOW_USERID_PREFIX: ''
 kind: ConfigMap
 metadata:

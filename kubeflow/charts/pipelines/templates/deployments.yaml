@@ -144,7 +144,7 @@ spec:
         - /hooks/sync.py
         env:
         - name: KUBEFLOW_USERID_HEADER
-          value: x-auth-request-email
+          value: x-forwarded-email
         - name: KUBEFLOW_USERID_PREFIX
           value: ''
         - name: KFP_VERSION
@@ -426,7 +426,7 @@ spec:
         - name: V2_LAUNCHER_IMAGE
           value: ghcr.io/kubeflow/kfp-launcher:2.16.1
         - name: KUBEFLOW_USERID_HEADER
-          value: x-auth-request-email
+          value: x-forwarded-email
         - name: KUBEFLOW_USERID_PREFIX
           value: ''
         - name: AUTO_UPDATE_PIPELINE_DEFAULT_VERSION
@@ -606,7 +606,7 @@ spec:
         - name: NAMESPACE
           value: ''
         - name: KUBEFLOW_USERID_HEADER
-          value: x-auth-request-email
+          value: x-forwarded-email
         - name: KUBEFLOW_USERID_PREFIX
           value: ''
         - name: TTL_SECONDS_AFTER_WORKFLOW_FINISH
@@ -668,7 +668,7 @@ spec:
         - name: NAMESPACE
           value: ''
         - name: KUBEFLOW_USERID_HEADER
-          value: x-auth-request-email
+          value: x-forwarded-email
         - name: KUBEFLOW_USERID_PREFIX
           value: ""
         - name: MULTIUSER
@@ -725,7 +725,7 @@ spec:
         - name: ENABLE_AUTHZ
           value: 'false'
         - name: KUBEFLOW_USERID_HEADER
-          value: x-auth-request-email
+          value: x-forwarded-email
         - name: KUBEFLOW_USERID_PREFIX
           value: ''
         - name: MINIO_NAMESPACE
