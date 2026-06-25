@@ -1,0 +1,64 @@
+# Enforce the L7 owner-isolation rules of the profile-controller's ns-owner-access-istio
+# AT THE WAYPOINT. The controller generates ns-owner-access-istio namespace-wide (no
+# targetRef), so in ambient mode Istio attaches it to ztunnel, which silently DROPS the
+# L7 rules (the request.headers[<userid_header>] owner check, paths, methods) — leaving
+# per-namespace owner isolation unenforced. This policy mirrors those rules but uses spec.targetRefs ->
+# the namespace's waypoint Gateway, so the waypoint enforces them with L7 active.
+#
+# Differences from the upstream controller policy (intentional, for this deployment):
+#  - gateway principal uses the REAL ingress gateway SA (ingress/sa/istio-ingressgateway),
+#    not the controller's hardcoded istio-system/sa/istio-ingressgateway-service-account
+#    (which does not exist here — see platform-7d1);
+#  - oauth2-proxy is added, since user traffic is reverse-proxied through it (not straight
+#    from the gateway) in this deployment.
+# Keep in sync with kubeflow/dashboard profile_controller.go getAuthorizationPolicy.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ns-owner-access-waypoint
+  namespace: {{ .Values.admin_profile_namespace }}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: waypoint
+  action: ALLOW
+  rules:
+  # Namespace owner (by authenticated email) reaching workloads via the gateway,
+  # oauth2-proxy, or ml-pipeline-ui (artifact/visualization proxy).
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/istio-ingressgateway
+        - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
+        - cluster.local/ns/{{ .Values.namespace }}/sa/ml-pipeline-ui
+    when:
+    # userid_header is configured per-deployment (chart default "kubeflow-userid";
+    # this deployment's terraform sets it to "X-Auth-Request-Email", matching the
+    # profile-controller's USERID_HEADER and oauth2-proxy's emitted header).
+    - key: request.headers[{{ .Values.userid_header }}]
+      values:
+      - {{ printf "%s%s" .Values.userid_prefix .Values.admin_email | quote }}
+  # Workloads in the same namespace can reach each other.
+  - when:
+    - key: source.namespace
+      values:
+      - {{ .Values.admin_profile_namespace }}
+  # Probe paths (KNative activator/controller, health).
+  - to:
+    - operation:
+        paths:
+        - /healthz
+        - /metrics
+        - /wait-for-drain
+  # notebook-controller -> notebook server api/kernels.
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.namespace }}/sa/notebook-controller-service-account
+    to:
+    - operation:
+        methods:
+        - GET
+        paths:
+        - '*/api/kernels'
