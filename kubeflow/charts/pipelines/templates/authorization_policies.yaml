@@ -119,6 +119,12 @@ spec:
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-scheduledworkflow
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-viewer-crd-service-account
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-cache
+        {{- /* Multi-user: KFP step/driver pods run as default-editor in each profile
+               namespace (ambient-captured) and call back to ml-pipeline gRPC. ztunnel
+               matches only exact principals, so enumerate each profile namespace. */}}
+        {{- range .Values.profile_namespaces }}
+        - cluster.local/ns/{{ . }}/sa/default-editor
+        {{- end }}
   - when:
     - key: request.headers[x-auth-request-email]
       notValues:

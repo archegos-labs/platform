@@ -210,7 +210,7 @@ resource "helm_release" "kubeflow_trainer" {
 resource "helm_release" "kubeflow_pipelines" {
   name      = "kubeflow-pipelines"
   chart     = "../charts/pipelines"
-  version   = "1.1.2"
+  version   = "1.1.3"
   namespace = kubernetes_namespace.kubeflow.metadata[0].name
 
   timeout       = 600
