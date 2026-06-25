@@ -19,7 +19,7 @@ metadata:
     # namespace whose owner annotation equals profile.Spec.Owner.Name; otherwise it
     # rejects the Profile ("not owned by profile creator") and never provisions the
     # default-editor SA / ns-owner-access-istio / RBAC.
-    owner: {{ .Values.admin_email }}
+    owner: {{ .Values.admin_email | quote }}
   labels:
     app.kubernetes.io/part-of: kubeflow-profile
     istio.io/dataplane-mode: ambient
