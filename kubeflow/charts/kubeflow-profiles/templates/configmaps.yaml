@@ -15,16 +15,18 @@ metadata:
   name: profiles-namespace-labels-data
   namespace: {{ .Values.namespace }}
 data:
-  # Profile namespaces run in SIDECAR mode: istio-injection=enabled is set
-  # explicitly below so enrollment is deterministic (not reliant on profile-
-  # controller defaults). ns-owner-access-istio relies on L7 rules
-  # (X-Auth-Request-Email) that only a sidecar — or an ambient waypoint — can
-  # enforce. Do NOT switch to istio.io/dataplane-mode=ambient until waypoints
-  # are deployed (platform-xd4); ambient without a waypoint drops those L7 rules
-  # and breaks per-namespace owner isolation.
+  # Profile namespaces run in AMBIENT mode (dataplane-mode=ambient) so that KFP
+  # step/driver pods (which set sidecar.istio.io/inject=false) are still captured
+  # by istio-cni and get a ztunnel identity — required for them to reach the
+  # ml-pipeline backend in multi-user. ztunnel can't enforce the L7
+  # ns-owner-access-istio owner-isolation rule (X-Auth-Request-Email), so the
+  # namespace is bound to an ambient waypoint (istio.io/use-waypoint=waypoint;
+  # the waypoint Gateway is created per profile namespace — see waypoint.yaml).
+  # Do NOT re-add istio-injection here: sidecar injection conflicts with ambient.
   namespace-labels.yaml: |-
     app.kubernetes.io/part-of: "kubeflow-profile"
-    istio-injection: "enabled"
+    istio.io/dataplane-mode: "ambient"
+    istio.io/use-waypoint: "waypoint"
     katib.kubeflow.org/metrics-collector-injection: "enabled"
     pipelines.kubeflow.org/enabled: "true"
     serving.kubeflow.org/inferenceservice: "enabled"

@@ -30,6 +30,20 @@ module "istio_base" {
   wait_for_jobs = true
 }
 
+# Gateway API standard CRDs — required for Istio ambient waypoints. istiod creates
+# the istio-waypoint GatewayClass once these exist, so install before istiod.
+resource "helm_release" "gateway_api_crds" {
+  name        = "gateway-api-crds"
+  description = "Kubernetes Gateway API standard CRDs (required for Istio ambient waypoints)"
+  chart       = "../charts/gateway-api-crds"
+  namespace   = kubernetes_namespace.istio_system.metadata[0].name
+
+  wait          = true
+  wait_for_jobs = true
+
+  depends_on = [module.istio_base]
+}
+
 # // https://istio.io/latest/docs/ambient/install/helm/#istiod-control-plane
 module "istio_istiod" {
   source  = "aws-ia/eks-blueprints-addon/aws"
@@ -71,7 +85,7 @@ module "istio_istiod" {
     EOT
   ]
 
-  depends_on = [module.istio_base]
+  depends_on = [module.istio_base, helm_release.gateway_api_crds]
 }
 
 # // https://istio.io/latest/docs/setup/additional-setup/cni/

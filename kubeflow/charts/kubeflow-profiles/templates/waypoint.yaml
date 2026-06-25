@@ -1,0 +1,20 @@
+# Ambient waypoint proxy for the admin profile namespace. Enforces the L7
+# ns-owner-access-istio AuthorizationPolicy (X-Auth-Request-Email owner isolation)
+# that ztunnel cannot, now that profile namespaces run in ambient mode. Named
+# "waypoint" so the static istio.io/use-waypoint label (profiles-namespace-labels-data)
+# binds the namespace to it. Requires the Gateway API CRDs + istio-waypoint GatewayClass.
+# NOTE: only the admin profile namespace is templated here; profiles beyond admin need a
+# per-namespace waypoint provisioned by the dynamic-automation follow-up.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: waypoint
+  namespace: {{ .Values.admin_profile_namespace }}
+  labels:
+    istio.io/waypoint-for: service
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+  - name: mesh
+    port: 15008
+    protocol: HBONE
