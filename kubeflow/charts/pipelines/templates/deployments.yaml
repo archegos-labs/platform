@@ -176,6 +176,8 @@ spec:
         envFrom:
         - configMapRef:
             name: kubeflow-pipelines-profile-controller-env
+        # Image must provide a Python interpreter: the command runs `python /hooks/sync.py`.
+        # alpine/k8s bundles aws-cli v1 (Python), so python3 is present. Matches upstream KFP 2.16.1.
         image: docker.io/alpine/k8s:1.32.3
         name: profile-controller
         ports:
