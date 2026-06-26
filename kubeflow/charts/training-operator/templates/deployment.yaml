@@ -20,7 +20,7 @@ spec:
       containers:
         - command:
             - /manager
-          image: kubeflow/training-operator:v1-be2e29e
+          image: ghcr.io/kubeflow/training-v1/training-operator:v1-d6eb98e
           name: training-operator
           ports:
             - containerPort: 8080
