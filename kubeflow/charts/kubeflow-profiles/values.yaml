@@ -18,9 +18,13 @@ admin_email: ""
 # and an ns-owner-access-waypoint AuthorizationPolicy enforcing owner isolation at the
 # waypoint. Keep in sync with the pipelines chart's profile_namespaces — terraform
 # drives both from one local.profiles list (platform-lyl).
-profiles:
-- namespace: kubeflow-admin
-  owner: ""
+#
+# Defaults to empty (a profile with an empty owner renders an invalid Profile). Terraform
+# supplies the real list via local.profiles. Each entry: { namespace, owner }. Example:
+#   profiles:
+#   - namespace: kubeflow-admin
+#     owner: admin@example.com
+profiles: []
 
 ingress:
   namespace: ingress

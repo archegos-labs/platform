@@ -7,5 +7,5 @@ metadata:
 spec:
   owner:
     kind: User
-    name: {{ $profile.owner }}
+    name: {{ required "each profiles[].owner must be set (matches the namespace owner annotation)" $profile.owner | quote }}
 {{- end }}

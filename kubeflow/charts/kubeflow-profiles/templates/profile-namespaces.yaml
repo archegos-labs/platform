@@ -1,35 +1,40 @@
-# Pre-install hook: create each profile namespace on a FRESH install only, so the per-
-# namespace waypoint Gateway (a normal release resource, applied after pre-install hooks)
-# has a namespace to land in. As hooks — NOT tracked release resources — Helm never tries
-# to "adopt" an already-existing, profile-controller-created namespace on `helm upgrade`
-# (which fails with "cannot be imported into the current release: missing managed-by").
-# They run once, before release resources, on install; on upgrade they are a no-op and the
-# existing controller-owned namespaces are left untouched. Hook resources are not deleted
-# on `helm uninstall`, so user data/notebooks are preserved.
-# CAVEAT: a full reinstall (uninstall + install) re-runs these hooks; Helm's default
-# before-hook-creation delete policy would delete+recreate the namespaces. Do NOT reinstall
-# the kubeflow-profiles release on a cluster with live user data.
+# Pre-create each profile namespace as a pre-install,pre-upgrade hook, so the per-namespace
+# waypoint Gateway + ns-owner-access-waypoint (normal release resources, applied AFTER hooks)
+# have a namespace to land in — on fresh installs AND when a profile is added later via
+# `helm upgrade`. As hooks — NOT tracked release resources — Helm never tries to "adopt" an
+# already-existing, profile-controller-created namespace (which would fail "cannot be imported
+# into the current release: missing managed-by"). Hook resources are not deleted on
+# `helm uninstall`, so user data/notebooks are preserved.
+#
+# Only MISSING namespaces are rendered (the `lookup` guard). This matters because the default
+# before-hook-creation delete policy would otherwise delete+recreate an existing namespace on
+# every upgrade; skipping existing ones leaves live namespaces (and their data) untouched, and
+# limits the hook to creating brand-new profile namespaces before the controller sees their
+# Profile CR. (`lookup` is a no-op under `helm template`/dry-run — it renders all there — but
+# resolves against the live cluster during the terraform helm provider's install/upgrade.)
 #
 # Pre-creating each namespace also avoids the profile-controller's hardcoded
-# istio-injection=enabled on namespace CREATION (profile_controller.go:131) — by the time
-# the controller reconciles the Profile, the namespace already exists, so it takes the
-# existing-namespace branch (additive setNamespaceLabels) and does NOT add istio-injection,
-# leaving the ambient/use-waypoint labels intact (platform-lyl / platform-nhv).
+# istio-injection=enabled on namespace CREATION (profile_controller.go:131) — by the time the
+# controller reconciles the Profile, the namespace already exists, so it takes the existing-
+# namespace branch (additive setNamespaceLabels) and does NOT add istio-injection, leaving the
+# ambient/use-waypoint labels intact (platform-lyl / platform-nhv).
 {{- range $profile := .Values.profiles }}
+{{- if not (lookup "v1" "Namespace" "" $profile.namespace) }}
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: {{ $profile.namespace }}
   annotations:
-    helm.sh/hook: pre-install
+    helm.sh/hook: pre-install,pre-upgrade
     # MUST match the Profile owner: the profile-controller only adopts a pre-existing
     # namespace whose owner annotation equals profile.Spec.Owner.Name; otherwise it
     # rejects the Profile ("not owned by profile creator") and never provisions the
     # default-editor SA / ns-owner-access-istio / RBAC.
-    owner: {{ $profile.owner | quote }}
+    owner: {{ required "each profiles[].owner must be set (matches the Profile owner)" $profile.owner | quote }}
   labels:
     app.kubernetes.io/part-of: kubeflow-profile
     istio.io/dataplane-mode: ambient
     istio.io/use-waypoint: waypoint
+{{- end }}
 {{- end }}
