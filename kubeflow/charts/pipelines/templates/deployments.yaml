@@ -164,14 +164,11 @@ spec:
               name: pipeline-install-config
               optional: true
         # SeaweedFS IAM endpoint (:8111) — sync.py uses the botocore iam client to
-        # provision per-namespace S3 access keys + policies. S3 endpoint (:8333) is
-        # for any direct S3 calls. AWS_ACCESS_KEY_ID/SECRET are the SeaweedFS admin
-        # credential (the central mlpipeline-minio-artifact secret) used to sign the
-        # IAM requests.
+        # provision per-namespace S3 access keys + policies. AWS_ACCESS_KEY_ID/SECRET
+        # are the SeaweedFS admin credential (the central mlpipeline-minio-artifact
+        # secret) used to sign the IAM requests; AWS_REGION seeds SigV4 signing.
         - name: AWS_ENDPOINT_URL
           value: http://seaweedfs.{{ .Values.kubeflow.namespace }}:8111
-        - name: S3_ENDPOINT_URL
-          value: http://seaweedfs.{{ .Values.kubeflow.namespace }}:8333
         - name: AWS_REGION
           value: us-east-1
         - name: AWS_ACCESS_KEY_ID

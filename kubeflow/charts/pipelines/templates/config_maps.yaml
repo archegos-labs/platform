@@ -31,12 +31,15 @@ data:
 
     def create_iam_client():
         # Talks to the SeaweedFS IAM API to manage per-namespace S3 users.
-        # Region is irrelevant to SeaweedFS; creds come from AWS_ACCESS_KEY_ID /
-        # AWS_SECRET_ACCESS_KEY (the SeaweedFS admin credential) in the env.
+        # Region is irrelevant to SeaweedFS (it only seeds SigV4 signing), so we
+        # honor AWS_REGION from the env rather than hardcoding a placeholder. Creds
+        # come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (the SeaweedFS admin
+        # credential) in the env.
+        region = os.environ.get("AWS_REGION", "us-east-1")
         endpoint_url = os.environ.get("AWS_ENDPOINT_URL")
         if endpoint_url:
-            return session.create_client('iam', region_name='foobar', endpoint_url=endpoint_url)
-        return session.create_client('iam', region_name='foobar')
+            return session.create_client('iam', region_name=region, endpoint_url=endpoint_url)
+        return session.create_client('iam', region_name=region)
 
 
     iam = create_iam_client()

@@ -13,6 +13,12 @@ spec:
     requests:
       storage: 20Gi
 ---
+# Deliberate cutover from MinIO, NOT an in-place upgrade. MinIO's on-disk layout is
+# not readable by SeaweedFS, so reusing the old volume would buy nothing. On
+# helm upgrade / terraform apply, Helm removes the old `minio-pvc` (template deleted)
+# and its gp2-backed EBS volume reclaims via the default Delete policy — no manual
+# cleanup. Existing pipeline artifacts on this dev cluster are intentionally abandoned;
+# a non-dev environment would need a one-time artifact copy (mc mirror / rclone) first.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

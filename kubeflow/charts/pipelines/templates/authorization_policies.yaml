@@ -39,15 +39,17 @@ metadata:
 spec:
   action: ALLOW
   rules:
-  # Scoped from the prior allow-all (platform-f2i). seaweedfs is the artifact store
-  # (S3 :8333/:9000) and IAM (:8111). Single-pod setup, so S3 clients only ever hit
-  # the service ports (no cross-pod volume redirect to authorize) — we keep the
-  # scoped-principal model instead of upstream's open `- {}` rule + NetworkPolicy.
+  # Scoped from the prior allow-all (platform-f2i), and further split by port for
+  # least privilege. Single-pod setup, so S3 clients only ever hit the service ports
+  # (no cross-pod volume redirect to authorize) — we keep the scoped-principal model
+  # instead of upstream's open `- {}` rule + NetworkPolicy. Management ports
+  # (9333/19333/18888/8888) are intentionally reachable by no mesh principal.
+  #
+  # Rule A — S3 data plane (:8333, and :9000 which the Service remaps to :8333).
   # Callers: ml-pipeline + ml-pipeline-ui (serve/read artifacts); artifact-writing
   # pipeline step pods AND the per-profile artifact proxy (ml-pipeline-ui-artifact)
   # -> default-editor in each profile namespace; persistenceagent / visualizationserver
-  # / cache read artifacts as needed; profile-controller calls the IAM API to
-  # provision per-namespace credentials.
+  # / cache read artifacts as needed.
   - from:
     - source:
         principals:
@@ -56,10 +58,24 @@ spec:
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-persistenceagent
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-visualizationserver
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-cache
-        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-profile-controller
         {{- range .Values.profile_namespaces }}
         - cluster.local/ns/{{ . }}/sa/default-editor
         {{- end }}
+    to:
+    - operation:
+        ports:
+        - "8333"
+        - "9000"
+  # Rule B — IAM control plane (:8111). Only the profile-controller provisions
+  # per-namespace S3 credentials; it makes no S3 data-plane calls.
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-profile-controller
+    to:
+    - operation:
+        ports:
+        - "8111"
   selector:
     matchLabels:
       app: seaweedfs
