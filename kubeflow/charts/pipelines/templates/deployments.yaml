@@ -432,13 +432,18 @@ spec:
                   sleep 5
                 done
 
-                # Configure admin user with retries (25s max)
+                # Configure admin user with retries (25s max).
+                # The admin identity name MUST NOT collide with any profile namespace:
+                # the profile-controller mints per-namespace IAM users keyed by namespace
+                # name, so a profile namespace sharing this name would have its provisioning
+                # (create/prune access key + put_user_policy) clobber the admin identity.
+                # Hence seaweedfs-admin, not kubeflow-admin (which is the admin profile ns).
                 for i in $(seq 1 5); do
-                  if echo "s3.configure -user kubeflow-admin -access_key $accesskey -secret_key $secretkey -actions Admin -apply" | /usr/bin/weed shell 2>&1; then
+                  if echo "s3.configure -user seaweedfs-admin -access_key $accesskey -secret_key $secretkey -actions Admin -apply" | /usr/bin/weed shell 2>&1; then
                     break
                   fi
                   if [ "$i" -eq 5 ]; then
-                    echo "ERROR: Failed to configure kubeflow-admin after 5 attempts"
+                    echo "ERROR: Failed to configure seaweedfs-admin after 5 attempts"
                     exit 1
                   fi
                   sleep 5
