@@ -159,6 +159,12 @@ data:
                             # Isolate each profile's v2 artifacts under a per-namespace
                             # prefix; the per-namespace IAM policy (below) only grants
                             # access to private-artifacts/{namespace}/*.
+                            # NOTE: KFP_DEFAULT_PIPELINE_ROOT only gates whether multi-user
+                            # provisioning runs (see the `if` above); its value is
+                            # intentionally NOT used verbatim here. The bucket is fixed to
+                            # mlpipeline (created in seaweedfs postStart, scoped by every IAM
+                            # policy), and the path must stay under private-artifacts/{ns}/ to
+                            # match the grant — honoring an arbitrary root would break both.
                             "defaultPipelineRoot": f"minio://{S3_BUCKET_NAME}/private-artifacts/{namespace}/v2/artifacts",
                             # The minio:// scheme is the KFP provider name; it resolves
                             # through this providers block, which points at SeaweedFS's
@@ -494,6 +500,13 @@ data:
                                         "s3:Get*",
                                         "s3:List*"
                                     ],
+                                    # SeaweedFS authorizes List against the request *prefix*
+                                    # (s3api authRequest sets object=prefix for ACTION_LIST),
+                                    # so these object-prefix ARNs already permit listing within
+                                    # the namespace's prefixes. The bucket ARN (arn:aws:s3:::bucket)
+                                    # is intentionally omitted: adding it would grant listing the
+                                    # whole bucket (all namespaces), and SeaweedFS ignores the
+                                    # s3:prefix Condition AWS would use to scope it.
                                     "Resource": [
                                         f"arn:aws:s3:::{S3_BUCKET_NAME}/artifacts/*",
                                         f"arn:aws:s3:::{S3_BUCKET_NAME}/private-artifacts/{namespace}/*",
