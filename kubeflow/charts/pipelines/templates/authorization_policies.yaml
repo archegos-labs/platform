@@ -9,14 +9,22 @@ metadata:
 spec:
   action: ALLOW
   rules:
-  # Allow-all (justified for now). Callers: metadata-envoy (fronts the external
-  # gateway /ml_metadata route, runs sa=default), metadata-writer, ml-pipeline,
-  # and pipeline step pods that log lineage. Under ambient most of these are
-  # now captured and have identities, so this can eventually be scoped — but
-  # the step-pod identity is still undecided (platform-02x) and the external
-  # gateway path complicates it. Tighten once platform-02x lands and a live
-  # run confirms the caller principals.
-  - {}
+  # Scoped from the prior allow-all (platform-f2i). Callers:
+  #  - pipeline step pods logging lineage -> default-editor in each profile namespace
+  #    (ztunnel-confirmed live: src=ns/kubeflow-admin/sa/default-editor);
+  #  - ml-pipeline (api-server), metadata-writer, kubeflow-pipelines-cache;
+  #  - metadata-envoy fronts the external /ml_metadata gateway route and runs as the
+  #    kubeflow-ns default SA, so that SA is allowed for that path.
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-metadata-writer
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-cache
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/default
+        {{- range .Values.profile_namespaces }}
+        - cluster.local/ns/{{ . }}/sa/default-editor
+        {{- end }}
   selector:
     matchLabels:
       component: metadata-grpc-server
@@ -31,24 +39,23 @@ metadata:
 spec:
   action: ALLOW
   rules:
+  # Scoped from the prior allow-all (platform-f2i). minio holds artifact-store creds.
+  # Callers: ml-pipeline + ml-pipeline-ui (serve/read artifacts); artifact-writing
+  # pipeline step pods AND the per-profile artifact proxy (ml-pipeline-ui-artifact)
+  # -> default-editor in each profile namespace (ztunnel-confirmed live:
+  # src=ns/kubeflow-admin/sa/default-editor); persistenceagent / visualizationserver
+  # / cache read artifacts as needed.
   - from:
     - source:
         principals:
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline
-  - from:
-    - source:
-        principals:
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-ui
-  # Allow-all (justified for now). minio holds artifact-store credentials, so
-  # this is the highest-value policy to scope. The catch-all currently makes
-  # the ml-pipeline / ml-pipeline-ui rules above redundant; it exists for the
-  # artifact-writing pipeline step pods, whose ServiceAccount is exactly the
-  # open decision in platform-02x (default-editor vs pipeline-runner vs
-  # multi-user). Cannot be safely scoped until platform-02x is resolved and a
-  # live run confirms the step-pod principal — wrong scoping breaks artifact
-  # writes mid-run. Once known, replace this with the step-pod SA (plus
-  # persistenceagent / visualizationserver / cache as needed).
-  - {}
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-persistenceagent
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-visualizationserver
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-cache
+        {{- range .Values.profile_namespaces }}
+        - cluster.local/ns/{{ . }}/sa/default-editor
+        {{- end }}
   selector:
     matchLabels:
       app: minio
