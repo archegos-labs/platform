@@ -1,6 +1,6 @@
 namespace: kubeflow
 
-image_tag: v2.0.0-rc.1
+image_tag: v2.0.0
 kfam_image: ghcr.io/kubeflow/dashboard/access-management
 controller_image: ghcr.io/kubeflow/dashboard/profile-controller
 

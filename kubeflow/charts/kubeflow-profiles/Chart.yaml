@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: v2.0.0-rc.1
+appVersion: v2.0.0
 description: Kubeflow Profile controller and KFAM (access management) API
 name: kubeflow-profiles
 type: application
