@@ -1,5 +1,27 @@
 locals {
   app_domain = "grafana.admin.${var.root_domain}"
+
+  # The monitoring stack and its CRDs are two separate Helm releases (CRDs split out so Helm can
+  # upgrade them — see helm_release.prometheus_operator_crds). Their schemas must match, so BUMP
+  # BOTH TOGETHER on every upgrade. The CRD chart's appVersion is the operator version the stack
+  # bundles; verify with `helm search repo prometheus-community/<chart> --versions`.
+  #   kube-prometheus-stack 87.2.1  (operator v0.92.0)  <->  prometheus-operator-crds 30.0.0
+  kube_prometheus_stack_version    = "87.2.1"
+  prometheus_operator_crds_version = "30.0.0"
+}
+
+# Prometheus Operator CRDs — managed as a dedicated release so Helm can UPGRADE them on version
+# bumps. kube-prometheus-stack ships its CRDs in a `crds/` dir that Helm only installs on a fresh
+# install and never updates on upgrade; this chart templates them instead, so the stack sets
+# crds.enabled=false and depends on this release. Version is pinned in lockstep via locals above.
+resource "helm_release" "prometheus_operator_crds" {
+  name             = "prometheus-operator-crds"
+  description      = "Prometheus Operator CRDs (managed separately so Helm can upgrade them)"
+  chart            = "prometheus-operator-crds"
+  namespace        = var.prometheus_namespace
+  create_namespace = true
+  repository       = "https://prometheus-community.github.io/helm-charts"
+  version          = local.prometheus_operator_crds_version
 }
 
 resource "helm_release" "prometheus" {
@@ -9,7 +31,7 @@ resource "helm_release" "prometheus" {
   namespace        = var.prometheus_namespace
   create_namespace = true
   repository       = "https://prometheus-community.github.io/helm-charts"
-  version          = "87.2.1"
+  version          = local.kube_prometheus_stack_version
 
   atomic        = true
   recreate_pods = true
@@ -17,6 +39,10 @@ resource "helm_release" "prometheus" {
   cleanup_on_fail = true
   values = [
     yamlencode({
+      # CRDs are owned by helm_release.prometheus_operator_crds so Helm can upgrade them.
+      crds = {
+        enabled = false
+      }
       alertmanager = {
         enabled = false
       }
@@ -60,17 +86,20 @@ resource "helm_release" "prometheus" {
       }
     })
   ]
+
+  depends_on = [helm_release.prometheus_operator_crds]
 }
 
 # Metrics Service + ServiceMonitor for the AWS LB Controller. Lives here (not in the
-# awslb-controller addon) because the addon applies before the Prometheus Operator CRDs
-# exist; depends_on the stack so monitoring.coreos.com/v1 is available at apply time.
+# awslb-controller addon) because the addon applies before the Prometheus Operator CRDs exist.
+# depends_on the CRD release so monitoring.coreos.com/v1 (ServiceMonitor) is available at apply
+# time, and on the stack so it scrapes into a running Prometheus.
 resource "helm_release" "lb_controller_monitor" {
   name      = "lb-controller-monitor"
   chart     = "../charts/lb-controller-monitor"
   namespace = var.prometheus_namespace
 
-  depends_on = [helm_release.prometheus]
+  depends_on = [helm_release.prometheus_operator_crds, helm_release.prometheus]
 }
 
 module "acm" {
