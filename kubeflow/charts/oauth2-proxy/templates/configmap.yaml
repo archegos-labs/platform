@@ -34,6 +34,13 @@ data:
 
     http_address = "0.0.0.0:4180"
     real_client_ip_header = "X-Forwarded-For"
+    {{- if .Values.trusted_proxy_ips }}
+    # Only these sources are trusted to set X-Forwarded-* (prevents header spoofing under
+    # reverse_proxy). Set to the VPC CIDR so the in-cluster ingress gateway is trusted while
+    # the real client IP is still read from X-Forwarded-For; layered on the AuthorizationPolicy
+    # that already restricts callers to the ingress-gateway SA.
+    trusted_proxy_ips = [{{ range $i, $cidr := .Values.trusted_proxy_ips }}{{ if $i }}, {{ end }}"{{ $cidr }}"{{ end }}]
+    {{- end }}
 
     skip_auth_routes = [
       "^/healthcheck$",

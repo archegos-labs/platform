@@ -292,6 +292,11 @@ resource "helm_release" "oauth2_proxy" {
         dex_service = var.dex_internal_url
       }
       cookie_secret = random_password.oauth2_proxy_cookie.result
+      # Trust only the VPC CIDR (the in-cluster ingress gateway, whose pod IP is the peer under
+      # ambient) plus loopback (the local proxy hop if a sidecar is ever injected) to set
+      # X-Forwarded-* headers, instead of the trust-all default. Layers on the
+      # ingress-gateway-only AuthorizationPolicy.
+      trusted_proxy_ips = [var.vpc_cidr_block, "127.0.0.0/8"]
     })
   ]
 }
