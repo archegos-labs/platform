@@ -15,7 +15,6 @@ spec:
       labels:
         app: oauth2-proxy
       annotations:
-        sidecar.istio.io/inject: "true"
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: oauth2-proxy
