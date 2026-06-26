@@ -6,8 +6,21 @@ controller_image: ghcr.io/kubeflow/dashboard/profile-controller
 
 userid_header: kubeflow-userid
 userid_prefix: ""
+
+# Cluster super-admin user (profile-controller/KFAM ADMIN config — grants access to all
+# profiles). Distinct from per-profile owners below; typically the same as the admin
+# profile's owner.
 admin_email: ""
-admin_profile_namespace: kubeflow-admin
+
+# Profiles to provision. Each entry yields: a Profile CR, a pre-created namespace
+# (ambient + use-waypoint labels + an `owner` annotation so the profile-controller
+# adopts it instead of hardcoding istio-injection on create), a "waypoint" Gateway,
+# and an ns-owner-access-waypoint AuthorizationPolicy enforcing owner isolation at the
+# waypoint. Keep in sync with the pipelines chart's profile_namespaces — terraform
+# drives both from one local.profiles list (platform-lyl).
+profiles:
+- namespace: kubeflow-admin
+  owner: ""
 
 ingress:
   namespace: ingress
