@@ -35,11 +35,17 @@ data:
         # honor AWS_REGION from the env rather than hardcoding a placeholder. Creds
         # come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (the SeaweedFS admin
         # credential) in the env.
+        # Fail fast if AWS_ENDPOINT_URL is unset: without it botocore would target
+        # the real AWS IAM endpoint, and with cluster AWS creds available (node
+        # instance profile / IRSA) a misconfig could mint users/keys/policies in the
+        # real account. The Deployment always sets it.
         region = os.environ.get("AWS_REGION", "us-east-1")
         endpoint_url = os.environ.get("AWS_ENDPOINT_URL")
-        if endpoint_url:
-            return session.create_client('iam', region_name=region, endpoint_url=endpoint_url)
-        return session.create_client('iam', region_name=region)
+        if not endpoint_url:
+            raise RuntimeError(
+                "AWS_ENDPOINT_URL must point to the in-cluster SeaweedFS IAM endpoint; "
+                "refusing to fall back to the real AWS IAM API")
+        return session.create_client('iam', region_name=region, endpoint_url=endpoint_url)
 
 
     iam = create_iam_client()

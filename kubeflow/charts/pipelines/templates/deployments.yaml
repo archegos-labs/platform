@@ -400,13 +400,13 @@ spec:
               - /bin/sh
               - -c
               - |
-                # Wait up to 120 seconds  for SeaweedFS master to be ready
+                # Wait up to 120 seconds for the SeaweedFS S3 endpoint to be ready
                 for i in $(seq 1 60); do
                   if wget -q --spider http://127.0.0.1:8333/status; then
                     break
                   fi
                   if [ "$i" -eq 60 ]; then
-                    echo "ERROR: SeaweedFS master did not become ready within 120 seconds"
+                    echo "ERROR: SeaweedFS S3 endpoint did not become ready within 120 seconds"
                     exit 1
                   fi
                   sleep 2
