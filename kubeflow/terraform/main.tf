@@ -294,7 +294,7 @@ resource "helm_release" "kubeflow_profiles" {
   values = [
     yamlencode({
       namespace               = kubernetes_namespace.kubeflow.metadata[0].name
-      image_tag               = "v2.0.0-rc.1"
+      image_tag               = "v2.0.0"
       admin_email             = var.admin_email
       admin_profile_namespace = local.admin_profile_namespace
       userid_header           = "X-Forwarded-Email"
@@ -318,7 +318,7 @@ resource "helm_release" "kubeflow_dashboard" {
       namespace = kubernetes_namespace.kubeflow.metadata[0].name
       image = {
         repository = "ghcr.io/kubeflow/dashboard/dashboard"
-        tag        = "v2.0.0-rc.1"
+        tag        = "v2.0.0"
       }
       userid_header     = "X-Forwarded-Email"
       registration_flow = "false"
