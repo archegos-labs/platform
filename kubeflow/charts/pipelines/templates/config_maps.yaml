@@ -21,6 +21,36 @@ data:
     import os
     import base64
 
+    # From awscli installed in the alpine/k8s image.
+    import botocore.session
+
+    S3_BUCKET_NAME = 'mlpipeline'
+
+    session = botocore.session.get_session()
+
+
+    def create_iam_client():
+        # Talks to the SeaweedFS IAM API to manage per-namespace S3 users.
+        # Region is irrelevant to SeaweedFS (it only seeds SigV4 signing), so we
+        # honor AWS_REGION from the env rather than hardcoding a placeholder. Creds
+        # come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (the SeaweedFS admin
+        # credential) in the env.
+        # Fail fast if AWS_ENDPOINT_URL is unset: without it botocore would target
+        # the real AWS IAM endpoint, and with cluster AWS creds available (node
+        # instance profile / IRSA) a misconfig could mint users/keys/policies in the
+        # real account. The Deployment always sets it.
+        region = os.environ.get("AWS_REGION", "us-east-1")
+        endpoint_url = os.environ.get("AWS_ENDPOINT_URL")
+        if not endpoint_url:
+            raise RuntimeError(
+                "AWS_ENDPOINT_URL must point to the in-cluster SeaweedFS IAM endpoint; "
+                "refusing to fall back to the real AWS IAM API")
+        return session.create_client('iam', region_name=region, endpoint_url=endpoint_url)
+
+
+    iam = create_iam_client()
+
+
     def main():
         settings = get_settings_from_env()
         server = server_factory(**settings)
@@ -30,7 +60,8 @@ data:
     def get_settings_from_env(controller_port=None,
                               visualization_server_image=None, frontend_image=None,
                               visualization_server_tag=None, frontend_tag=None, disable_istio_sidecar=None,
-                              minio_access_key=None, minio_secret_key=None, kfp_default_pipeline_root=None):
+                              kfp_default_pipeline_root=None,
+                              object_store_endpoint=None, kubeflow_namespace=None):
         """
         Returns a dict of settings from environment variables relevant to the controller
 
@@ -44,8 +75,6 @@ data:
             frontend_image: ghcr.io/kubeflow/kfp-frontend
             frontend_tag: value of KFP_VERSION environment variable
             disable_istio_sidecar: Required (no default)
-            minio_access_key: Required (no default)
-            minio_secret_key: Required (no default)
         """
         settings = dict()
         settings["controller_port"] = \
@@ -77,26 +106,29 @@ data:
             disable_istio_sidecar if disable_istio_sidecar is not None \
                 else os.environ.get("DISABLE_ISTIO_SIDECAR") == "true"
 
-        settings["minio_access_key"] = \
-            minio_access_key or \
-            base64.b64encode(bytes(os.environ.get("MINIO_ACCESS_KEY"), 'utf-8')).decode('utf-8')
-
-        settings["minio_secret_key"] = \
-            minio_secret_key or \
-            base64.b64encode(bytes(os.environ.get("MINIO_SECRET_KEY"), 'utf-8')).decode('utf-8')
-
         # KFP_DEFAULT_PIPELINE_ROOT is optional
         settings["kfp_default_pipeline_root"] = \
             kfp_default_pipeline_root or \
             os.environ.get("KFP_DEFAULT_PIPELINE_ROOT")
+
+        # Object-store endpoint + central namespace are provided via env so the
+        # per-namespace configmaps below aren't hardcoded at chart-render time.
+        settings["object_store_endpoint"] = \
+            object_store_endpoint or \
+            os.environ.get("OBJECT_STORE_ENDPOINT", "seaweedfs:9000")
+
+        settings["kubeflow_namespace"] = \
+            kubeflow_namespace or \
+            os.environ.get("KUBEFLOW_NAMESPACE", "kubeflow")
 
         return settings
 
 
     def server_factory(visualization_server_image,
                       visualization_server_tag, frontend_image, frontend_tag,
-                      disable_istio_sidecar, minio_access_key,
-                      minio_secret_key, kfp_default_pipeline_root=None,
+                      disable_istio_sidecar, kfp_default_pipeline_root=None,
+                      object_store_endpoint="seaweedfs:9000",
+                      kubeflow_namespace="kubeflow",
                       url="", controller_port=8080):
         """
         Returns an HTTPServer populated with Handler with customized settings
@@ -112,10 +144,10 @@ data:
                 if pipeline_enabled != "true":
                     return {"status": {}, "attachments": []}
 
-                desired_configmap_count = 1
+                # metadata-grpc-configmap and artifact-repositories are always created;
+                # the kfp-launcher configmap is added when a default pipeline root is set.
                 desired_resources = []
                 if kfp_default_pipeline_root:
-                    desired_configmap_count = 2
                     desired_resources += [{
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
@@ -124,16 +156,24 @@ data:
                             "namespace": namespace,
                         },
                         "data": {
-                            "defaultPipelineRoot": kfp_default_pipeline_root,
-                            # KFP 2.16.1 defaults the minio:// endpoint to
-                            # seaweedfs.kubeflow:9000; this deployment keeps
-                            # standalone MinIO, so the per-namespace launcher
-                            # needs the same providers override as the central
-                            # kfp-launcher configmap.
+                            # Isolate each profile's v2 artifacts under a per-namespace
+                            # prefix; the per-namespace IAM policy (below) only grants
+                            # access to private-artifacts/{namespace}/*.
+                            # NOTE: KFP_DEFAULT_PIPELINE_ROOT only gates whether multi-user
+                            # provisioning runs (see the `if` above); its value is
+                            # intentionally NOT used verbatim here. The bucket is fixed to
+                            # mlpipeline (created in seaweedfs postStart, scoped by every IAM
+                            # policy), and the path must stay under private-artifacts/{ns}/ to
+                            # match the grant — honoring an arbitrary root would break both.
+                            "defaultPipelineRoot": f"minio://{S3_BUCKET_NAME}/private-artifacts/{namespace}/v2/artifacts",
+                            # The minio:// scheme is the KFP provider name; it resolves
+                            # through this providers block, which points at SeaweedFS's
+                            # S3 endpoint with the per-namespace credentials provisioned
+                            # by this controller.
                             "providers": (
                                 "minio:\n"
                                 "  default:\n"
-                                "    endpoint: minio-service.{{ .Values.kubeflow.namespace }}:9000\n"
+                                "    endpoint: " + object_store_endpoint + "\n"
                                 "    disableSSL: true\n"
                                 "    region: minio\n"
                                 "    forcePathStyle: true\n"
@@ -148,18 +188,6 @@ data:
                     }]
 
 
-                # Compute status based on observed state.
-                desired_status = {
-                    "kubeflow-pipelines-ready":
-                        len(attachments["Secret.v1"]) == 1 and
-                        len(attachments["ConfigMap.v1"]) == desired_configmap_count and
-                        len(attachments["Deployment.apps/v1"]) == 2 and
-                        len(attachments["Service.v1"]) == 2 and
-                        len(attachments["DestinationRule.networking.istio.io/v1alpha3"]) == 1 and
-                        len(attachments["AuthorizationPolicy.security.istio.io/v1beta1"]) == 1 and
-                        "True" or "False"
-                }
-
                 # Generate the desired child object(s).
                 desired_resources += [
                     {
@@ -171,9 +199,45 @@ data:
                         },
                         "data": {
                             "METADATA_GRPC_SERVICE_HOST":
-                                "metadata-grpc-service.{{ .Values.kubeflow.namespace }}",
+                                "metadata-grpc-service." + kubeflow_namespace,
                             "METADATA_GRPC_SERVICE_PORT": "8080",
                         },
+                    },
+                    # Per-namespace Argo artifact repository. The annotation makes Argo
+                    # use this (default-namespaced) over the controller-level default,
+                    # archiving each profile's workflow artifacts under a private prefix
+                    # using that namespace's SeaweedFS credentials. The {{`{{...}}`}}
+                    # sequences are helm-escaped so the literal Argo placeholders survive
+                    # into the rendered sync.py.
+                    {
+                        "apiVersion": "v1",
+                        "kind": "ConfigMap",
+                        "metadata": {
+                            "name": "artifact-repositories",
+                            "namespace": namespace,
+                            "annotations": {
+                                "workflows.argoproj.io/default-artifact-repository": "default-namespaced"
+                            }
+                        },
+                        "data": {
+                            "default-namespaced": json.dumps({
+                                "archiveLogs": True,
+                                "s3": {
+                                    "endpoint": object_store_endpoint,
+                                    "bucket": S3_BUCKET_NAME,
+                                    "keyFormat": "private-artifacts/" + namespace + "/{{`{{workflow.name}}`}}/{{`{{workflow.creationTimestamp.Y}}`}}/{{`{{workflow.creationTimestamp.m}}`}}/{{`{{workflow.creationTimestamp.d}}`}}/{{`{{pod.name}}`}}",
+                                    "insecure": True,
+                                    "accessKeySecret": {
+                                        "name": "mlpipeline-minio-artifact",
+                                        "key": "accesskey",
+                                    },
+                                    "secretKeySecret": {
+                                        "name": "mlpipeline-minio-artifact",
+                                        "key": "secretkey",
+                                    }
+                                }
+                            })
+                        }
                     },
                     # Visualization server related manifests below
                     {
@@ -397,18 +461,88 @@ data:
                 print('Received request:\n', json.dumps(parent, sort_keys=True))
                 print('Desired resources except secrets:\n', json.dumps(desired_resources, sort_keys=True))
                 # Moved after the print argument because this is sensitive data.
-                desired_resources.append({
-                    "apiVersion": "v1",
-                    "kind": "Secret",
-                    "metadata": {
-                        "name": "mlpipeline-minio-artifact",
-                        "namespace": namespace,
-                    },
-                    "data": {
-                        "accesskey": minio_access_key,
-                        "secretkey": minio_secret_key,
-                    },
-                })
+
+                # Reuse the namespace's artifact secret if this controller already
+                # created it; otherwise provision a new SeaweedFS access key plus a
+                # policy that confines the namespace to its own artifact prefixes
+                # (and the shared ones). Replaces the old static-credential copy.
+                if s3_secret := attachments["Secret.v1"].get(f"{namespace}/mlpipeline-minio-artifact"):
+                    desired_resources.append(s3_secret)
+                    print('Using existing secret')
+                else:
+                    print('Provisioning SeaweedFS credentials.')
+                    # The K8s Secret is the source of truth for the namespace's live
+                    # key. If it's gone but the SeaweedFS identity still has keys (e.g.
+                    # the secret was deleted or lost), prune them first — create_access_key
+                    # appends rather than replaces, so without this old keys accumulate as
+                    # orphaned-but-valid credentials that can never be revoked.
+                    try:
+                        existing = iam.list_access_keys(UserName=namespace)
+                        for key_meta in existing.get("AccessKeyMetadata", []):
+                            iam.delete_access_key(
+                                UserName=namespace,
+                                AccessKeyId=key_meta["AccessKeyId"])
+                    except Exception as exc:
+                        # The user may not exist yet on first provision; create_access_key
+                        # creates it. Pruning is best-effort.
+                        print(f'No existing access keys to prune for {namespace}: {exc}')
+                    s3_access_key = iam.create_access_key(UserName=namespace)
+                    iam.put_user_policy(
+                        UserName=namespace,
+                        PolicyName=f"KubeflowProject{namespace}",
+                        PolicyDocument=json.dumps(
+                            {
+                                "Version": "2012-10-17",
+                                "Statement": [{
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:Put*",
+                                        "s3:Get*",
+                                        "s3:List*"
+                                    ],
+                                    # SeaweedFS authorizes List against the request *prefix*
+                                    # (s3api authRequest sets object=prefix for ACTION_LIST),
+                                    # so these object-prefix ARNs already permit listing within
+                                    # the namespace's prefixes. The bucket ARN (arn:aws:s3:::bucket)
+                                    # is intentionally omitted: adding it would grant listing the
+                                    # whole bucket (all namespaces), and SeaweedFS ignores the
+                                    # s3:prefix Condition AWS would use to scope it.
+                                    "Resource": [
+                                        f"arn:aws:s3:::{S3_BUCKET_NAME}/artifacts/*",
+                                        f"arn:aws:s3:::{S3_BUCKET_NAME}/private-artifacts/{namespace}/*",
+                                        f"arn:aws:s3:::{S3_BUCKET_NAME}/private/{namespace}/*",
+                                        f"arn:aws:s3:::{S3_BUCKET_NAME}/shared/*",
+                                    ]
+                                }]
+                            })
+                    )
+                    desired_resources.append({
+                        "apiVersion": "v1",
+                        "kind": "Secret",
+                        "metadata": {
+                            "name": "mlpipeline-minio-artifact",
+                            "namespace": namespace,
+                        },
+                        "data": {
+                            "accesskey": base64.b64encode(s3_access_key["AccessKey"]["AccessKeyId"].encode('utf-8')).decode("utf-8"),
+                            "secretkey": base64.b64encode(s3_access_key["AccessKey"]["SecretAccessKey"].encode('utf-8')).decode("utf-8"),
+                        },
+                    })
+
+                # Readiness: every kind we declare must be observed back as an
+                # attachment in the expected count. Derived from desired_resources so
+                # adding/removing a child can't desync a hand-maintained counter.
+                desired_counts = {}
+                for resource in desired_resources:
+                    key = f'{resource["kind"]}.{resource["apiVersion"]}'
+                    desired_counts[key] = desired_counts.get(key, 0) + 1
+                ready = all(
+                    len(attachments.get(key, {})) == count
+                    for key, count in desired_counts.items()
+                )
+                desired_status = {
+                    "kubeflow-pipelines-ready": "True" if ready else "False"
+                }
 
                 return {"status": desired_status, "attachments": desired_resources}
 
@@ -578,7 +712,7 @@ data:
   artifactRepository: |
     archiveLogs: true
     s3:
-      endpoint: "minio-service.{{ .Values.kubeflow.namespace }}:9000"
+      endpoint: "{{ include "kubeflow-pipelines.s3Endpoint" . }}"
       bucket: "mlpipeline"
       # keyFormat is a format pattern to define how artifacts will be organized in a bucket.
       # It can reference workflow metadata variables such as workflow.namespace, workflow.name,
@@ -610,12 +744,13 @@ metadata:
 apiVersion: v1
 data:
   defaultPipelineRoot: "minio://mlpipeline/v2/artifacts"
-  # KFP 2.16.1 defaults the minio:// object-store endpoint to seaweedfs.kubeflow:9000.
-  # This deployment keeps standalone MinIO, so point the launcher at minio-service.
+  # The minio:// scheme is the KFP provider name, not the backend: it resolves
+  # through the providers block below, which now points at SeaweedFS's
+  # S3-compatible endpoint (service port 9000 -> SeaweedFS :8333).
   providers: |
     minio:
       default:
-        endpoint: minio-service.{{ .Values.kubeflow.namespace }}:9000
+        endpoint: {{ include "kubeflow-pipelines.s3Endpoint" . }}
         disableSSL: true
         region: minio
         forcePathStyle: true

@@ -66,6 +66,11 @@ resource "helm_release" "kubeflow_roles" {
   depends_on = [kubernetes_namespace.kubeflow]
 }
 
+# Artifact-store admin credential. Despite the minio_* names (kept to avoid churning
+# the helm values/secret keys), these now seed the SeaweedFS admin user: the chart's
+# mlpipeline-minio-artifact secret is consumed by the SeaweedFS postStart bootstrap
+# (s3.configure kubeflow-admin) and by the profile-controller's IAM client, which
+# mints per-namespace credentials. Not vestigial — required by the SeaweedFS backend.
 resource "random_password" "minio_access_key" {
   length  = 16
   special = false
@@ -219,7 +224,7 @@ resource "helm_release" "kubeflow_trainer" {
 resource "helm_release" "kubeflow_pipelines" {
   name      = "kubeflow-pipelines"
   chart     = "../charts/pipelines"
-  version   = "1.1.9"
+  version   = "1.2.4"
   namespace = kubernetes_namespace.kubeflow.metadata[0].name
 
   timeout       = 600

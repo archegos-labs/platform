@@ -31,10 +31,10 @@ kind: DestinationRule
 metadata:
   labels:
     application-crd-id: kubeflow-pipelines
-  name: ml-pipeline-minio
+  name: ml-pipeline-seaweedfs
   namespace: {{ .Values.kubeflow.namespace }}
 spec:
-  host: minio-service.{{ .Values.kubeflow.namespace }}.svc.cluster.local
+  host: seaweedfs.{{ .Values.kubeflow.namespace }}.svc.cluster.local
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL
