@@ -176,7 +176,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kubeflow-pipelines-profile-controller-env
-        image: python:3.9
+        image: docker.io/alpine/k8s:1.32.3
         name: profile-controller
         ports:
         - containerPort: 8080
