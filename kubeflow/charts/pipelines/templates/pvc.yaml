@@ -16,7 +16,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: minio-pvc
+  name: seaweedfs-pvc
   namespace: {{ .Values.kubeflow.namespace }}
   labels:
     application-crd-id: kubeflow-pipelines

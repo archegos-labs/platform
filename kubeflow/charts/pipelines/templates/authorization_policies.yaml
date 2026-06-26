@@ -34,17 +34,20 @@ kind: AuthorizationPolicy
 metadata:
   labels:
     application-crd-id: kubeflow-pipelines
-  name: minio-service
+  name: seaweedfs
   namespace: {{ .Values.kubeflow.namespace }}
 spec:
   action: ALLOW
   rules:
-  # Scoped from the prior allow-all (platform-f2i). minio holds artifact-store creds.
+  # Scoped from the prior allow-all (platform-f2i). seaweedfs is the artifact store
+  # (S3 :8333/:9000) and IAM (:8111). Single-pod setup, so S3 clients only ever hit
+  # the service ports (no cross-pod volume redirect to authorize) — we keep the
+  # scoped-principal model instead of upstream's open `- {}` rule + NetworkPolicy.
   # Callers: ml-pipeline + ml-pipeline-ui (serve/read artifacts); artifact-writing
   # pipeline step pods AND the per-profile artifact proxy (ml-pipeline-ui-artifact)
-  # -> default-editor in each profile namespace (ztunnel-confirmed live:
-  # src=ns/kubeflow-admin/sa/default-editor); persistenceagent / visualizationserver
-  # / cache read artifacts as needed.
+  # -> default-editor in each profile namespace; persistenceagent / visualizationserver
+  # / cache read artifacts as needed; profile-controller calls the IAM API to
+  # provision per-namespace credentials.
   - from:
     - source:
         principals:
@@ -53,12 +56,13 @@ spec:
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-persistenceagent
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline-visualizationserver
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-cache
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-profile-controller
         {{- range .Values.profile_namespaces }}
         - cluster.local/ns/{{ . }}/sa/default-editor
         {{- end }}
   selector:
     matchLabels:
-      app: minio
+      app: seaweedfs
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
