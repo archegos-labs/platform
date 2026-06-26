@@ -1,10 +1,14 @@
 locals {
   dashboard_host = "dashboard.admin.${var.root_domain}"
-  # Single source of truth for the admin profile namespace. Used by the profiles
-  # release (Profile/namespace name) and the pipelines release (profile_namespaces,
-  # which scopes the ml-pipeline AuthorizationPolicy to that namespace's
-  # default-editor). Keep these in sync via this local.
-  admin_profile_namespace = "kubeflow-admin"
+  # Single source of truth for provisioned profiles. Drives the kubeflow-profiles release
+  # (one Profile CR + pre-created namespace + waypoint Gateway + ns-owner-access-waypoint
+  # policy per entry) AND the pipelines release (profile_namespaces, which scopes the
+  # ml-pipeline / minio / metadata-grpc AuthorizationPolicies to each namespace's
+  # default-editor — ztunnel needs exact principals, no wildcards). Add a profile by
+  # appending { namespace, owner } here (platform-lyl).
+  profiles = [
+    { namespace = "kubeflow-admin", owner = var.admin_email },
+  ]
 }
 
 resource "kubernetes_namespace" "kubeflow" {
@@ -228,19 +232,24 @@ resource "helm_release" "kubeflow_pipelines" {
   wait_for_jobs = true
 
   values = [
-    <<-EOT
-      kubeflow:
-        namespace: "${kubernetes_namespace.kubeflow.metadata[0].name}"
-      ingress:
-        namespace: "ingress"
-        gateway: "ingress-gateway"
-        sa: "istio-ingressgateway"
-      minio:
-        access_key: "${random_password.minio_access_key.result}"
-        secret_key: "${random_password.minio_secret_key.result}"
-      profile_namespaces:
-      - "${local.admin_profile_namespace}"
-    EOT
+    yamlencode({
+      kubeflow = {
+        namespace = kubernetes_namespace.kubeflow.metadata[0].name
+      }
+      ingress = {
+        namespace = "ingress"
+        gateway   = "ingress-gateway"
+        sa        = "istio-ingressgateway"
+      }
+      minio = {
+        access_key = random_password.minio_access_key.result
+        secret_key = random_password.minio_secret_key.result
+      }
+      # Scopes the ml-pipeline / minio / metadata-grpc AuthorizationPolicies to each
+      # profile namespace's default-editor (driven from the same local.profiles list as
+      # the kubeflow-profiles release — single source of truth, platform-lyl).
+      profile_namespaces = [for p in local.profiles : p.namespace]
+    })
   ]
 
   depends_on = [helm_release.istio_ingress]
@@ -298,11 +307,11 @@ resource "helm_release" "kubeflow_profiles" {
 
   values = [
     yamlencode({
-      namespace               = kubernetes_namespace.kubeflow.metadata[0].name
-      image_tag               = "v2.0.0"
-      admin_email             = var.admin_email
-      admin_profile_namespace = local.admin_profile_namespace
-      userid_header           = "X-Forwarded-Email"
+      namespace     = kubernetes_namespace.kubeflow.metadata[0].name
+      image_tag     = "v2.0.0"
+      admin_email   = var.admin_email
+      profiles      = local.profiles
+      userid_header = "X-Forwarded-Email"
     })
   ]
 

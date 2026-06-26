@@ -1,0 +1,11 @@
+{{- range $profile := .Values.profiles }}
+---
+apiVersion: kubeflow.org/v1
+kind: Profile
+metadata:
+  name: {{ $profile.namespace }}
+spec:
+  owner:
+    kind: User
+    name: {{ required "each profiles[].owner must be set (matches the namespace owner annotation)" $profile.owner | quote }}
+{{- end }}
