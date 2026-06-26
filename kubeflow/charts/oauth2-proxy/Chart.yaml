@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: v7.6.0
+appVersion: v7.15.3
 description: oauth2-proxy as the OIDC reverse proxy and single entry point for Kubeflow
 name: oauth2-proxy
 type: application
-version: 1.0.3
+version: 1.0.4
