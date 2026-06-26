@@ -9,7 +9,7 @@ resource "helm_release" "prometheus" {
   namespace        = var.prometheus_namespace
   create_namespace = true
   repository       = "https://prometheus-community.github.io/helm-charts"
-  version          = "v76.4.0"
+  version          = "87.2.1"
 
   atomic        = true
   recreate_pods = true
