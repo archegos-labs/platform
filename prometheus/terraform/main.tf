@@ -14,6 +14,19 @@ locals {
 # bumps. kube-prometheus-stack ships its CRDs in a `crds/` dir that Helm only installs on a fresh
 # install and never updates on upgrade; this chart templates them instead, so the stack sets
 # crds.enabled=false and depends on this release. Version is pinned in lockstep via locals above.
+#
+# MIGRATION (existing clusters only): kube-prometheus-stack previously shipped these CRDs via its
+# bundled `crds/` dir, which leaves them with NO Helm ownership metadata. This release refuses to
+# adopt them ("invalid ownership metadata; missing key app.kubernetes.io/managed-by") until they
+# are labeled/annotated once, BEFORE the first apply:
+#   for c in alertmanagerconfigs alertmanagers podmonitors probes prometheusagents prometheuses \
+#            prometheusrules scrapeconfigs servicemonitors thanosrulers; do
+#     kubectl label    crd $c.monitoring.coreos.com app.kubernetes.io/managed-by=Helm --overwrite
+#     kubectl annotate crd $c.monitoring.coreos.com \
+#       meta.helm.sh/release-name=prometheus-operator-crds \
+#       meta.helm.sh/release-namespace=monitoring --overwrite
+#   done
+# Fresh installs need none of this (no pre-existing CRDs to adopt).
 resource "helm_release" "prometheus_operator_crds" {
   name             = "prometheus-operator-crds"
   description      = "Prometheus Operator CRDs (managed separately so Helm can upgrade them)"
