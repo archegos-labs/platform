@@ -210,6 +210,7 @@ spec:
         application-crd-id: kubeflow-pipelines
         component: metadata-envoy
     spec:
+      serviceAccountName: metadata-envoy
       containers:
       - args:
         - /etc/envoy/envoy-config.yaml

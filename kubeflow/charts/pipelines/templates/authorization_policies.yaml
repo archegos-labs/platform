@@ -9,22 +9,48 @@ metadata:
 spec:
   action: ALLOW
   rules:
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+  # Allow-all (justified for now). Callers: metadata-envoy (fronts the external
+  # gateway /ml_metadata route, runs sa=default), metadata-writer, ml-pipeline,
+  # and pipeline step pods that log lineage. Under ambient most of these are
+  # now captured and have identities, so this can eventually be scoped — but
+  # the step-pod identity is still undecided (platform-02x) and the external
+  # gateway path complicates it. Tighten once platform-02x lands and a live
+  # run confirms the caller principals.
+  - {}
+=======
+>>>>>>> Stashed changes
   # Scoped from the prior allow-all (platform-f2i). Callers:
   #  - pipeline step pods logging lineage -> default-editor in each profile namespace
   #    (ztunnel-confirmed live: src=ns/kubeflow-admin/sa/default-editor);
   #  - ml-pipeline (api-server), metadata-writer, kubeflow-pipelines-cache;
+<<<<<<< Updated upstream
   #  - metadata-envoy fronts the external /ml_metadata gateway route and runs as the
   #    kubeflow-ns default SA, so that SA is allowed for that path.
+=======
+  #  - metadata-envoy fronts the external /ml_metadata gateway route, via its own
+  #    dedicated metadata-envoy SA (not the namespace default — see PR #185 review).
+>>>>>>> Stashed changes
   - from:
     - source:
         principals:
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/ml-pipeline
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-metadata-writer
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/kubeflow-pipelines-cache
+<<<<<<< Updated upstream
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/default
         {{- range .Values.profile_namespaces }}
         - cluster.local/ns/{{ . }}/sa/default-editor
         {{- end }}
+=======
+        - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/metadata-envoy
+        {{- range .Values.profile_namespaces }}
+        - cluster.local/ns/{{ . }}/sa/default-editor
+        {{- end }}
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   selector:
     matchLabels:
       component: metadata-grpc-server

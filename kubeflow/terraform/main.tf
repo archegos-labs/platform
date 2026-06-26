@@ -215,7 +215,15 @@ resource "helm_release" "kubeflow_trainer" {
 resource "helm_release" "kubeflow_pipelines" {
   name      = "kubeflow-pipelines"
   chart     = "../charts/pipelines"
+<<<<<<< Updated upstream
   version   = "1.1.8"
+=======
+<<<<<<< Updated upstream
+  version   = "1.1.7"
+=======
+  version   = "1.1.9"
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   namespace = kubernetes_namespace.kubeflow.metadata[0].name
 
   timeout       = 600
