@@ -11,6 +11,11 @@ ingress:
 
 dashboard_host: ""
 
+# CIDRs trusted to set X-Forwarded-* headers (oauth2-proxy --trusted-proxy-ip). Empty = trust
+# all (the backwards-compatible default, which logs a startup warning under reverse_proxy).
+# Terraform sets this to the VPC CIDR so only the in-cluster ingress gateway is trusted.
+trusted_proxy_ips: []
+
 oidc:
   issuer_url: ""
   client_id: kubeflow-oidc-authservice
