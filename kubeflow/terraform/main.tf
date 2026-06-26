@@ -294,7 +294,7 @@ resource "helm_release" "kubeflow_profiles" {
   values = [
     yamlencode({
       namespace               = kubernetes_namespace.kubeflow.metadata[0].name
-      image_tag               = "v2.0.0-rc.1"
+      image_tag               = "v2.0.0"
       admin_email             = var.admin_email
       admin_profile_namespace = local.admin_profile_namespace
       userid_header           = "X-Forwarded-Email"
