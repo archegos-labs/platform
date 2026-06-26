@@ -318,7 +318,7 @@ resource "helm_release" "kubeflow_dashboard" {
       namespace = kubernetes_namespace.kubeflow.metadata[0].name
       image = {
         repository = "ghcr.io/kubeflow/dashboard/dashboard"
-        tag        = "v2.0.0-rc.1"
+        tag        = "v2.0.0"
       }
       userid_header     = "X-Forwarded-Email"
       registration_flow = "false"
