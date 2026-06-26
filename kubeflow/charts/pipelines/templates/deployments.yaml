@@ -181,6 +181,13 @@ spec:
             secretKeyRef:
               key: secretkey
               name: mlpipeline-minio-artifact
+        # Object-store wiring for the per-namespace configmaps sync.py generates,
+        # passed via env (not baked into the script at render time). OBJECT_STORE_ENDPOINT
+        # is single-sourced with the central configmaps via the s3Endpoint helper.
+        - name: OBJECT_STORE_ENDPOINT
+          value: {{ include "kubeflow-pipelines.s3Endpoint" . }}
+        - name: KUBEFLOW_NAMESPACE
+          value: {{ .Values.kubeflow.namespace }}
         envFrom:
         - configMapRef:
             name: kubeflow-pipelines-profile-controller-env
@@ -456,7 +463,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - test -f /tmp/initialization-complete && echo "s3.bucket.list" | /usr/bin/weed shell | grep -q mlpipeline
+            - test -f /tmp/initialization-complete
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 10

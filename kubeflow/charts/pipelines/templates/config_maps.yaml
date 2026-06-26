@@ -60,7 +60,8 @@ data:
     def get_settings_from_env(controller_port=None,
                               visualization_server_image=None, frontend_image=None,
                               visualization_server_tag=None, frontend_tag=None, disable_istio_sidecar=None,
-                              kfp_default_pipeline_root=None):
+                              kfp_default_pipeline_root=None,
+                              object_store_endpoint=None, kubeflow_namespace=None):
         """
         Returns a dict of settings from environment variables relevant to the controller
 
@@ -110,12 +111,24 @@ data:
             kfp_default_pipeline_root or \
             os.environ.get("KFP_DEFAULT_PIPELINE_ROOT")
 
+        # Object-store endpoint + central namespace are provided via env so the
+        # per-namespace configmaps below aren't hardcoded at chart-render time.
+        settings["object_store_endpoint"] = \
+            object_store_endpoint or \
+            os.environ.get("OBJECT_STORE_ENDPOINT", "seaweedfs:9000")
+
+        settings["kubeflow_namespace"] = \
+            kubeflow_namespace or \
+            os.environ.get("KUBEFLOW_NAMESPACE", "kubeflow")
+
         return settings
 
 
     def server_factory(visualization_server_image,
                       visualization_server_tag, frontend_image, frontend_tag,
                       disable_istio_sidecar, kfp_default_pipeline_root=None,
+                      object_store_endpoint="seaweedfs:9000",
+                      kubeflow_namespace="kubeflow",
                       url="", controller_port=8080):
         """
         Returns an HTTPServer populated with Handler with customized settings
@@ -131,13 +144,10 @@ data:
                 if pipeline_enabled != "true":
                     return {"status": {}, "attachments": []}
 
-                # Base per-namespace configmaps always created: metadata-grpc-configmap
-                # and artifact-repositories. The kfp-launcher configmap is added when a
-                # default pipeline root is configured.
-                desired_configmap_count = 2
+                # metadata-grpc-configmap and artifact-repositories are always created;
+                # the kfp-launcher configmap is added when a default pipeline root is set.
                 desired_resources = []
                 if kfp_default_pipeline_root:
-                    desired_configmap_count = 3
                     desired_resources += [{
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
@@ -157,7 +167,7 @@ data:
                             "providers": (
                                 "minio:\n"
                                 "  default:\n"
-                                "    endpoint: seaweedfs.{{ .Values.kubeflow.namespace }}:9000\n"
+                                "    endpoint: " + object_store_endpoint + "\n"
                                 "    disableSSL: true\n"
                                 "    region: minio\n"
                                 "    forcePathStyle: true\n"
@@ -172,18 +182,6 @@ data:
                     }]
 
 
-                # Compute status based on observed state.
-                desired_status = {
-                    "kubeflow-pipelines-ready":
-                        len(attachments["Secret.v1"]) == 1 and
-                        len(attachments["ConfigMap.v1"]) == desired_configmap_count and
-                        len(attachments["Deployment.apps/v1"]) == 2 and
-                        len(attachments["Service.v1"]) == 2 and
-                        len(attachments["DestinationRule.networking.istio.io/v1alpha3"]) == 1 and
-                        len(attachments["AuthorizationPolicy.security.istio.io/v1beta1"]) == 1 and
-                        "True" or "False"
-                }
-
                 # Generate the desired child object(s).
                 desired_resources += [
                     {
@@ -195,7 +193,7 @@ data:
                         },
                         "data": {
                             "METADATA_GRPC_SERVICE_HOST":
-                                "metadata-grpc-service.{{ .Values.kubeflow.namespace }}",
+                                "metadata-grpc-service." + kubeflow_namespace,
                             "METADATA_GRPC_SERVICE_PORT": "8080",
                         },
                     },
@@ -219,7 +217,7 @@ data:
                             "default-namespaced": json.dumps({
                                 "archiveLogs": True,
                                 "s3": {
-                                    "endpoint": "seaweedfs.{{ .Values.kubeflow.namespace }}:9000",
+                                    "endpoint": object_store_endpoint,
                                     "bucket": S3_BUCKET_NAME,
                                     "keyFormat": "private-artifacts/" + namespace + "/{{`{{workflow.name}}`}}/{{`{{workflow.creationTimestamp.Y}}`}}/{{`{{workflow.creationTimestamp.m}}`}}/{{`{{workflow.creationTimestamp.d}}`}}/{{`{{pod.name}}`}}",
                                     "insecure": True,
@@ -466,7 +464,22 @@ data:
                     desired_resources.append(s3_secret)
                     print('Using existing secret')
                 else:
-                    print('Creating new access key.')
+                    print('Provisioning SeaweedFS credentials.')
+                    # The K8s Secret is the source of truth for the namespace's live
+                    # key. If it's gone but the SeaweedFS identity still has keys (e.g.
+                    # the secret was deleted or lost), prune them first — create_access_key
+                    # appends rather than replaces, so without this old keys accumulate as
+                    # orphaned-but-valid credentials that can never be revoked.
+                    try:
+                        existing = iam.list_access_keys(UserName=namespace)
+                        for key_meta in existing.get("AccessKeyMetadata", []):
+                            iam.delete_access_key(
+                                UserName=namespace,
+                                AccessKeyId=key_meta["AccessKeyId"])
+                    except Exception as exc:
+                        # The user may not exist yet on first provision; create_access_key
+                        # creates it. Pruning is best-effort.
+                        print(f'No existing access keys to prune for {namespace}: {exc}')
                     s3_access_key = iam.create_access_key(UserName=namespace)
                     iam.put_user_policy(
                         UserName=namespace,
@@ -502,6 +515,21 @@ data:
                             "secretkey": base64.b64encode(s3_access_key["AccessKey"]["SecretAccessKey"].encode('utf-8')).decode("utf-8"),
                         },
                     })
+
+                # Readiness: every kind we declare must be observed back as an
+                # attachment in the expected count. Derived from desired_resources so
+                # adding/removing a child can't desync a hand-maintained counter.
+                desired_counts = {}
+                for resource in desired_resources:
+                    key = f'{resource["kind"]}.{resource["apiVersion"]}'
+                    desired_counts[key] = desired_counts.get(key, 0) + 1
+                ready = all(
+                    len(attachments.get(key, {})) == count
+                    for key, count in desired_counts.items()
+                )
+                desired_status = {
+                    "kubeflow-pipelines-ready": "True" if ready else "False"
+                }
 
                 return {"status": desired_status, "attachments": desired_resources}
 
@@ -671,7 +699,7 @@ data:
   artifactRepository: |
     archiveLogs: true
     s3:
-      endpoint: "seaweedfs.{{ .Values.kubeflow.namespace }}:9000"
+      endpoint: "{{ include "kubeflow-pipelines.s3Endpoint" . }}"
       bucket: "mlpipeline"
       # keyFormat is a format pattern to define how artifacts will be organized in a bucket.
       # It can reference workflow metadata variables such as workflow.namespace, workflow.name,
@@ -709,7 +737,7 @@ data:
   providers: |
     minio:
       default:
-        endpoint: seaweedfs.{{ .Values.kubeflow.namespace }}:9000
+        endpoint: {{ include "kubeflow-pipelines.s3Endpoint" . }}
         disableSSL: true
         region: minio
         forcePathStyle: true
