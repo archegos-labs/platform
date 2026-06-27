@@ -196,15 +196,15 @@ kind: Service
 metadata:
   labels:
     application-crd-id: kubeflow-pipelines
-  name: mysql
+  name: postgres
   namespace: {{ .Values.kubeflow.namespace }}
 spec:
   ports:
-  - port: 3306
+  - port: 5432
     protocol: TCP
-    targetPort: 3306
+    targetPort: 5432
   selector:
-    app: mysql
+    app: postgres
     application-crd-id: kubeflow-pipelines
 ---
 apiVersion: v1

@@ -64,7 +64,7 @@ spec:
               key: cacheNodeRestrictions
               name: pipeline-install-config
         - name: DBCONFIG_DRIVER
-          value: mysql
+          value: pgx
         - name: DBCONFIG_DB_NAME
           valueFrom:
             configMapKeyRef:
@@ -73,23 +73,23 @@ spec:
         - name: DBCONFIG_HOST_NAME
           valueFrom:
             configMapKeyRef:
-              key: dbHost
+              key: postgresHost
               name: pipeline-install-config
         - name: DBCONFIG_PORT
           valueFrom:
             configMapKeyRef:
-              key: dbPort
+              key: postgresPort
               name: pipeline-install-config
         - name: DBCONFIG_USER
           valueFrom:
             secretKeyRef:
               key: username
-              name: mysql-secret
+              name: postgres-secret
         - name: DBCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
               key: password
-              name: mysql-secret
+              name: postgres-secret
           # If you update WEBHOOK_PORT, also change the value of the
           # containerPort "webhook-api" to match.
         - name: WEBHOOK_PORT
@@ -284,11 +284,12 @@ spec:
       containers:
       - args:
         - --grpc_port=8080
-        - --mysql_config_database=$(MYSQL_DATABASE)
-        - --mysql_config_host=$(MYSQL_HOST)
-        - --mysql_config_port=$(MYSQL_PORT)
-        - --mysql_config_user=$(DBCONFIG_USER)
-        - --mysql_config_password=$(DBCONFIG_PASSWORD)
+        - --metadata_source_config_type=postgresql
+        - --postgres_config_dbname=$(POSTGRES_DATABASE)
+        - --postgres_config_host=$(POSTGRES_HOST)
+        - --postgres_config_port=$(POSTGRES_PORT)
+        - --postgres_config_user=$(DBCONFIG_USER)
+        - --postgres_config_password=$(DBCONFIG_PASSWORD)
         - --enable_database_upgrade=true
         command:
         - /bin/metadata_store_server
@@ -297,26 +298,26 @@ spec:
           valueFrom:
             secretKeyRef:
               key: username
-              name: mysql-secret
+              name: postgres-secret
         - name: DBCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
               key: password
-              name: mysql-secret
-        - name: MYSQL_DATABASE
+              name: postgres-secret
+        - name: POSTGRES_DATABASE
           valueFrom:
             configMapKeyRef:
               key: mlmdDb
               name: pipeline-install-config
-        - name: MYSQL_HOST
+        - name: POSTGRES_HOST
           valueFrom:
             configMapKeyRef:
-              key: dbHost
+              key: postgresHost
               name: pipeline-install-config
-        - name: MYSQL_PORT
+        - name: POSTGRES_PORT
           valueFrom:
             configMapKeyRef:
-              key: dbPort
+              key: postgresPort
               name: pipeline-install-config
         image: gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
         livenessProbe:
@@ -590,31 +591,6 @@ spec:
             configMapKeyRef:
               key: bucketName
               name: pipeline-install-config
-        - name: DBCONFIG_USER
-          valueFrom:
-            secretKeyRef:
-              key: username
-              name: mysql-secret
-        - name: DBCONFIG_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              key: password
-              name: mysql-secret
-        - name: DBCONFIG_DBNAME
-          valueFrom:
-            configMapKeyRef:
-              key: pipelineDb
-              name: pipeline-install-config
-        - name: DBCONFIG_HOST
-          valueFrom:
-            configMapKeyRef:
-              key: dbHost
-              name: pipeline-install-config
-        - name: DBCONFIG_PORT
-          valueFrom:
-            configMapKeyRef:
-              key: dbPort
-              name: pipeline-install-config
         - name: DBCONFIG_CONMAXLIFETIME
           valueFrom:
             configMapKeyRef:
@@ -625,33 +601,33 @@ spec:
             configMapKeyRef:
               name: pipeline-install-config
               key: dbType
-        # MySQL Config
-        - name: DBCONFIG_MYSQLCONFIG_USER
+        # Postgres Config
+        - name: DBCONFIG_POSTGRESQLCONFIG_USER
           valueFrom:
             secretKeyRef:
-              name: mysql-secret
+              name: postgres-secret
               key: username
-        - name: DBCONFIG_MYSQLCONFIG_PASSWORD
+        - name: DBCONFIG_POSTGRESQLCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mysql-secret
+              name: postgres-secret
               key: password
-        - name: DBCONFIG_MYSQLCONFIG_DBNAME
+        - name: DBCONFIG_POSTGRESQLCONFIG_DBNAME
           valueFrom:
             configMapKeyRef:
               name: pipeline-install-config
               key: pipelineDb
-        - name: DBCONFIG_MYSQLCONFIG_HOST
+        - name: DBCONFIG_POSTGRESQLCONFIG_HOST
           valueFrom:
             configMapKeyRef:
               name: pipeline-install-config
-              key: mysqlHost
-        - name: DBCONFIG_MYSQLCONFIG_PORT
+              key: postgresHost
+        - name: DBCONFIG_POSTGRESQLCONFIG_PORT
           valueFrom:
             configMapKeyRef:
               name: pipeline-install-config
-              key: mysqlPort
-        # end of MySQL Config
+              key: postgresPort
+        # end of Postgres Config
         - name: OBJECTSTORECONFIG_ACCESSKEY
           valueFrom:
             secretKeyRef:
@@ -1040,38 +1016,53 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: mysql
+    app: postgres
     application-crd-id: kubeflow-pipelines
-  name: mysql
+  name: postgres
   namespace: {{ .Values.kubeflow.namespace }}
 spec:
   selector:
     matchLabels:
-      app: mysql
+      app: postgres
       application-crd-id: kubeflow-pipelines
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: mysql
+        app: postgres
         application-crd-id: kubeflow-pipelines
     spec:
       containers:
-      - args:
-        - --datadir
-        - /var/lib/mysql
-        - --authentication-policy=mysql_native_password
-        - --mysql-native-password=ON
-        - --disable-log-bin
-        env:
-        - name: MYSQL_ALLOW_EMPTY_PASSWORD
-          value: 'true'
-        image: mysql:8.4
-        name: mysql
+      - env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: postgres-secret
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: postgres-secret
+        # Bootstrap DB; the per-component DBs (mlpipeline/metadb/cachedb) are created
+        # by the init script mounted at /docker-entrypoint-initdb.d.
+        - name: POSTGRES_DB
+          value: postgres
+        # Keep PGDATA in a subdir so the volume's lost+found does not block initdb.
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        image: postgres:14.7-alpine3.17
+        name: postgres
         ports:
-        - containerPort: 3306
-          name: mysql
+        - containerPort: 5432
+          name: postgres
+        readinessProbe:
+          exec:
+            command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "postgres"]
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
         resources:
           requests:
             cpu: 100m
@@ -1081,25 +1072,31 @@ spec:
           capabilities:
             drop:
             - ALL
-          runAsGroup: 999
+          runAsGroup: 70
           runAsNonRoot: true
-          runAsUser: 999
+          runAsUser: 70
           seccompProfile:
             type: RuntimeDefault
         volumeMounts:
-        - mountPath: /var/lib/mysql
-          name: mysql-persistent-storage
+        - mountPath: /var/lib/postgresql/data
+          name: postgres-persistent-storage
+        - mountPath: /docker-entrypoint-initdb.d
+          name: postgres-init
+          readOnly: true
       securityContext:
-        fsGroup: 999
+        fsGroup: 70
         fsGroupChangePolicy: OnRootMismatch
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
-      serviceAccountName: mysql
+      serviceAccountName: postgres
       volumes:
-      - name: mysql-persistent-storage
+      - name: postgres-persistent-storage
         persistentVolumeClaim:
-          claimName: mysql-pv-claim-v2
+          claimName: postgres-pvc
+      - name: postgres-init
+        configMap:
+          name: postgres-init
 ---
 apiVersion: apps/v1
 kind: Deployment
