@@ -1,0 +1,3 @@
+# No configurable values. Monitors and dashboard ConfigMaps derive their namespace from the Helm
+# release namespace (.Release.Namespace), set by the prometheus Terraform module. The dashboard
+# JSON is vendored under dashboards/ and templated via .Files.Glob.

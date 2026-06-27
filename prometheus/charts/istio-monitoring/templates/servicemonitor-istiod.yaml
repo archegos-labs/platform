@@ -1,0 +1,21 @@
+# Control-plane metrics: scrape istiod's monitoring endpoint (15014). The istiod Service in
+# istio-system exposes the http-monitoring port.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: istiod-monitor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    # kube-prometheus-stack's Prometheus selects ServiceMonitors labeled release=<release name>.
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - istio-system
+  selector:
+    matchLabels:
+      app: istiod
+  endpoints:
+    - port: http-monitoring
+      path: /metrics
+      interval: 15s

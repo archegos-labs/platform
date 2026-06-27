@@ -1,0 +1,5 @@
+apiVersion: v2
+name: istio-monitoring
+description: Istio mesh observability for kube-prometheus-stack — ServiceMonitor/PodMonitors that scrape istiod, ztunnel, and Envoy gateways/waypoints, plus the upstream Istio Grafana dashboards. Deployed on the Prometheus side so the monitoring.coreos.com CRDs exist first.
+type: application
+version: 0.1.0
