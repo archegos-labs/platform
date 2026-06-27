@@ -31,7 +31,7 @@ jobs:
   validate:
     name: Infra - Validate & Plan
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # avoid using gitHub runners time
+    timeout-minutes: 10 # avoid using GitHub runners time
     defaults:
       run:
         shell: bash
@@ -124,7 +124,7 @@ jobs:
   security-scan:
     name: Trivy IaC Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # avoid using gitHub runners time
+    timeout-minutes: 10 # avoid using GitHub runners time
     permissions:
       contents: read         # allow read repository's content by steps
       security-events: write # upload SARIF to the code-scanning dashboard
