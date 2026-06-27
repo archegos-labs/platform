@@ -1,0 +1,81 @@
+name: Charts - Helm Validate
+
+# Renders every chart under kubeflow/charts/ on PRs that touch them, so a broken
+# template or schema-invalid manifest fails here instead of at deploy time
+# (motivation: platform-olw / PR #188). Pure local rendering — no cloud creds.
+
+on:
+  workflow_dispatch: # enables manual execution
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'kubeflow/charts/**'
+      - '.github/workflows/helm-validate.yaml'
+
+concurrency:
+  group: helm-validate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # only needs to read the repo to render charts
+
+env:
+  helm_version: 'v3.16.4'
+  kubeconform_version: 'v0.6.7'
+
+jobs:
+  helm-validate:
+    name: Helm lint, template & schema-validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10 # avoid using gitHub runners time
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Install Helm + kubeconform (pinned)
+        run: |
+          set -euo pipefail
+          curl -fsSL -o helm.tar.gz "https://get.helm.sh/helm-${helm_version}-linux-amd64.tar.gz"
+          tar -xzf helm.tar.gz
+          sudo install -m 0755 linux-amd64/helm /usr/local/bin/helm
+          curl -fsSL -o kubeconform.tar.gz \
+            "https://github.com/yannh/kubeconform/releases/download/${kubeconform_version}/kubeconform-linux-amd64.tar.gz"
+          tar -xzf kubeconform.tar.gz
+          sudo install -m 0755 kubeconform /usr/local/bin/kubeconform
+          helm version --short
+          kubeconform -v
+
+      - name: Lint, template & validate each chart
+        run: |
+          set -euo pipefail
+          rc=0
+          for dir in kubeflow/charts/*/; do
+            [ -f "${dir}Chart.yaml" ] || continue
+            name="$(basename "$dir")"
+            # Charts that need real values to render a schema-valid manifest carry a
+            # ci/ci-values.yaml fixture (e.g. pv-fsx's FSx volume handle).
+            vals=""
+            [ -f "${dir}ci/ci-values.yaml" ] && vals="-f ${dir}ci/ci-values.yaml"
+            echo "::group::${name}"
+            if ! helm lint "$dir" $vals; then echo "helm lint failed: ${name}"; rc=1; fi
+            if helm template "$name" "$dir" $vals > "/tmp/${name}.rendered.yaml"; then
+              # CRDs (Profile, Istio, cert-manager, metacontroller, ...) have no public
+              # schema -> skip them; still strictly validate core Kubernetes kinds.
+              if ! kubeconform -strict -ignore-missing-schemas -summary "/tmp/${name}.rendered.yaml"; then
+                echo "kubeconform failed: ${name}"; rc=1
+              fi
+            else
+              echo "helm template failed: ${name}"; rc=1
+            fi
+            echo "::endgroup::"
+          done
+          exit "$rc"
