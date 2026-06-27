@@ -127,7 +127,7 @@ resource "helm_release" "prometheus" {
 resource "helm_release" "lb_controller_monitor" {
   name      = "lb-controller-monitor"
   chart     = "../charts/lb-controller-monitor"
-  namespace = var.prometheus_namespace
+  namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
 
   depends_on = [helm_release.prometheus_operator_crds, helm_release.prometheus]
 }
