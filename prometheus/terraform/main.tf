@@ -10,18 +10,6 @@ resource "kubernetes_namespace_v1" "monitoring" {
   }
 }
 
-# MIGRATION (existing clusters only): the namespace already exists (Helm-created via
-# create_namespace=true, no Terraform ownership), so a plain apply would fail with "namespace already
-# exists". This config-driven import block makes the normal apply ADOPT the existing namespace into
-# state instead of recreating it.
-#
-# REMOVE this block after the first successful apply: once the namespace is in state it is a no-op,
-# and it would FAIL a fresh cluster (no namespace yet to import).
-import {
-  to = kubernetes_namespace_v1.monitoring
-  id = var.prometheus_namespace
-}
-
 locals {
   app_domain = "grafana.admin.${var.root_domain}"
 
