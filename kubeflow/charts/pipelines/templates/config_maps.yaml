@@ -691,13 +691,14 @@ metadata:
   name: postgres-init
   namespace: {{ .Values.kubeflow.namespace }}
 data:
-  # Run on first boot via /docker-entrypoint-initdb.d. The KFP components share one
-  # Postgres instance; create their DBs up front so api-server / MLMD / cache-server
-  # connect to existing databases (Postgres CREATE DATABASE cannot run mid-transaction).
+  # Runs once on first init via /docker-entrypoint-initdb.d (the postgres entrypoint only
+  # runs these on an empty PGDATA, so the DBs never pre-exist). The KFP components share
+  # one Postgres instance; create their DBs up front so api-server / MLMD / cache-server
+  # connect to existing databases.
   init.sql: |
-    SELECT 'CREATE DATABASE mlpipeline' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mlpipeline')\gexec
-    SELECT 'CREATE DATABASE metadb'     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'metadb')\gexec
-    SELECT 'CREATE DATABASE cachedb'    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'cachedb')\gexec
+    CREATE DATABASE mlpipeline;
+    CREATE DATABASE metadb;
+    CREATE DATABASE cachedb;
 ---
 apiVersion: v1
 data:
