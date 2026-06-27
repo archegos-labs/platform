@@ -17,7 +17,7 @@ locals {
 
   eks = {
     cluster_name                       = "mock-cluster-name"
-    cluster_version                    = "1.31"
+    cluster_version                    = "1.33"
     cluster_endpoint                   = "https://mock-cluster-endpoint"
     cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=="
   }
