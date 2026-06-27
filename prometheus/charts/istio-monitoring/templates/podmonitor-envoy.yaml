@@ -4,6 +4,11 @@
 # only istio-proxy containers that opt in via the prometheus.io/scrape annotation (set on mesh pods
 # because istiod runs with meshConfig.enablePrometheusMerge=true) and targets the merged
 # /stats/prometheus endpoint on the annotated prometheus.io/port.
+#
+# ztunnel pods also match (their container is named istio-proxy and they carry prometheus.io/port),
+# but ztunnel is the Rust node proxy, not an Envoy data-plane proxy, and its /stats/prometheus is
+# identical to the /metrics already collected by podmonitor-ztunnel.yaml. Drop it here to avoid
+# double-scraping every ztunnel series.
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
@@ -29,6 +34,9 @@ spec:
         - action: keep
           sourceLabels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           regex: "true"
+        - action: drop
+          sourceLabels: [__meta_kubernetes_pod_label_app]
+          regex: "ztunnel"
         - action: replace
           regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
           replacement: '[$2]:$1'
