@@ -139,6 +139,10 @@ spec:
         app.kubernetes.io/name: kubeflow-pipelines
         application-crd-id: kubeflow-pipelines
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - command:
         - python
@@ -195,6 +199,16 @@ spec:
         # alpine/k8s bundles aws-cli v1 (Python), so python3 is present. Matches upstream KFP 2.16.1.
         image: docker.io/alpine/k8s:1.32.3@sha256:eec3541331932d8613ce7b3283508063cba7f704302e9b4eda45e49b38a2a0f9
         name: profile-controller
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
         ports:
         - containerPort: 8080
         volumeMounts:
