@@ -157,7 +157,7 @@ module "acm" {
 resource "kubernetes_ingress_v1" "grafana_ingress" {
   metadata {
     name      = "grafana-ingress"
-    namespace = var.prometheus_namespace
+    namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
     annotations = {
       "external-dns.alpha.kubernetes.io/hostname"      = local.app_domain
       "kubernetes.io/ingress.class"                    = "alb"
