@@ -4,15 +4,22 @@
 # to istiod/ztunnel/Envoy metrics ports; bringing these targets behind STRICT mTLS while scraping
 # from outside the mesh would make ztunnel silently drop the scrapes. Keeping monitoring out of the
 # mesh is the common, lowest-risk posture for a pull-based Prometheus.
-#
-# MIGRATION (existing clusters only): the namespace already exists (Helm-created, no Terraform
-# ownership), so import it once BEFORE the first apply or Terraform will fail trying to create it:
-#   terraform import kubernetes_namespace_v1.monitoring monitoring   # or var.prometheus_namespace
-# Fresh installs need no import.
 resource "kubernetes_namespace_v1" "monitoring" {
   metadata {
     name = var.prometheus_namespace
   }
+}
+
+# MIGRATION (existing clusters only): the namespace already exists (Helm-created via
+# create_namespace=true, no Terraform ownership), so a plain apply would fail with "namespace already
+# exists". This config-driven import block makes the normal apply ADOPT the existing namespace into
+# state instead of recreating it.
+#
+# REMOVE this block after the first successful apply: once the namespace is in state it is a no-op,
+# and it would FAIL a fresh cluster (no namespace yet to import).
+import {
+  to = kubernetes_namespace_v1.monitoring
+  id = var.prometheus_namespace
 }
 
 locals {
