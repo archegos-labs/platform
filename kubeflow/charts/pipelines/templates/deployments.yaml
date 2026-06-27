@@ -1059,7 +1059,8 @@ spec:
           name: postgres
         readinessProbe:
           exec:
-            command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "postgres"]
+            # sh -c so $POSTGRES_USER expands (probe exec does NOT do k8s $(VAR) substitution).
+            command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d postgres"]
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 5
