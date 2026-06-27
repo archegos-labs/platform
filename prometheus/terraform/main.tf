@@ -1,3 +1,20 @@
+# Monitoring namespace, owned explicitly (was previously created implicitly via Helm
+# create_namespace=true). Deliberately OUT OF THE ISTIO AMBIENT MESH: no istio.io/dataplane-mode
+# label and no PeerAuthentication. Prometheus scrapes mesh metrics by opening plaintext connections
+# to istiod/ztunnel/Envoy metrics ports; bringing these targets behind STRICT mTLS while scraping
+# from outside the mesh would make ztunnel silently drop the scrapes. Keeping monitoring out of the
+# mesh is the common, lowest-risk posture for a pull-based Prometheus.
+#
+# MIGRATION (existing clusters only): the namespace already exists (Helm-created, no Terraform
+# ownership), so import it once BEFORE the first apply or Terraform will fail trying to create it:
+#   terraform import kubernetes_namespace_v1.monitoring monitoring   # or var.prometheus_namespace
+# Fresh installs need no import.
+resource "kubernetes_namespace_v1" "monitoring" {
+  metadata {
+    name = var.prometheus_namespace
+  }
+}
+
 locals {
   app_domain = "grafana.admin.${var.root_domain}"
 
@@ -31,8 +48,8 @@ resource "helm_release" "prometheus_operator_crds" {
   name             = "prometheus-operator-crds"
   description      = "Prometheus Operator CRDs (managed separately so Helm can upgrade them)"
   chart            = "prometheus-operator-crds"
-  namespace        = var.prometheus_namespace
-  create_namespace = true
+  namespace        = kubernetes_namespace_v1.monitoring.metadata[0].name
+  create_namespace = false
   repository       = "https://prometheus-community.github.io/helm-charts"
   version          = local.prometheus_operator_crds_version
 }
@@ -41,8 +58,8 @@ resource "helm_release" "prometheus" {
   name             = "prometheus"
   description      = "Prometheus monitoring stack"
   chart            = "kube-prometheus-stack"
-  namespace        = var.prometheus_namespace
-  create_namespace = true
+  namespace        = kubernetes_namespace_v1.monitoring.metadata[0].name
+  create_namespace = false
   repository       = "https://prometheus-community.github.io/helm-charts"
   version          = local.kube_prometheus_stack_version
 
@@ -110,6 +127,18 @@ resource "helm_release" "prometheus" {
 resource "helm_release" "lb_controller_monitor" {
   name      = "lb-controller-monitor"
   chart     = "../charts/lb-controller-monitor"
+  namespace = var.prometheus_namespace
+
+  depends_on = [helm_release.prometheus_operator_crds, helm_release.prometheus]
+}
+
+# Istio mesh observability: ServiceMonitor/PodMonitors that scrape istiod, ztunnel, and Envoy
+# gateways/waypoints, plus the upstream Istio Grafana dashboards as ConfigMaps the Grafana sidecar
+# auto-loads. depends_on the CRD release so monitoring.coreos.com/v1 (Service/PodMonitor) exists at
+# apply time, and on the stack so the dashboard sidecar is running to pick the ConfigMaps up.
+resource "helm_release" "istio_monitoring" {
+  name      = "istio-monitoring"
+  chart     = "../charts/istio-monitoring"
   namespace = var.prometheus_namespace
 
   depends_on = [helm_release.prometheus_operator_crds, helm_release.prometheus]

@@ -1,0 +1,22 @@
+# Ambient data-plane metrics: ztunnel is the per-node proxy (DaemonSet, no Service), so scrape it
+# by pod. ztunnel is a Rust proxy (not Envoy) and serves Prometheus metrics on the ztunnel-stats
+# port (15020) at /metrics.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ztunnel-monitor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    # kube-prometheus-stack's Prometheus selects PodMonitors labeled release=<release name>.
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - istio-system
+  selector:
+    matchLabels:
+      app: ztunnel
+  podMetricsEndpoints:
+    - port: ztunnel-stats
+      path: /metrics
+      interval: 15s
