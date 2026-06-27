@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-pv-claim-v2
+  name: postgres-pvc
   namespace: {{ .Values.kubeflow.namespace }}
   labels:
     application-crd-id: kubeflow-pipelines
