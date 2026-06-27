@@ -652,11 +652,11 @@ data:
     namespace: `kubectl rollout restart deployment -n <your-namespace>`.
   appName: pipeline
   appVersion: 2.16.1
-  dbHost: mysql  # relic to be removed after release
-  dbPort: '3306' # relic to be removed after release
-  dbType: mysql
-  mysqlHost: mysql
-  mysqlPort: "3306"
+  dbHost: postgres # relic to be removed after release
+  dbPort: '5432'   # relic to be removed after release
+  dbType: postgres
+  postgresHost: postgres
+  postgresPort: "5432"
   mlmdDb: metadb
   cacheDb: cachedb
   pipelineDb: mlpipeline
@@ -681,6 +681,23 @@ metadata:
     application-crd-id: kubeflow-pipelines
   name: pipeline-install-config
   namespace: {{ .Values.kubeflow.namespace }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: postgres
+    application-crd-id: kubeflow-pipelines
+  name: postgres-init
+  namespace: {{ .Values.kubeflow.namespace }}
+data:
+  # Run on first boot via /docker-entrypoint-initdb.d. The KFP components share one
+  # Postgres instance; create their DBs up front so api-server / MLMD / cache-server
+  # connect to existing databases (Postgres CREATE DATABASE cannot run mid-transaction).
+  init.sql: |
+    SELECT 'CREATE DATABASE mlpipeline' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mlpipeline')\gexec
+    SELECT 'CREATE DATABASE metadb'     WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'metadb')\gexec
+    SELECT 'CREATE DATABASE cachedb'    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'cachedb')\gexec
 ---
 apiVersion: v1
 data:
