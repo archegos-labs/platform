@@ -27,7 +27,7 @@ jobs:
   helm-validate:
     name: Helm lint, template & schema-validate
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # avoid using gitHub runners time
+    timeout-minutes: 10 # avoid using GitHub runners time
     defaults:
       run:
         shell: bash
@@ -67,10 +67,15 @@ jobs:
             [ -f "${dir}ci/ci-values.yaml" ] && vals="-f ${dir}ci/ci-values.yaml"
             echo "::group::${name}"
             if ! helm lint "$dir" $vals; then echo "helm lint failed: ${name}"; rc=1; fi
-            if helm template "$name" "$dir" $vals > "/tmp/${name}.rendered.yaml"; then
-              # CRDs (Profile, Istio, cert-manager, metacontroller, ...) have no public
-              # schema -> skip them; still strictly validate core Kubernetes kinds.
-              if ! kubeconform -strict -ignore-missing-schemas -summary "/tmp/${name}.rendered.yaml"; then
+            # --include-crds renders the chart's crds/ dir (helm skips it by default), so
+            # charts shipping CRDs (pipelines, training-operator, kubeflow-profiles) are
+            # rendered in full and their CRD YAML is exercised.
+            if helm template "$name" "$dir" $vals --include-crds > "/tmp/${name}.rendered.yaml"; then
+              # Pin to the cluster's Kubernetes version for deterministic validation aligned
+              # to the target API (eks/cluster: 1.33). CRDs + custom resources (Profile,
+              # Istio, cert-manager, metacontroller, ...) have no public schema -> skipped;
+              # core Kubernetes kinds are strictly validated.
+              if ! kubeconform -strict -ignore-missing-schemas -kubernetes-version 1.33.0 -summary "/tmp/${name}.rendered.yaml"; then
                 echo "kubeconform failed: ${name}"; rc=1
               fi
             else
