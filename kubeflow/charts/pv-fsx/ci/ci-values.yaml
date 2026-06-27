@@ -1,0 +1,7 @@
+# Placeholder values so the chart renders a schema-valid PersistentVolume in CI
+# (helm-validate workflow). Real values are supplied by terraform at deploy time;
+# these are dummies purely to exercise template rendering + kubeconform.
+namespace: kubeflow
+fs_id: fs-0123456789abcdef0
+dns_name: fs-0123456789abcdef0.fsx.us-east-1.amazonaws.com
+mount_name: fsxmount
