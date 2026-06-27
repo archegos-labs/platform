@@ -20,6 +20,15 @@ locals {
   #   kube-prometheus-stack 87.2.1  (operator v0.92.0)  <->  prometheus-operator-crds 30.0.0
   kube_prometheus_stack_version    = "87.2.1"
   prometheus_operator_crds_version = "30.0.0"
+
+  # The terraform helm provider keys a local-chart release on its chart VERSION + values, NOT on the
+  # contents of the chart's template files. So editing a template under charts/<name> WITHOUT bumping
+  # Chart.yaml's version is silently NOT redeployed (terraform sees no diff, helm stays on the old
+  # revision). To make local-chart edits always redeploy, feed a content hash of the chart dir in as
+  # a value — any file change flips the hash, which the provider does track. The value is unused by
+  # the charts themselves.
+  lb_controller_monitor_checksum = sha1(join(",", [for f in sort(tolist(fileset("${path.module}/../charts/lb-controller-monitor", "**"))) : "${f}:${filesha1("${path.module}/../charts/lb-controller-monitor/${f}")}"]))
+  istio_monitoring_checksum      = sha1(join(",", [for f in sort(tolist(fileset("${path.module}/../charts/istio-monitoring", "**"))) : "${f}:${filesha1("${path.module}/../charts/istio-monitoring/${f}")}"]))
 }
 
 # Prometheus Operator CRDs — managed as a dedicated release so Helm can UPGRADE them on version
@@ -124,6 +133,10 @@ resource "helm_release" "lb_controller_monitor" {
   chart     = "../charts/lb-controller-monitor"
   namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
 
+  # Redeploy whenever the local chart's files change (see local.*_checksum rationale above).
+  # Passed via values (list(string), stable across helm provider 2.x/3.x); unused by the chart.
+  values = [yamlencode({ chartChecksum = local.lb_controller_monitor_checksum })]
+
   depends_on = [helm_release.prometheus_operator_crds, helm_release.prometheus]
 }
 
@@ -135,6 +148,10 @@ resource "helm_release" "istio_monitoring" {
   name      = "istio-monitoring"
   chart     = "../charts/istio-monitoring"
   namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
+
+  # Redeploy whenever the local chart's files change (see local.*_checksum rationale above).
+  # Passed via values (list(string), stable across helm provider 2.x/3.x); unused by the chart.
+  values = [yamlencode({ chartChecksum = local.istio_monitoring_checksum })]
 
   depends_on = [helm_release.prometheus_operator_crds, helm_release.prometheus]
 }
