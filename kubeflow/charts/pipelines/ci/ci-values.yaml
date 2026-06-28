@@ -1,0 +1,4 @@
+# CI-only dummy values so the chart renders (mysql.root_password is required; terraform
+# supplies the real value at deploy time). Used by the helm-validate workflow.
+mysql:
+  root_password: ci-dummy-mysql-password

@@ -81,6 +81,13 @@ resource "random_password" "minio_secret_key" {
   special = false
 }
 
+# MySQL root password for the in-cluster KFP DB (replaces the upstream empty-password
+# default). The chart wires it into mysql-secret + the mysql container MYSQL_ROOT_PASSWORD.
+resource "random_password" "mysql_root_password" {
+  length  = 32
+  special = false
+}
+
 resource "helm_release" "istio_ingress" {
   name             = "istio-ingress"
   chart            = "../charts/istio-ingress"
@@ -244,6 +251,9 @@ resource "helm_release" "kubeflow_pipelines" {
       minio = {
         access_key = random_password.minio_access_key.result
         secret_key = random_password.minio_secret_key.result
+      }
+      mysql = {
+        root_password = random_password.mysql_root_password.result
       }
       # Scopes the ml-pipeline / minio / metadata-grpc AuthorizationPolicies to each
       # profile namespace's default-editor (driven from the same local.profiles list as
