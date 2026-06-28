@@ -6,11 +6,6 @@ ingress:
 minio:
   access_key:
   secret_key:
-# PostgreSQL DB backend credentials. Supplied by terraform (random_password);
-# password is required (the chart fails to render if unset).
-postgres:
-  username: postgres
-  password:
 # Profile namespaces whose default-editor SA (the multi-user pipeline runner) is
 # allowed to call the ml-pipeline backend. Keep in sync with provisioned profiles.
 profile_namespaces:

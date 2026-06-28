@@ -168,7 +168,7 @@ kind: AuthorizationPolicy
 metadata:
   labels:
     application-crd-id: kubeflow-pipelines
-  name: postgres
+  name: mysql
   namespace: {{ .Values.kubeflow.namespace }}
 spec:
   rules:
@@ -184,7 +184,7 @@ spec:
         - cluster.local/ns/{{ .Values.kubeflow.namespace }}/sa/metadata-grpc-server
   selector:
     matchLabels:
-      app: postgres
+      app: mysql
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy

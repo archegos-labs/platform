@@ -652,11 +652,11 @@ data:
     namespace: `kubectl rollout restart deployment -n <your-namespace>`.
   appName: pipeline
   appVersion: 2.16.1
-  dbHost: postgres # relic to be removed after release
-  dbPort: '5432'   # relic to be removed after release
-  dbType: postgres
-  postgresHost: postgres
-  postgresPort: "5432"
+  dbHost: mysql  # relic to be removed after release
+  dbPort: '3306' # relic to be removed after release
+  dbType: mysql
+  mysqlHost: mysql
+  mysqlPort: "3306"
   mlmdDb: metadb
   cacheDb: cachedb
   pipelineDb: mlpipeline
@@ -681,24 +681,6 @@ metadata:
     application-crd-id: kubeflow-pipelines
   name: pipeline-install-config
   namespace: {{ .Values.kubeflow.namespace }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  labels:
-    app: postgres
-    application-crd-id: kubeflow-pipelines
-  name: postgres-init
-  namespace: {{ .Values.kubeflow.namespace }}
-data:
-  # Runs once on first init via /docker-entrypoint-initdb.d (the postgres entrypoint only
-  # runs these on an empty PGDATA, so the DBs never pre-exist). The KFP components share
-  # one Postgres instance; create their DBs up front so api-server / MLMD / cache-server
-  # connect to existing databases.
-  init.sql: |
-    CREATE DATABASE mlpipeline;
-    CREATE DATABASE metadb;
-    CREATE DATABASE cachedb;
 ---
 apiVersion: v1
 data:
