@@ -377,11 +377,11 @@ Operator. The dashboard is published at `https://dashboard.admin.<ROOT_DOMAIN>` 
 deploys the dashboard from the published `ghcr.io/kubeflow/dashboard/dashboard` image — the `dashboard/` directory in
 the repo root is just a local clone of the upstream source and is gitignored (it is not part of any deploy).
 
-### Training Operator
+### Trainer
 
-The [Kubeflow Training Operator](https://www.kubeflow.org/docs/components/training/overview/) allows you to use
-Kubernetes workloads to train large models with Kubernetes Custom Resources APIs or using the Training Operator Python SDK.
-The operators primary use case is the ability to run *distributed training and fine-tuning*. After installing the operator 
+[Kubeflow Trainer](https://www.kubeflow.org/docs/components/trainer/) allows you to
+train large models on Kubernetes with the `TrainJob` Custom Resource API or the Kubeflow Python SDK.
+Its primary use case is the ability to run *distributed training and fine-tuning*. After installing Trainer
 we'll demonstrate how to run a training job.
 
 Before running the example you'll need to,
@@ -416,9 +416,9 @@ Or copy and paste one of these URLs:
         http://127.0.0.1:8888/lab?token=161c548d8a560266b0e76323276322a1f3ecaf8da32d1de2
 ```
 
-3. Open the notebook at `work/training-operator/pytorchjobs/python-sdk-distributed-training.ipynb` and follow the instructions.
+3. Open the notebook at `work/trainer/pytorch/fashion-mnist-trainjob.ipynb` and follow the instructions.
  
-That's it! You've run your first distributed training job using the Kubeflow Training Operator.
+That's it! You've run your first distributed training job using Kubeflow Trainer.
 
 #### Example 2: Fine-Tune an LLM
 
@@ -452,7 +452,7 @@ TODO: How does this get leveraged in jobs?
 #### References
 
 
-* [Kubeflow Training Operator](https://www.kubeflow.org/docs/components/training/overview/)
+* [Kubeflow Trainer](https://www.kubeflow.org/docs/components/trainer/)
 
 
 ## Teardown
