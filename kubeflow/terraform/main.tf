@@ -124,12 +124,35 @@ resource "helm_release" "kubeflow_trainer" {
   wait_for_jobs = true
   timeout       = 600
 
+  # runtimes.defaultEnabled is intentionally false: the ClusterTrainingRuntime
+  # blueprints are applied by the separate kubeflow_trainer_runtimes release below.
+  # The operator's validating webhook serves a self-rotated cert whose serving-side
+  # reload lags the caBundle patch by ~20s; bundling the runtime CRs here makes their
+  # CREATE/UPDATE patches race that window and fail every upgrade with x509
+  # "unknown authority". Keeping them out means this release never patches a
+  # webhook-validated resource.
   set {
     name  = "runtimes.defaultEnabled"
-    value = "true"
+    value = "false"
   }
 
   depends_on = [kubernetes_namespace.kubeflow_system]
+}
+
+# ClusterTrainingRuntime blueprints, decoupled from the operator release above so the
+# operator's webhook cert rotation can't fail operator upgrades. See the chart's
+# Chart.yaml for the full rationale. This release rarely changes, so it rarely patches
+# the webhook; the operator release (which triggers the cert refresh) no longer carries
+# any webhook-validated resources.
+resource "helm_release" "kubeflow_trainer_runtimes" {
+  name      = "kubeflow-trainer-runtimes"
+  namespace = kubernetes_namespace.kubeflow_system.metadata[0].name
+  chart     = "../charts/kubeflow-trainer-runtimes"
+
+  wait          = true
+  wait_for_jobs = true
+
+  depends_on = [helm_release.kubeflow_trainer]
 }
 
 #######################################

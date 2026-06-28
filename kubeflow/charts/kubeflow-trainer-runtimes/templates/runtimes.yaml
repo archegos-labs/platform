@@ -1,0 +1,533 @@
+# Vendored verbatim from `helm template kubeflow-trainer oci://ghcr.io/kubeflow/charts/kubeflow-trainer
+# --version 2.2.1 --set runtimes.defaultEnabled=true` (the ClusterTrainingRuntime objects only).
+#
+# helm.sh/resource-policy: keep is intentional. These CRs were originally owned by the
+# `kubeflow-trainer` operator release. During the one-time migration that moves them here,
+# `keep` stops the operator's runtimes-off upgrade from deleting them so this release can adopt
+# them in place (empty diff, no webhook call). It also leaves them in the cluster if this release
+# is ever uninstalled — desirable for shared training-runtime blueprints.
+#
+# Labels are kept exactly as the upstream render produced them (incl. the original
+# app.kubernetes.io/instance and helm.sh/chart values) so adoption is a true no-op.
+---
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: ClusterTrainingRuntime
+metadata:
+  name: deepspeed-distributed
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    trainer.kubeflow.org/framework: deepspeed
+    helm.sh/chart: kubeflow-trainer-2.2.1
+    app.kubernetes.io/name: kubeflow-trainer
+    app.kubernetes.io/instance: kubeflow-trainer
+    app.kubernetes.io/version: "2.2.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  mlPolicy:
+    numNodes: 1
+    mpi:
+      numProcPerNode: 1
+      mpiImplementation: OpenMPI
+      sshAuthMountPath: /home/mpiuser/.ssh
+      runLauncherAsNode: true
+  template:
+    spec:
+      network:
+        publishNotReadyAddresses: true
+      successPolicy:
+        operator: All
+        targetReplicatedJobs:
+          - launcher
+      replicatedJobs:
+        - name: launcher
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: trainer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: ghcr.io/kubeflow/trainer/deepspeed-runtime:v2.2.1
+                      securityContext:
+                        runAsUser: 1000
+        - name: node
+          template:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: ghcr.io/kubeflow/trainer/deepspeed-runtime:v2.2.1
+                      securityContext:
+                        runAsUser: 1000
+                      command:
+                        - /usr/sbin/sshd
+                      args:
+                        - -De
+                        - -f
+                        - /home/mpiuser/.sshd_config
+                      readinessProbe:
+                        tcpSocket:
+                          port: 2222
+                        initialDelaySeconds: 5
+---
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: ClusterTrainingRuntime
+metadata:
+  name: jax-distributed
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    trainer.kubeflow.org/framework: jax
+    helm.sh/chart: kubeflow-trainer-2.2.1
+    app.kubernetes.io/name: kubeflow-trainer
+    app.kubernetes.io/instance: kubeflow-trainer
+    app.kubernetes.io/version: "2.2.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  mlPolicy:
+    numNodes: 1
+    jax: {}
+  template:
+    spec:
+      replicatedJobs:
+        - name: node
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: trainer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: nvcr.io/nvidia/jax:25.10-py3
+---
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: ClusterTrainingRuntime
+metadata:
+  name: mlx-distributed
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    trainer.kubeflow.org/framework: mlx
+    helm.sh/chart: kubeflow-trainer-2.2.1
+    app.kubernetes.io/name: kubeflow-trainer
+    app.kubernetes.io/instance: kubeflow-trainer
+    app.kubernetes.io/version: "2.2.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  mlPolicy:
+    numNodes: 1
+    mpi:
+      numProcPerNode: 1
+      mpiImplementation: OpenMPI
+      sshAuthMountPath: /home/mpiuser/.ssh
+      runLauncherAsNode: true
+  template:
+    spec:
+      network:
+        publishNotReadyAddresses: true
+      successPolicy:
+        operator: All
+        targetReplicatedJobs:
+          - launcher
+      replicatedJobs:
+        - name: launcher
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: trainer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: ghcr.io/kubeflow/trainer/mlx-runtime:v2.2.1
+                      securityContext:
+                        runAsUser: 1000
+        - name: node
+          template:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: ghcr.io/kubeflow/trainer/mlx-runtime:v2.2.1
+                      securityContext:
+                        runAsUser: 1000
+                      command:
+                        - /usr/sbin/sshd
+                      args:
+                        - -De
+                        - -f
+                        - /home/mpiuser/.sshd_config
+                      readinessProbe:
+                        tcpSocket:
+                          port: 2222
+                        initialDelaySeconds: 5
+---
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: ClusterTrainingRuntime
+metadata:
+  name: torch-distributed
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    trainer.kubeflow.org/framework: torch
+    helm.sh/chart: kubeflow-trainer-2.2.1
+    app.kubernetes.io/name: kubeflow-trainer
+    app.kubernetes.io/instance: kubeflow-trainer
+    app.kubernetes.io/version: "2.2.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  mlPolicy:
+    numNodes: 1
+    torch: {}
+  template:
+    spec:
+      replicatedJobs:
+        - name: node
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: trainer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: pytorch/pytorch:2.10.0-cuda12.8-cudnn9-runtime
+---
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: ClusterTrainingRuntime
+metadata:
+  name: torchtune-llama3.2-1b
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    trainer.kubeflow.org/framework: torchtune
+    helm.sh/chart: kubeflow-trainer-2.2.1
+    app.kubernetes.io/name: kubeflow-trainer
+    app.kubernetes.io/instance: kubeflow-trainer
+    app.kubernetes.io/version: "2.2.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  mlPolicy:
+    numNodes: 1
+    torch: {}
+  template:
+    spec:
+      volumeClaimPolicies:
+        - templates:
+            - metadata:
+                name: initializer
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 20Gi
+      replicatedJobs:
+        - name: dataset-initializer
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: dataset-initializer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: dataset-initializer
+                      image: ghcr.io/kubeflow/trainer/dataset-initializer
+                      env:
+                        - name: STORAGE_URI
+                          value: hf://tatsu-lab/alpaca
+                      volumeMounts:
+                        - mountPath: /workspace
+                          name: initializer
+        - name: model-initializer
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: model-initializer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: model-initializer
+                      image: ghcr.io/kubeflow/trainer/model-initializer
+                      env:
+                        - name: STORAGE_URI
+                          value: hf://meta-llama/Llama-3.2-1B-Instruct
+                      volumeMounts:
+                        - name: initializer
+                          mountPath: /workspace
+        - name: node
+          dependsOn:
+            - name: dataset-initializer
+              status: Complete
+            - name: model-initializer
+              status: Complete
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: trainer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: ghcr.io/kubeflow/trainer/torchtune-trainer:v2.2.1
+                      command:
+                        - tune
+                        - run
+                        - --rdzv_endpoint=localhost:29500
+                        - full_finetune_distributed
+                        - --config
+                        - llama3_2/1B_full
+                        - dataset=torchtune.datasets.instruct_dataset
+                        - dataset.source=parquet
+                        - dataset.data_dir=/workspace/dataset/data
+                        - output_dir=/workspace/output
+                        - tokenizer.path=/workspace/model/original/tokenizer.model
+                        - checkpointer.checkpoint_dir=/workspace/model
+                      resources:
+                        limits:
+                          nvidia.com/gpu: 2
+                      volumeMounts:
+                        - mountPath: /workspace
+                          name: initializer
+---
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: ClusterTrainingRuntime
+metadata:
+  name: torchtune-llama3.2-3b
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    trainer.kubeflow.org/framework: torchtune
+    helm.sh/chart: kubeflow-trainer-2.2.1
+    app.kubernetes.io/name: kubeflow-trainer
+    app.kubernetes.io/instance: kubeflow-trainer
+    app.kubernetes.io/version: "2.2.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  mlPolicy:
+    numNodes: 1
+    torch: {}
+  template:
+    spec:
+      volumeClaimPolicies:
+        - templates:
+            - metadata:
+                name: initializer
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 20Gi
+      replicatedJobs:
+        - name: dataset-initializer
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: dataset-initializer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: dataset-initializer
+                      image: ghcr.io/kubeflow/trainer/dataset-initializer
+                      env:
+                        - name: STORAGE_URI
+                          value: hf://tatsu-lab/alpaca
+                      volumeMounts:
+                        - mountPath: /workspace
+                          name: initializer
+        - name: model-initializer
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: model-initializer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: model-initializer
+                      image: ghcr.io/kubeflow/trainer/model-initializer
+                      env:
+                        - name: STORAGE_URI
+                          value: hf://meta-llama/Llama-3.2-3B-Instruct
+                      volumeMounts:
+                        - name: initializer
+                          mountPath: /workspace
+        - name: node
+          dependsOn:
+            - name: dataset-initializer
+              status: Complete
+            - name: model-initializer
+              status: Complete
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: trainer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: ghcr.io/kubeflow/trainer/torchtune-trainer:v2.2.1
+                      command:
+                        - tune
+                        - run
+                        - --rdzv_endpoint=localhost:29500
+                        - full_finetune_distributed
+                        - --config
+                        - llama3_2/3B_full
+                        - dataset=torchtune.datasets.instruct_dataset
+                        - dataset.source=parquet
+                        - dataset.data_dir=/workspace/dataset/data
+                        - output_dir=/workspace/output
+                        - tokenizer.path=/workspace/model/original/tokenizer.model
+                        - checkpointer.checkpoint_dir=/workspace/model
+                      resources:
+                        limits:
+                          nvidia.com/gpu: 2
+                      volumeMounts:
+                        - mountPath: /workspace
+                          name: initializer
+---
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: ClusterTrainingRuntime
+metadata:
+  name: torchtune-qwen2.5-1.5b
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    trainer.kubeflow.org/framework: torchtune
+    helm.sh/chart: kubeflow-trainer-2.2.1
+    app.kubernetes.io/name: kubeflow-trainer
+    app.kubernetes.io/instance: kubeflow-trainer
+    app.kubernetes.io/version: "2.2.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  mlPolicy:
+    numNodes: 1
+    torch: {}
+  template:
+    spec:
+      volumeClaimPolicies:
+        - templates:
+            - metadata:
+                name: initializer
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 20Gi
+      replicatedJobs:
+        - name: dataset-initializer
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: dataset-initializer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: dataset-initializer
+                      image: ghcr.io/kubeflow/trainer/dataset-initializer
+                      env:
+                        - name: STORAGE_URI
+                          value: hf://tatsu-lab/alpaca
+                      volumeMounts:
+                        - mountPath: /workspace
+                          name: initializer
+        - name: model-initializer
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: model-initializer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: model-initializer
+                      image: ghcr.io/kubeflow/trainer/model-initializer
+                      env:
+                        - name: STORAGE_URI
+                          value: hf://Qwen/Qwen2.5-1.5B-Instruct
+                      volumeMounts:
+                        - name: initializer
+                          mountPath: /workspace
+        - name: node
+          dependsOn:
+            - name: dataset-initializer
+              status: Complete
+            - name: model-initializer
+              status: Complete
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: trainer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: ghcr.io/kubeflow/trainer/torchtune-trainer:v2.2.1
+                      command:
+                        - tune
+                        - run
+                        - --rdzv_endpoint=localhost:29500
+                        - full_finetune_distributed
+                        - --config
+                        - qwen2_5/1.5B_full
+                        - dataset=torchtune.datasets.instruct_dataset
+                        - dataset.source=parquet
+                        - dataset.data_dir=/workspace/dataset/data
+                        - output_dir=/workspace/output
+                        - tokenizer.path=/workspace/model/vocab.json
+                        - tokenizer.merges_file=/workspace/model/merges.txt
+                        - checkpointer.checkpoint_dir=/workspace/model
+                      resources:
+                        limits:
+                          nvidia.com/gpu: 2
+                      volumeMounts:
+                        - mountPath: /workspace
+                          name: initializer
+---
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: ClusterTrainingRuntime
+metadata:
+  name: xgboost-distributed
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    trainer.kubeflow.org/framework: xgboost
+    helm.sh/chart: kubeflow-trainer-2.2.1
+    app.kubernetes.io/name: kubeflow-trainer
+    app.kubernetes.io/instance: kubeflow-trainer
+    app.kubernetes.io/version: "2.2.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  mlPolicy:
+    numNodes: 1
+    xgboost: {}
+  template:
+    spec:
+      replicatedJobs:
+        - name: node
+          template:
+            metadata:
+              labels:
+                trainer.kubeflow.org/trainjob-ancestor-step: trainer
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: node
+                      image: ghcr.io/kubeflow/trainer/xgboost-runtime:v2.2.1

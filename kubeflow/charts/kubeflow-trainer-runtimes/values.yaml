@@ -1,0 +1,3 @@
+# No values. The ClusterTrainingRuntime manifests are vendored statically in
+# templates/runtimes.yaml so that helm's adoption of the pre-existing CRs (during
+# the one-time migration off the operator release) is an exact, empty-diff no-op.
