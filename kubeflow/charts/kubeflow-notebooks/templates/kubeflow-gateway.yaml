@@ -1,0 +1,23 @@
+# Fan-out point for per-notebook URLs. The notebook-controller writes one istio
+# VirtualService per Notebook (prefix /notebook/<ns>/<name>/) bound to this gateway; Envoy
+# in the shared istio-ingressgateway opens a listener on the dedicated port and routes to the
+# notebook Service. oauth2-proxy forwards /notebook/ here after authenticating the user.
+# A dedicated port keeps these routes off the dashboard_host VirtualService.
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ .Values.gateway.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: jupyter-web-app
+    kustomize.component: notebook-controller
+spec:
+  selector:
+    app: {{ .Values.gateway.selector_label }}
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: http-notebooks
+      number: {{ .Values.gateway.port }}
+      protocol: HTTP

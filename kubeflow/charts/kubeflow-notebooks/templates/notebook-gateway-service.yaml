@@ -1,0 +1,22 @@
+# Internal-only entrypoint to the per-notebook fan-out listener. The kubeflow-gateway
+# (kubeflow ns) makes Envoy in the shared istio-ingressgateway open a listener on the
+# notebooks port; this ClusterIP Service (in the ingress ns, selecting those Envoy pods)
+# exposes that port in-cluster WITHOUT adding it to the public NLB Service. oauth2-proxy
+# forwards /notebook/ here. Owner authz is still enforced at the profile waypoint.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.gateway.service_name }}
+  namespace: {{ .Values.ingress.namespace }}
+  labels:
+    app: jupyter-web-app
+    kustomize.component: notebook-controller
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.gateway.selector_label }}
+  ports:
+  - name: http-notebooks
+    port: {{ .Values.gateway.port }}
+    protocol: TCP
+    targetPort: {{ .Values.gateway.port }}

@@ -23,6 +23,14 @@ data:
           ],
           "text": "Pipelines",
           "type": "section"
+        },
+        {
+          "icon": "book",
+          "items": [
+            {"link": "/jupyter/", "text": "Notebooks", "type": "item"}
+          ],
+          "text": "Notebooks",
+          "type": "section"
         }
       ],
       "externalLinks": [],

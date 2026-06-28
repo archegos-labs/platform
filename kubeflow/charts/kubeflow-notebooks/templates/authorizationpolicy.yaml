@@ -1,0 +1,18 @@
+# ztunnel L4 authz: only oauth2-proxy may reach the Jupyter Web App (it is the
+# authenticating reverse proxy that injects the userid header). Mirrors the oauth2-proxy
+# service policy. ztunnel honors only exact principals (no wildcards).
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: jupyter-web-app
+  namespace: {{ .Values.namespace }}
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app: jupyter-web-app
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notebook-controller-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: notebook-controller
+    kustomize.component: notebook-controller
+data:
+  USE_ISTIO: {{ .Values.notebook_controller.use_istio | quote }}
+  ISTIO_GATEWAY: {{ .Values.notebook_controller.istio_gateway | quote }}
+  ISTIO_HOST: {{ .Values.notebook_controller.istio_host | quote }}
+  CLUSTER_DOMAIN: {{ .Values.notebook_controller.cluster_domain | quote }}
+  ENABLE_CULLING: {{ .Values.notebook_controller.enable_culling | quote }}
+  CULL_IDLE_TIME: {{ .Values.notebook_controller.cull_idle_time | quote }}
+  IDLENESS_CHECK_PERIOD: {{ .Values.notebook_controller.idleness_check_period | quote }}

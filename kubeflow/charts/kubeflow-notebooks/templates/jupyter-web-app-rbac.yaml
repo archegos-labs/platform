@@ -1,0 +1,78 @@
+# Cluster-scoped access: the JWA backend acts with its own SA across profile namespaces,
+# gating each action on a SubjectAccessReview for the calling user (userid_header identity).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: jupyter-web-app-cluster-role
+  labels:
+    app: jupyter-web-app
+    kustomize.component: jupyter-web-app
+rules:
+- apiGroups: [authorization.k8s.io]
+  resources: [subjectaccessreviews]
+  verbs: [create]
+- apiGroups: [kubeflow.org]
+  resources: [notebooks, notebooks/finalizers, poddefaults]
+  verbs: [get, list, create, delete, patch, update]
+- apiGroups: [""]
+  resources: [persistentvolumeclaims]
+  verbs: [create, delete, get, list]
+- apiGroups: [""]
+  resources: [events, nodes]
+  verbs: [list]
+- apiGroups: [storage.k8s.io]
+  resources: [storageclasses]
+  verbs: [get, list, watch]
+- apiGroups: [""]
+  resources: [pods, pods/log]
+  verbs: [list, get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jupyter-web-app-cluster-role-binding
+  labels:
+    app: jupyter-web-app
+    kustomize.component: jupyter-web-app
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jupyter-web-app-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: jupyter-web-app-service-account
+  namespace: {{ .Values.namespace }}
+---
+# Aggregated roles so notebook UI access rolls up into Kubeflow admin/edit/view.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeflow-notebook-ui-admin
+  labels:
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: "true"
+rules: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeflow-notebook-ui-edit
+  labels:
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-edit: "true"
+rules:
+- apiGroups: [kubeflow.org]
+  resources: [notebooks, notebooks/finalizers, poddefaults]
+  verbs: [get, list, create, delete]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeflow-notebook-ui-view
+  labels:
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-view: "true"
+rules:
+- apiGroups: [kubeflow.org]
+  resources: [notebooks, notebooks/finalizers, poddefaults]
+  verbs: [get, list]
+- apiGroups: [storage.k8s.io]
+  resources: [storageclasses]
+  verbs: [get, list, watch]
