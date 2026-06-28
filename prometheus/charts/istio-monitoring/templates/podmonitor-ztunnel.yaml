@@ -16,6 +16,11 @@ spec:
   selector:
     matchLabels:
       app: ztunnel
+  # Copy the `app` pod label onto the scraped series. The release-1.30 ztunnel dashboard
+  # added panels that filter on app="ztunnel"; without this the label is absent (only
+  # pod/namespace/etc. are added by default) and those panels render empty.
+  podTargetLabels:
+    - app
   podMetricsEndpoints:
     - port: ztunnel-stats
       path: /metrics

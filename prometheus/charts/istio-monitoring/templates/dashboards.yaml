@@ -1,7 +1,8 @@
 # Wrap each vendored Istio dashboard JSON (dashboards/*.json) in a ConfigMap labeled
 # grafana_dashboard=1, which the kube-prometheus-stack Grafana sidecar auto-imports from Grafana's
-# own namespace (= this release namespace). JSON sourced from istio/istio@release-1.27
-# manifests/addons/dashboards; keep in lockstep with istio_repo_version.
+# own namespace (= this release namespace). JSON sourced from istio/istio@release-1.30
+# manifests/addons/dashboards; keep in lockstep with istio_repo_version. Note: mesh/pilot/ztunnel
+# are the upstream *.gen.json files (jsonnet-generated), re-vendored here under their plain names.
 {{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
 {{- $name := base $path | trimSuffix ".json" }}
 ---
