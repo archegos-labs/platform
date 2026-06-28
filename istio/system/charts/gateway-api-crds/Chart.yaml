@@ -8,8 +8,9 @@ description: >-
   required. Vendored verbatim from kubernetes-sigs/gateway-api v1.5.1
   standard-install.yaml. NOTE: Helm only applies crds/ on first install, never on
   `helm upgrade` — so bumping the version is NOT enough to update the CRDs. To upgrade
-  them, replace crds/standard-install.yaml AND apply it directly
-  (kubectl apply -f / kubectl replace -f), then bump appVersion for tracking.
+  them, replace crds/standard-install.yaml AND apply it directly with server-side apply
+  (kubectl apply --server-side -f crds/standard-install.yaml), then bump appVersion for
+  tracking.
 type: application
 version: 1.0.0
 appVersion: "1.5.1"
