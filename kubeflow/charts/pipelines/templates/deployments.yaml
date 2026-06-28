@@ -1102,7 +1102,7 @@ spec:
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
-          claimName: mysql-pv-claim-v2
+          claimName: mysql-pv-claim-v3
 ---
 apiVersion: apps/v1
 kind: Deployment
