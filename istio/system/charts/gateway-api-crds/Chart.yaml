@@ -5,12 +5,12 @@ description: >-
   GRPCRoute, ReferenceGrant, TLSRoute, ListenerSet, BackendTLSPolicy). Required by Istio
   ambient waypoints; istiod creates the istio-waypoint GatewayClass once these exist.
   Istio 1.30 reads TLSRoute/ReferenceGrant from the standard channel, so v1.5.x is
-  required. Vendored verbatim from kubernetes-sigs/gateway-api v1.5.1
-  standard-install.yaml. NOTE: Helm only applies crds/ on first install, never on
-  `helm upgrade` — so bumping the version is NOT enough to update the CRDs. To upgrade
-  them, replace crds/standard-install.yaml AND apply it directly with server-side apply
-  (kubectl apply --server-side -f crds/standard-install.yaml), then bump appVersion for
-  tracking.
+  required. Vendored from kubernetes-sigs/gateway-api v1.5.1 standard-install.yaml under
+  templates/ (NOT crds/) so `helm upgrade` reconciles them on every apply — same pattern
+  as prometheus-operator-crds. Each object carries `helm.sh/resource-policy: keep` so the
+  CRDs (and their custom resources) survive `helm uninstall`. To bump: replace
+  templates/standard-install.yaml with the new release bundle, re-add the keep annotation,
+  and update appVersion.
 type: application
 version: 1.0.0
 appVersion: "1.5.1"
