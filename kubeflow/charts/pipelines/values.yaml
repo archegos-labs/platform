@@ -6,6 +6,10 @@ ingress:
 minio:
   access_key:
   secret_key:
+# MySQL DB backend root password. Supplied by terraform (random_password); required
+# (the chart fails to render if unset) so the DB is never left with an empty password.
+mysql:
+  root_password:
 # Profile namespaces whose default-editor SA (the multi-user pipeline runner) is
 # allowed to call the ml-pipeline backend. Keep in sync with provisioned profiles.
 profile_namespaces:
