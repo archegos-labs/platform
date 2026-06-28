@@ -1,7 +1,11 @@
+# Bumped v2 -> v3 to force a FRESH datadir alongside the root-password change: the mysql
+# image only applies MYSQL_ROOT_PASSWORD on first bootstrap, so reusing an empty-password
+# v2 volume would leave MySQL with no password while clients use the new secret. The new
+# name makes Helm delete the old PVC (gp2 Delete reclaim) and create an empty one.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-pv-claim-v2
+  name: mysql-pv-claim-v3
   namespace: {{ .Values.kubeflow.namespace }}
   labels:
     application-crd-id: kubeflow-pipelines
