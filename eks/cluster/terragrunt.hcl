@@ -56,7 +56,7 @@ locals {
 
 inputs = {
   name               = "${dependency.account.outputs.resource_prefix}-eks"
-  kubernetes_version = "1.33"
+  kubernetes_version = "1.34"
 
   endpoint_public_access = true
 
