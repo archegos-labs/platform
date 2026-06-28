@@ -14,7 +14,7 @@ module "kiali_operator" {
   namespace        = "kiali-operator"
   create_namespace = true
   chart            = "kiali-operator"
-  chart_version    = "v2.2.0"
+  chart_version    = "v2.26.0"
   repository       = "https://kiali.org/helm-charts"
 
   // CR spec: https://kiali.io/docs/configuration/kialis.kiali.io/
