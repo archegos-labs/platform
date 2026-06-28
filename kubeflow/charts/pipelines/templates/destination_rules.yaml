@@ -44,10 +44,10 @@ kind: DestinationRule
 metadata:
   labels:
     application-crd-id: kubeflow-pipelines
-  name: ml-pipeline-postgres
+  name: ml-pipeline-mysql
   namespace: {{ .Values.kubeflow.namespace }}
 spec:
-  host: postgres.{{ .Values.kubeflow.namespace }}.svc.cluster.local
+  host: mysql.{{ .Values.kubeflow.namespace }}.svc.cluster.local
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL

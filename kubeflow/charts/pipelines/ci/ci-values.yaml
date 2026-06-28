@@ -1,5 +1,0 @@
-# CI-only dummy values so the chart renders (postgres.password is required; terraform
-# supplies the real value at deploy time). Used by the helm-validate workflow.
-postgres:
-  username: postgres
-  password: ci-dummy-postgres-password
