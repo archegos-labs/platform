@@ -10,7 +10,8 @@ description: >-
   as prometheus-operator-crds. Each object carries `helm.sh/resource-policy: keep` so the
   CRDs (and their custom resources) survive `helm uninstall`. To bump: replace
   templates/standard-install.yaml with the new release bundle, re-add the keep annotation,
-  and update appVersion.
+  and bump BOTH `version` (so Terraform's helm provider re-applies this local chart — it
+  diffs on chart version, not file contents) and `appVersion` (to track the bundle).
 type: application
-version: 1.0.0
+version: 1.1.0
 appVersion: "1.5.1"
