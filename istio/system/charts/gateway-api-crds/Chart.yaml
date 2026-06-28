@@ -2,12 +2,14 @@ apiVersion: v2
 name: gateway-api-crds
 description: >-
   Kubernetes Gateway API standard-channel CRDs (GatewayClass, Gateway, HTTPRoute,
-  GRPCRoute, ReferenceGrant). Required by Istio ambient waypoints; istiod creates the
-  istio-waypoint GatewayClass once these exist. Vendored verbatim from
-  kubernetes-sigs/gateway-api v1.2.1 standard-install.yaml. NOTE: Helm only applies
-  crds/ on first install, never on `helm upgrade` — so bumping the version is NOT enough
-  to update the CRDs. To upgrade them, replace crds/standard-install.yaml AND apply it
-  directly (kubectl apply -f / kubectl replace -f), then bump appVersion for tracking.
+  GRPCRoute, ReferenceGrant, TLSRoute, ListenerSet, BackendTLSPolicy). Required by Istio
+  ambient waypoints; istiod creates the istio-waypoint GatewayClass once these exist.
+  Istio 1.30 reads TLSRoute/ReferenceGrant from the standard channel, so v1.5.x is
+  required. Vendored verbatim from kubernetes-sigs/gateway-api v1.5.1
+  standard-install.yaml. NOTE: Helm only applies crds/ on first install, never on
+  `helm upgrade` — so bumping the version is NOT enough to update the CRDs. To upgrade
+  them, replace crds/standard-install.yaml AND apply it directly
+  (kubectl apply -f / kubectl replace -f), then bump appVersion for tracking.
 type: application
 version: 1.0.0
-appVersion: "1.2.1"
+appVersion: "1.5.1"
