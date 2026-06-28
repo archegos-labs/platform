@@ -118,7 +118,7 @@ resource "helm_release" "kubeflow_trainer" {
   namespace  = kubernetes_namespace.kubeflow_system.metadata[0].name
   repository = "oci://ghcr.io/kubeflow/charts"
   chart      = "kubeflow-trainer"
-  version    = "2.2.0"
+  version    = "2.2.1"
 
   wait          = true
   wait_for_jobs = true

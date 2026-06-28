@@ -68,7 +68,7 @@ jobs:
             echo "::group::${name}"
             if ! helm lint "$dir" $vals; then echo "helm lint failed: ${name}"; rc=1; fi
             # --include-crds renders the chart's crds/ dir (helm skips it by default), so
-            # charts shipping CRDs (pipelines, training-operator, kubeflow-profiles) are
+            # charts shipping CRDs (pipelines, kubeflow-profiles) are
             # rendered in full and their CRD YAML is exercised.
             if helm template "$name" "$dir" $vals --include-crds > "/tmp/${name}.rendered.yaml"; then
               # Pin to the cluster's Kubernetes version for deterministic validation aligned
