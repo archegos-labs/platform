@@ -144,6 +144,11 @@ resource "helm_release" "kubeflow_trainer" {
 # Chart.yaml for the full rationale. This release rarely changes, so it rarely patches
 # the webhook; the operator release (which triggers the cert refresh) no longer carries
 # any webhook-validated resources.
+#
+# On a cluster where the runtimes are still bundled in the operator release, a one-time
+# migration must run BEFORE this is applied, or the operator upgrade deletes the CRs and
+# this release recreates them through the racing webhook. Runbook:
+# kubeflow/docs/trainer-runtimes-migration.md
 resource "helm_release" "kubeflow_trainer_runtimes" {
   name      = "kubeflow-trainer-runtimes"
   namespace = kubernetes_namespace.kubeflow_system.metadata[0].name
