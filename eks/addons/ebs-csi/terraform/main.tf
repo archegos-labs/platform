@@ -48,3 +48,28 @@ resource "aws_eks_addon" "aws_ebs_csi" {
   depends_on = [aws_eks_addon.snapshot_controller]
 }
 
+# Cluster-default StorageClass. EKS ships a legacy in-tree `gp2` class that is NOT marked
+# default, so PVCs without an explicit storageClassName (e.g. Kubeflow notebook workspaces)
+# fail to provision. This gp3 class uses the EBS CSI driver, is encrypted, and is the default.
+resource "kubernetes_storage_class_v1" "gp3" {
+  metadata {
+    name = "gp3"
+    annotations = {
+      "storageclass.kubernetes.io/is-default-class" = "true"
+    }
+  }
+  storage_provisioner    = "ebs.csi.aws.com"
+  reclaim_policy         = "Delete"
+  volume_binding_mode    = "WaitForFirstConsumer"
+  allow_volume_expansion = true
+  parameters = {
+    type      = "gp3"
+    encrypted = "true"
+    # CSI fstype key (handled by the external-provisioner). The legacy in-tree key `fsType`
+    # is not a recognized ebs.csi.aws.com parameter and fails CreateVolume.
+    "csi.storage.k8s.io/fstype" = "ext4"
+  }
+
+  depends_on = [aws_eks_addon.aws_ebs_csi]
+}
+
