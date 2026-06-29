@@ -85,6 +85,8 @@ metadata:
     app.kubernetes.io/name: model-catalog
     app.kubernetes.io/component: server
     app.kubernetes.io/part-of: model-catalog
+    # The UI BFF discovers the catalog by Service name + this component label.
+    component: model-catalog
 spec:
   selector:
     app.kubernetes.io/part-of: model-catalog

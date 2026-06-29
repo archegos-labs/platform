@@ -23,9 +23,14 @@ registry:
     password: ""
     storage: 10Gi
 
+# Custom UI image built from the v0.3.10 source with the frontend in FEDERATED mode
+# (DEPLOYMENT_MODE=federated, mui-theme) so the Model Catalog + MCP Catalog views render — the
+# stock ghcr.io/kubeflow/hub/ui:v0.3.10 is built DEPLOYMENT_MODE=kubeflow, which hides them, and
+# the mode is baked at build time (webpack), not configurable at runtime. The BFF still runs
+# --deployment-mode=kubeflow (see the deployment) so our kubeflow-userid auth flow is unchanged.
 ui:
-  image: ghcr.io/kubeflow/hub/ui
-  tag: v0.3.10
+  image: 541898866282.dkr.ecr.us-east-1.amazonaws.com/kubeflow/hub/ui
+  tag: v0.3.10-federated
   prefix: /model-registry
 
 catalog:
