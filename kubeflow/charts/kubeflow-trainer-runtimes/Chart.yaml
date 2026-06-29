@@ -1,0 +1,16 @@
+apiVersion: v2
+name: kubeflow-trainer-runtimes
+description: >-
+  ClusterTrainingRuntime blueprints for Kubeflow Trainer, applied as a release
+  separate from the operator. Decoupled on purpose: the operator chart's webhook
+  serving cert is self-rotated by an in-pod cert-rotator, and the serving cert
+  reload lags the caBundle patch by ~20s. When the runtimes ride in the operator
+  release, their CREATE/UPDATE patches hit the validating webhook inside that lag
+  window and fail with x509 "unknown authority", failing every operator upgrade.
+  Keeping them here means operator upgrades never patch a webhook-validated
+  resource. Snapshot of the upstream kubeflow-trainer 2.2.1 runtimes
+  (runtimes.defaultEnabled=true). One-time per-cluster migration onto this
+  release: see kubeflow/docs/trainer-runtimes-migration.md.
+type: application
+version: 1.0.0
+appVersion: "2.2.1"
