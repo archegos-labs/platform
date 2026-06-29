@@ -1,3 +1,7 @@
 # No values. The ClusterTrainingRuntime manifests are vendored statically in
-# templates/runtimes.yaml so that helm's adoption of the pre-existing CRs (during
-# the one-time migration off the operator release) is an exact, empty-diff no-op.
+# templates/runtimes.yaml. On a cluster where the CRs already exist (owned by the
+# operator release), this release does NOT adopt them automatically: a one-time
+# ownership migration (re-annotating meta.helm.sh/release-name on the live objects)
+# is required first — see kubeflow/docs/trainer-runtimes-migration.md. After that
+# migration, and on greenfield clusters, this release's install is an empty-diff
+# no-op / clean create.

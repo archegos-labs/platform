@@ -1,14 +1,18 @@
-# Vendored verbatim from `helm template kubeflow-trainer oci://ghcr.io/kubeflow/charts/kubeflow-trainer
-# --version 2.2.1 --set runtimes.defaultEnabled=true` (the ClusterTrainingRuntime objects only).
+# Vendored from `helm template kubeflow-trainer oci://ghcr.io/kubeflow/charts/kubeflow-trainer
+# --version 2.2.1 --set runtimes.defaultEnabled=true` (the ClusterTrainingRuntime objects only),
+# with one local addition: the helm.sh/resource-policy: keep annotation (see below). Labels are
+# otherwise left exactly as upstream renders them (incl. the original app.kubernetes.io/instance
+# and helm.sh/chart values).
 #
-# helm.sh/resource-policy: keep is intentional. These CRs were originally owned by the
-# `kubeflow-trainer` operator release. During the one-time migration that moves them here,
-# `keep` stops the operator's runtimes-off upgrade from deleting them so this release can adopt
-# them in place (empty diff, no webhook call). It also leaves them in the cluster if this release
-# is ever uninstalled — desirable for shared training-runtime blueprints.
-#
-# Labels are kept exactly as the upstream render produced them (incl. the original
-# app.kubernetes.io/instance and helm.sh/chart values) so adoption is a true no-op.
+# helm.sh/resource-policy: keep is intentional but does NOT, on its own, let this release adopt
+# these CRs. These CRs were originally owned by the `kubeflow-trainer` operator release; Helm
+# ownership is transferred by a separate, required one-time step that re-annotates
+# meta.helm.sh/release-name on the live objects — see kubeflow/docs/trainer-runtimes-migration.md.
+# `keep` only handles deletion: it stops the operator's runtimes-off upgrade from deleting the CRs
+# while ownership is being moved. Once both the ownership re-annotation AND the matching specs are
+# in place (the runbook applies this chart to do so), this release's install is an empty-diff
+# adoption with no webhook call. `keep` also leaves the CRs in the cluster if this release is ever
+# uninstalled — see the runbook's teardown/DR caveats.
 ---
 apiVersion: trainer.kubeflow.org/v1alpha1
 kind: ClusterTrainingRuntime
