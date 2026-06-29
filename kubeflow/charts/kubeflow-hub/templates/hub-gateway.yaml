@@ -1,0 +1,21 @@
+# Hub's own ingress entrypoint. Makes Envoy in the shared istio-ingressgateway open a
+# dedicated listener on the hub port; the Hub VirtualServices bind to this gateway. A
+# dedicated gateway/port (separate from the notebooks gateway) keeps Hub self-contained
+# rather than piggybacking on notebooks-owned infrastructure.
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ .Values.gateway.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: model-registry-ui
+spec:
+  selector:
+    app: {{ .Values.gateway.selector_label }}
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: http-hub
+      number: {{ .Values.gateway.port }}
+      protocol: HTTP

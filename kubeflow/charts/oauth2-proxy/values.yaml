@@ -39,4 +39,8 @@ upstreams:
   # /jupyter/ -> / since the JWA serves at root) and /notebook/<ns>/<name>/ (per-notebook
   # fan-out through the profile waypoint). Not exposed on the public NLB.
   notebook_gateway: istio-ingressgateway-notebooks.ingress.svc.cluster.local:8090
+  # Internal ClusterIP fronting the Hub's dedicated listener (kubeflow/kubeflow-hub-gateway).
+  # Fronts /model-registry/ (UI) and /api/model_registry/ + /api/model_catalog/ (APIs), routed
+  # by VirtualServices bound to kubeflow-hub-gateway. Not exposed on the public NLB.
+  hub_gateway: istio-ingressgateway-hub.ingress.svc.cluster.local:8091
   dashboard_service: dashboard.kubeflow.svc.cluster.local:80

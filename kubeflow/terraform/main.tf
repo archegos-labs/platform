@@ -88,6 +88,19 @@ resource "random_password" "mysql_root_password" {
   special = false
 }
 
+# MySQL root password for the in-cluster Hub (Model Registry) datastore. Replaces the
+# upstream root/test default; wired into model-registry-db-secrets MYSQL_ROOT_PASSWORD.
+resource "random_password" "hub_mysql_password" {
+  length  = 32
+  special = false
+}
+
+# Postgres password for the Hub model-catalog datastore.
+resource "random_password" "hub_catalog_pg_password" {
+  length  = 32
+  special = false
+}
+
 resource "helm_release" "istio_ingress" {
   name             = "istio-ingress"
   chart            = "../charts/istio-ingress"
@@ -411,6 +424,46 @@ resource "helm_release" "kubeflow_notebooks" {
   # Profile namespaces + default-editor + per-profile waypoints (which enforce the
   # owner authz that per-notebook traffic traverses) must exist first.
   depends_on = [helm_release.kubeflow_profiles]
+}
+
+#######################################
+# Kubeflow Hub (Model Registry + Model Catalog)
+#######################################
+resource "helm_release" "kubeflow_hub" {
+  name      = "kubeflow-hub"
+  chart     = "../charts/kubeflow-hub"
+  namespace = kubernetes_namespace.kubeflow.metadata[0].name
+
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 600
+
+  values = [
+    yamlencode({
+      namespace     = kubernetes_namespace.kubeflow.metadata[0].name
+      userid_header = "X-Forwarded-Email"
+      # Same source of truth as the other releases: profile workloads (default-editor) may
+      # reach the registry server in-cluster via the SDK.
+      profile_namespaces = [for p in local.profiles : p.namespace]
+      registry = {
+        db = {
+          password = random_password.hub_mysql_password.result
+        }
+      }
+      catalog = {
+        postgres = {
+          password = random_password.hub_catalog_pg_password.result
+        }
+      }
+      ingress = {
+        namespace = "ingress"
+      }
+    })
+  ]
+
+  # Hub owns its own dedicated kubeflow-hub-gateway listener + ClusterIP, so it only needs
+  # the shared istio-ingressgateway (Envoy pods + selector) to exist.
+  depends_on = [helm_release.istio_ingress]
 }
 
 module "acm_dashboard" {

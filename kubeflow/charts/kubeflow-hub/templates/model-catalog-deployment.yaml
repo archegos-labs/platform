@@ -1,0 +1,98 @@
+{{- if .Values.catalog.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-catalog-server
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: model-catalog
+    app.kubernetes.io/part-of: model-catalog
+    app.kubernetes.io/component: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: model-catalog
+      app.kubernetes.io/part-of: model-catalog
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: model-catalog
+        app.kubernetes.io/part-of: model-catalog
+        app.kubernetes.io/component: server
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+      volumes:
+      - name: sources
+        configMap:
+          name: model-catalog-sources
+      containers:
+        - name: catalog
+          image: {{ .Values.catalog.image }}:{{ .Values.catalog.tag }}
+          command:
+            - /model-registry
+            - catalog
+          args:
+            - --listen=0.0.0.0:8080
+            - --catalogs-path=/catalog/sources.yaml
+          env:
+            - name: PGHOST
+              value: model-catalog-postgres
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: model-catalog-postgres
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: model-catalog-postgres
+                  key: POSTGRES_PASSWORD
+          ports:
+            - name: http-api
+              containerPort: 8080
+          livenessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            tcpSocket:
+              port: http-api
+            timeoutSeconds: 2
+          readinessProbe:
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            tcpSocket:
+              port: http-api
+            timeoutSeconds: 2
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+          - name: sources
+            mountPath: /catalog
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: model-catalog
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: model-catalog
+    app.kubernetes.io/component: server
+    app.kubernetes.io/part-of: model-catalog
+spec:
+  selector:
+    app.kubernetes.io/part-of: model-catalog
+    app.kubernetes.io/component: server
+  type: ClusterIP
+  ports:
+  - port: 8080
+    protocol: TCP
+    appProtocol: http
+    name: http-api
+{{- end }}
