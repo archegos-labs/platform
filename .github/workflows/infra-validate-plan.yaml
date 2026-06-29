@@ -150,6 +150,8 @@ jobs:
         with:
           scan-type: config
           scan-ref: .
+          # Documented, path-scoped exceptions for accepted/false-positive findings.
+          trivyignores: .trivyignore.yaml
           format: sarif
           output: trivy-results.sarif
           severity: 'HIGH,CRITICAL'

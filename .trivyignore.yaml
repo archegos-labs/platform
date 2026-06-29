@@ -1,0 +1,56 @@
+# Trivy IaC config-scan exceptions. Each entry is a triaged finding that is accepted-by-design
+# or a false positive, scoped by `paths` to the specific file(s) so the same check still applies
+# everywhere else in the repo. See PR #218 review threads for the full discussion.
+#
+# `**/` globs match the file regardless of Trivy's scan root (CI scans repo root; local scans of
+# the chart dir report chart-relative paths). IDs use Trivy's check ID form (e.g. KSV-0056).
+#
+# NOT listed here (fixed in code, must keep flagging on regression): KSV-0045 (wildcard verbs),
+# KSV-0014 (readOnlyRootFilesystem), KSV-0011/0015/0016/0018 (resource requests/limits).
+misconfigurations:
+  # The notebook-controller creates and manages a Service per Notebook for per-notebook routing.
+  # Service names are dynamic (one per Notebook CR), so resourceNames scoping is impossible.
+  - id: KSV-0056
+    paths:
+      - "**/notebook-controller-rbac.yaml"
+    statement: "notebook-controller must create/manage a Service per Notebook; names are dynamic."
+
+  # The controller creates the StatefulSet that backs each Notebook (pods access is read-only).
+  - id: KSV-0048
+    paths:
+      - "**/notebook-controller-rbac.yaml"
+    statement: "notebook-controller must create/manage the StatefulSet backing each Notebook."
+
+  # Standard controller-runtime leader election writes to configmaps.
+  - id: KSV-0049
+    paths:
+      - "**/notebook-controller-rbac.yaml"
+    statement: "leader-election configmap writes are standard controller-runtime behavior."
+
+  # ghcr.io/kubeflow is the official upstream Kubeflow registry, used by every Kubeflow chart here.
+  - id: KSV-0125
+    paths:
+      - "**/notebook-controller-deployment.yaml"
+      - "**/jupyter-web-app-deployment.yaml"
+    statement: "ghcr.io/kubeflow is the official upstream Kubeflow image registry."
+
+  # Kubeflow images are built for uid/gid 1000; forcing >10000 risks file-permission breakage.
+  # The containers still run non-root (runAsNonRoot: true).
+  - id: KSV-0020
+    paths:
+      - "**/notebook-controller-deployment.yaml"
+      - "**/jupyter-web-app-deployment.yaml"
+    statement: "upstream images expect uid 1000; still non-root."
+  - id: KSV-0021
+    paths:
+      - "**/notebook-controller-deployment.yaml"
+      - "**/jupyter-web-app-deployment.yaml"
+    statement: "upstream images expect gid 1000; still non-root."
+
+  # False positive: flags the controller tunable CULL_IDLE_TIME and spawner-config comment lines
+  # containing the substring "Key" (topologyKey, limitsKey, configKey) - no secret material.
+  - id: KSV-01010
+    paths:
+      - "**/notebook-controller-configmap.yaml"
+      - "**/jupyter-web-app-configmap.yaml"
+    statement: "false positive: tunables / spawner-config comment lines, no secrets."
