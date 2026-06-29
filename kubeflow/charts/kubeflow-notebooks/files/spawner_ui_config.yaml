@@ -159,7 +159,9 @@ spawnerFormDefaults:
           # "{notebook-name}" is replaced with the Notebook name
           name: "{notebook-name}-workspace"
         spec:
-          #storageClassName: my-storage-class
+          # Pin the default gp3 StorageClass (defined in eks/addons/ebs-csi) so notebook
+          # workspace PVCs don't depend on the cluster default being set. platform-8kj.
+          storageClassName: gp3
           resources:
             requests:
               storage: 5Gi

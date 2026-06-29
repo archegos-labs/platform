@@ -3,4 +3,4 @@ appVersion: v1.11.0
 description: Kubeflow Notebooks - notebook-controller (Notebook CRD) + Jupyter Web App spawner
 name: kubeflow-notebooks
 type: application
-version: 1.0.1
+version: 1.0.2
