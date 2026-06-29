@@ -65,7 +65,9 @@ resource "kubernetes_storage_class_v1" "gp3" {
   parameters = {
     type      = "gp3"
     encrypted = "true"
-    fsType    = "ext4"
+    # CSI fstype key (handled by the external-provisioner). The legacy in-tree key `fsType`
+    # is not a recognized ebs.csi.aws.com parameter and fails CreateVolume.
+    "csi.storage.k8s.io/fstype" = "ext4"
   }
 
   depends_on = [aws_eks_addon.aws_ebs_csi]
