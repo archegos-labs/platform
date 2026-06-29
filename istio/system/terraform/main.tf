@@ -76,6 +76,13 @@ module "istio_istiod" {
         env:
           PILOT_ENABLE_AMBIENT: true
           CLOUD_PLATFORM: aws
+          # Route ingress-gateway traffic to a destination's waypoint when the target
+          # Service/Namespace is labeled istio.io/ingress-use-waypoint=true. Kubeflow Notebooks
+          # relies on this so per-notebook UI traffic (ingress gateway -> notebook Service in a
+          # profile namespace) traverses the profile waypoint, where ns-owner-access-waypoint
+          # enforces L7 owner-isolation instead of being delivered pod-direct. Defaults off
+          # (sidecar gateways otherwise bypass waypoints). platform-f2t.
+          ENABLE_INGRESS_WAYPOINT_ROUTING: true
       istio_cni:
         enabled: true
         chained: true

@@ -34,10 +34,9 @@ upstreams:
   kfam_service: profiles-kfam.kubeflow.svc.cluster.local:8081
   pipeline_service: ml-pipeline-ui.kubeflow.svc.cluster.local:80
   metadata_envoy_service: metadata-envoy-service.kubeflow.svc.cluster.local:9090
-  # Jupyter Web App spawner UI (serves under APP_PREFIX=/jupyter).
-  jupyter_web_app_service: jupyter-web-app-service.kubeflow.svc.cluster.local:80
-  # Per-notebook fan-out: internal ClusterIP fronting the shared istio-ingressgateway's
-  # dedicated notebooks listener (kubeflow/kubeflow-gateway), which routes
-  # /notebook/<ns>/<name>/ to the right notebook Service. Not exposed on the public NLB.
+  # Internal ClusterIP fronting the shared istio-ingressgateway's dedicated notebooks listener
+  # (kubeflow/kubeflow-gateway). Fronts BOTH /jupyter/ (the JWA, where the gateway rewrites
+  # /jupyter/ -> / since the JWA serves at root) and /notebook/<ns>/<name>/ (per-notebook
+  # fan-out through the profile waypoint). Not exposed on the public NLB.
   notebook_gateway: istio-ingressgateway-notebooks.ingress.svc.cluster.local:8090
   dashboard_service: dashboard.kubeflow.svc.cluster.local:80

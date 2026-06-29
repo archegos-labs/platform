@@ -1,0 +1,34 @@
+# The Jupyter Web App backend serves all routes at root (its APP_PREFIX only rewrites the
+# index.html <base href>, not the Flask routes), so it expects the /jupyter prefix to be
+# STRIPPED before requests arrive. oauth2-proxy forwards the prefix un-stripped, so route the
+# JWA through kubeflow-gateway and rewrite /jupyter/ -> / here (mirrors the upstream JWA istio
+# overlay). x-forwarded-prefix lets the app build correct absolute URLs. oauth2-proxy points its
+# /jupyter/ upstream at the gateway (see oauth2-proxy values/configmap). platform-8kj.
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: jupyter-web-app
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: jupyter-web-app
+    kustomize.component: jupyter-web-app
+spec:
+  gateways:
+  - {{ .Values.namespace }}/{{ .Values.gateway.name }}
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /jupyter/
+    rewrite:
+      uri: /
+    headers:
+      request:
+        set:
+          x-forwarded-prefix: /jupyter
+    route:
+    - destination:
+        host: jupyter-web-app-service.{{ .Values.namespace }}.svc.cluster.local
+        port:
+          number: 80

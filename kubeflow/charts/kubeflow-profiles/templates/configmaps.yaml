@@ -31,6 +31,11 @@ data:
     app.kubernetes.io/part-of: "kubeflow-profile"
     istio.io/dataplane-mode: "ambient"
     istio.io/use-waypoint: "waypoint"
+    # Route ingress-gateway traffic into this namespace through the waypoint (requires istiod
+    # ENABLE_INGRESS_WAYPOINT_ROUTING) so per-notebook UI traffic is L7 owner-isolated at the
+    # waypoint instead of delivered pod-direct. The profile-controller applies this additively to
+    # ALL profile namespaces, including already-existing ones. platform-f2t.
+    istio.io/ingress-use-waypoint: "true"
     katib.kubeflow.org/metrics-collector-injection: "enabled"
     pipelines.kubeflow.org/enabled: "true"
     serving.kubeflow.org/inferenceservice: "enabled"
