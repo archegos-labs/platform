@@ -375,9 +375,7 @@ resource "helm_release" "kubeflow_notebooks" {
       namespace     = kubernetes_namespace.kubeflow.metadata[0].name
       userid_header = "X-Forwarded-Email"
       ingress = {
-        namespace       = "ingress"
-        gateway         = "ingress-gateway"
-        service_account = "istio-ingressgateway"
+        namespace = "ingress"
       }
     })
   ]

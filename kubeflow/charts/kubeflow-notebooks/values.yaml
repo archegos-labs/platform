@@ -39,7 +39,7 @@ gateway:
   # Internal ClusterIP Service (in ingress ns) that exposes the listener to oauth2-proxy.
   service_name: istio-ingressgateway-notebooks
 
+# Namespace of the shared istio-ingressgateway (where the internal notebooks fan-out
+# Service is created).
 ingress:
   namespace: ingress
-  gateway: ingress-gateway
-  service_account: istio-ingressgateway
