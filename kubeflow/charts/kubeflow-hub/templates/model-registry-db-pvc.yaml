@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: metadata-mysql
+  name: model-registry-mysql
   namespace: {{ .Values.namespace }}
 spec:
   accessModes:

@@ -1,6 +1,6 @@
-# UI: oauth2-proxy forwards /model-registry/ to the shared kubeflow-gateway listener, which
-# rewrites to / (the UI serves at root). The Model Registry BFF reads the user identity from
-# the hardcoded "kubeflow-userid" header; our oauth2-proxy emits the email as
+# UI: oauth2-proxy forwards /model-registry/ to the Hub gateway listener (kubeflow-hub-gateway),
+# which rewrites to / (the UI serves at root). The Model Registry BFF reads the user identity
+# from the hardcoded "kubeflow-userid" header; our oauth2-proxy emits the email as
 # {{ .Values.userid_header }}, so bridge it via Envoy's %REQ()% command operator.
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
