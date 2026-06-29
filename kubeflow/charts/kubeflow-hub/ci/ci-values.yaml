@@ -1,0 +1,9 @@
+# CI-only dummy values so the chart renders (registry.db.password and
+# catalog.postgres.password are required; terraform supplies the real values at deploy time).
+# Used by the helm-validate workflow.
+registry:
+  db:
+    password: ci-dummy-mysql-password
+catalog:
+  postgres:
+    password: ci-dummy-postgres-password
