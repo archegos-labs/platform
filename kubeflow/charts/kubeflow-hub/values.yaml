@@ -1,0 +1,56 @@
+namespace: kubeflow
+
+# Kubeflow profile namespaces whose in-cluster workloads (the default-editor SA used by
+# notebooks/pipelines) are allowed to reach the registry server directly via the SDK.
+# Driven from the same local.profiles list as the other releases (single source of truth).
+profile_namespaces: []
+
+# Identity header our oauth2-proxy emits for the authenticated user. The Model Registry BFF
+# keys on the hardcoded "kubeflow-userid" header (not configurable upstream), so the UI
+# VirtualService bridges this header into kubeflow-userid via an Envoy command operator.
+userid_header: X-Forwarded-Email
+
+registry:
+  image: ghcr.io/kubeflow/hub/server
+  tag: v0.3.10
+  db:
+    image: public.ecr.aws/docker/library/mysql
+    tag: "8.3"
+    database: metadb
+    port: 3306
+    user: root
+    # Set by terraform (random_password). MySQL root password.
+    password: ""
+    storage: 10Gi
+
+ui:
+  image: ghcr.io/kubeflow/hub/ui
+  tag: v0.3.10
+  prefix: /model-registry
+
+catalog:
+  enabled: true
+  image: ghcr.io/kubeflow/hub/server
+  tag: v0.3.10
+  postgres:
+    image: postgres
+    tag: "17.6"
+    user: postgres
+    # Set by terraform (random_password).
+    password: ""
+    storage: 5Gi
+
+# Shared istio-ingressgateway (in the ingress namespace) that fronts the kubeflow-gateway
+# listener. Used as the AuthorizationPolicy principal for ingress-origin traffic.
+ingress:
+  namespace: ingress
+  service_account: istio-ingressgateway
+
+# Hub's own dedicated Istio Gateway listener (a separate port from notebooks) that the UI/API
+# VirtualServices bind to. oauth2-proxy forwards /model-registry/ and /api/model_*/ to the
+# ClusterIP (service_name, in the ingress namespace) that fronts this listener.
+gateway:
+  name: kubeflow-hub-gateway
+  port: 8091
+  selector_label: istio-ingressgateway
+  service_name: istio-ingressgateway-hub

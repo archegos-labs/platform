@@ -1,0 +1,75 @@
+# UI: oauth2-proxy forwards /model-registry/ to the Hub gateway listener (kubeflow-hub-gateway),
+# which rewrites to / (the UI serves at root). The Model Registry BFF reads the user identity
+# from the hardcoded "kubeflow-userid" header; our oauth2-proxy emits the email as
+# {{ .Values.userid_header }}, so bridge it via Envoy's %REQ()% command operator.
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: model-registry-ui
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: model-registry-ui
+spec:
+  gateways:
+  - {{ .Values.namespace }}/{{ .Values.gateway.name }}
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: {{ .Values.ui.prefix }}/
+    rewrite:
+      uri: /
+    headers:
+      request:
+        set:
+          x-forwarded-prefix: {{ .Values.ui.prefix }}
+          kubeflow-userid: "%REQ({{ .Values.userid_header }})%"
+    route:
+    - destination:
+        host: model-registry-ui-service.{{ .Values.namespace }}.svc.cluster.local
+        port:
+          number: 80
+---
+# Direct REST API access to the registry server.
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: model-registry
+  namespace: {{ .Values.namespace }}
+spec:
+  gateways:
+  - {{ .Values.namespace }}/{{ .Values.gateway.name }}
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /api/model_registry/
+    route:
+    - destination:
+        host: model-registry-service.{{ .Values.namespace }}.svc.cluster.local
+        port:
+          number: 8080
+{{- if .Values.catalog.enabled }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: model-catalog
+  namespace: {{ .Values.namespace }}
+spec:
+  gateways:
+  - {{ .Values.namespace }}/{{ .Values.gateway.name }}
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /api/model_catalog/
+    route:
+    - destination:
+        host: model-catalog.{{ .Values.namespace }}.svc.cluster.local
+        port:
+          number: 8080
+{{- end }}

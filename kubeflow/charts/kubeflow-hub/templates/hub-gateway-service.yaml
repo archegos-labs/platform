@@ -1,0 +1,21 @@
+# Internal-only entrypoint to the hub listener. The kubeflow-hub-gateway (kubeflow ns) makes
+# Envoy in the shared istio-ingressgateway open a listener on the hub port; this ClusterIP
+# Service (in the ingress ns, selecting those Envoy pods) exposes that port in-cluster WITHOUT
+# adding it to the public NLB Service. oauth2-proxy forwards /model-registry/ and /api/model_*/
+# here after authenticating the user.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.gateway.service_name }}
+  namespace: {{ .Values.ingress.namespace }}
+  labels:
+    app: model-registry-ui
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.gateway.selector_label }}
+  ports:
+  - name: http-hub
+    port: {{ .Values.gateway.port }}
+    protocol: TCP
+    targetPort: {{ .Values.gateway.port }}

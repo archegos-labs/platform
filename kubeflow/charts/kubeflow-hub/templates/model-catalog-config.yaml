@@ -1,0 +1,24 @@
+{{- if .Values.catalog.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: model-catalog-sources
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/part-of: model-catalog
+data:
+  sources.yaml: |
+    catalogs: []
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: model-catalog-postgres
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/part-of: model-catalog
+type: Opaque
+stringData:
+  POSTGRES_USER: {{ .Values.catalog.postgres.user | quote }}
+  POSTGRES_PASSWORD: {{ required "catalog.postgres.password is required" .Values.catalog.postgres.password | quote }}
+{{- end }}

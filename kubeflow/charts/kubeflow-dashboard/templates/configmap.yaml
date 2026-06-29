@@ -31,6 +31,14 @@ data:
           ],
           "text": "Notebooks",
           "type": "section"
+        },
+        {
+          "icon": "assignment",
+          "items": [
+            {"link": "/model-registry/", "text": "Model Registry", "type": "item"}
+          ],
+          "text": "Model Registry",
+          "type": "section"
         }
       ],
       "externalLinks": [],

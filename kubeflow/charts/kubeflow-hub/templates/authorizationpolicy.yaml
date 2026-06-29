@@ -1,0 +1,69 @@
+# ztunnel L4 authz (ambient). Replaces the upstream sidecar-mode DestinationRule (ISTIO_MUTUAL)
+# + kubeflow-userid AuthorizationPolicy combo. Callers reach these workloads via the shared
+# kubeflow-gateway (ingress gateway SA) or directly from oauth2-proxy; the UI BFF
+# (model-registry-ui SA) calls the registry server and catalog in-cluster.
+# ztunnel honors only exact principals (no wildcards).
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: model-registry-ui
+  namespace: {{ .Values.namespace }}
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app: model-registry-ui
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
+        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/{{ .Values.ingress.service_account }}
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: model-registry-service
+  namespace: {{ .Values.namespace }}
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      component: model-registry-server
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
+        - cluster.local/ns/{{ .Values.namespace }}/sa/model-registry-ui
+        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/{{ .Values.ingress.service_account }}
+{{- if .Values.profile_namespaces }}
+  # In-cluster SDK access from profile workloads (notebooks/pipelines run as default-editor).
+  - from:
+    - source:
+        principals:
+        {{- range .Values.profile_namespaces }}
+        - cluster.local/ns/{{ . }}/sa/default-editor
+        {{- end }}
+{{- end }}
+{{- if .Values.catalog.enabled }}
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: model-catalog
+  namespace: {{ .Values.namespace }}
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: model-catalog
+      app.kubernetes.io/component: server
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
+        - cluster.local/ns/{{ .Values.namespace }}/sa/model-registry-ui
+        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/{{ .Values.ingress.service_account }}
+{{- end }}

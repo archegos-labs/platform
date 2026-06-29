@@ -52,5 +52,8 @@ data:
       "http://{{ .Values.upstreams.metadata_envoy_service }}/ml_metadata.MetadataStoreService/",
       "http://{{ .Values.upstreams.notebook_gateway }}/jupyter/",
       "http://{{ .Values.upstreams.notebook_gateway }}/notebook/",
+      "http://{{ .Values.upstreams.hub_gateway }}/model-registry/",
+      "http://{{ .Values.upstreams.hub_gateway }}/api/model_registry/",
+      "http://{{ .Values.upstreams.hub_gateway }}/api/model_catalog/",
       "http://{{ .Values.upstreams.dashboard_service }}/",
     ]
