@@ -16,7 +16,6 @@ spec:
         kubectl.kubernetes.io/default-container: dashboard
       labels:
         app: kubeflow-dashboard
-        sidecar.istio.io/inject: "true"
     spec:
       serviceAccountName: dashboard
       containers:
