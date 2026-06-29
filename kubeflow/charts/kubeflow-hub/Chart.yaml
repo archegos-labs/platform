@@ -3,4 +3,4 @@ appVersion: v0.3.10
 description: Kubeflow Hub (Model Registry) - registry server + MySQL datastore, web UI, and model catalog
 name: kubeflow-hub
 type: application
-version: 0.1.0
+version: 0.1.1
