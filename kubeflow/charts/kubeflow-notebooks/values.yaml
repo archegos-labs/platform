@@ -1,0 +1,45 @@
+namespace: kubeflow
+
+# Identity header set by oauth2-proxy and consumed by the Jupyter Web App to scope
+# notebooks to the caller's profile namespace. Must match the kubeflow-profiles /
+# dashboard userid_header (X-Forwarded-Email in this deployment).
+userid_header: X-Forwarded-Email
+userid_prefix: ""
+
+notebook_controller:
+  image: ghcr.io/kubeflow/notebooks/notebook-controller
+  tag: v1.11.0
+  # Per-notebook traffic fan-out. The controller writes one istio VirtualService per
+  # Notebook bound to this gateway, matching /notebook/<ns>/<name>/. oauth2-proxy forwards
+  # /notebook/ to this gateway (see kubeflow-gateway.yaml + oauth2-proxy upstreams).
+  use_istio: "true"
+  istio_gateway: kubeflow/kubeflow-gateway
+  istio_host: "*"
+  cluster_domain: cluster.local
+  enable_culling: "false"
+  cull_idle_time: "1440"
+  idleness_check_period: "1"
+
+jupyter_web_app:
+  image: ghcr.io/kubeflow/notebooks/jupyter-web-app
+  tag: v1.11.0
+  prefix: /jupyter
+  ui: default
+  secure_cookies: "true"
+  enable_metrics: "1"
+
+# istio Gateway used for per-notebook fan-out. Bound to the shared istio-ingressgateway
+# on a dedicated port so it does not collide with the dashboard_host VirtualService.
+gateway:
+  name: kubeflow-gateway
+  # Label on the shared istio-ingressgateway pods (set by the istio gateway chart).
+  selector_label: istio-ingressgateway
+  # Dedicated notebooks listener port (not exposed on the public NLB).
+  port: 8090
+  # Internal ClusterIP Service (in ingress ns) that exposes the listener to oauth2-proxy.
+  service_name: istio-ingressgateway-notebooks
+
+# Namespace of the shared istio-ingressgateway (where the internal notebooks fan-out
+# Service is created).
+ingress:
+  namespace: ingress

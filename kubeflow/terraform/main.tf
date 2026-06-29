@@ -386,6 +386,33 @@ resource "helm_release" "kubeflow_dashboard" {
   depends_on = [helm_release.kubeflow_profiles]
 }
 
+#######################################
+# Kubeflow Notebooks (notebook-controller + Jupyter Web App)
+#######################################
+resource "helm_release" "kubeflow_notebooks" {
+  name      = "kubeflow-notebooks"
+  chart     = "../charts/kubeflow-notebooks"
+  namespace = kubernetes_namespace.kubeflow.metadata[0].name
+
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 600
+
+  values = [
+    yamlencode({
+      namespace     = kubernetes_namespace.kubeflow.metadata[0].name
+      userid_header = "X-Forwarded-Email"
+      ingress = {
+        namespace = "ingress"
+      }
+    })
+  ]
+
+  # Profile namespaces + default-editor + per-profile waypoints (which enforce the
+  # owner authz that per-notebook traffic traverses) must exist first.
+  depends_on = [helm_release.kubeflow_profiles]
+}
+
 module "acm_dashboard" {
   source  = "terraform-aws-modules/acm/aws"
   version = "~> 6.0"

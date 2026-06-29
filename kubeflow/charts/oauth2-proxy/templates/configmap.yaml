@@ -50,5 +50,7 @@ data:
       "http://{{ .Values.upstreams.kfam_service }}/kfam/",
       "http://{{ .Values.upstreams.pipeline_service }}/pipeline/",
       "http://{{ .Values.upstreams.metadata_envoy_service }}/ml_metadata.MetadataStoreService/",
+      "http://{{ .Values.upstreams.jupyter_web_app_service }}/jupyter/",
+      "http://{{ .Values.upstreams.notebook_gateway }}/notebook/",
       "http://{{ .Values.upstreams.dashboard_service }}/",
     ]

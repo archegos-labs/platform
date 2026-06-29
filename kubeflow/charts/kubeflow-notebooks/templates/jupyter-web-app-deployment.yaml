@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter-web-app-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: jupyter-web-app
+    kustomize.component: jupyter-web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyter-web-app
+      kustomize.component: jupyter-web-app
+  template:
+    metadata:
+      labels:
+        app: jupyter-web-app
+        kustomize.component: jupyter-web-app
+    spec:
+      serviceAccountName: jupyter-web-app-service-account
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: jupyter-web-app
+        image: {{ .Values.jupyter_web_app.image }}:{{ .Values.jupyter_web_app.tag }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: APP_PREFIX
+          value: {{ .Values.jupyter_web_app.prefix | quote }}
+        - name: UI
+          value: {{ .Values.jupyter_web_app.ui | quote }}
+        # Identify the caller from the oauth2-proxy header so notebooks land in the
+        # user's profile namespace.
+        - name: USERID_HEADER
+          value: {{ .Values.userid_header | quote }}
+        - name: USERID_PREFIX
+          value: {{ .Values.userid_prefix | quote }}
+        - name: APP_SECURE_COOKIES
+          value: {{ .Values.jupyter_web_app.secure_cookies | quote }}
+        - name: METRICS
+          value: {{ .Values.jupyter_web_app.enable_metrics | quote }}
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
+        - mountPath: /src/apps/default/static/assets/logos
+          name: logos-volume
+        - mountPath: /tmp
+          name: tmp
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          runAsUser: 1000
+          # Root fs is read-only; the app only needs a writable /tmp (emptyDir below).
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: config-volume
+        configMap:
+          name: jupyter-web-app-config
+      - name: logos-volume
+        configMap:
+          name: jupyter-web-app-logos
+      - name: tmp
+        emptyDir: {}
