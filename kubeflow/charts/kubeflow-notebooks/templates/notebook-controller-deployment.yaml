@@ -31,6 +31,13 @@ spec:
         envFrom:
         - configMapRef:
             name: notebook-controller-config
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
         livenessProbe:
           httpGet:
             path: /healthz
@@ -47,6 +54,7 @@ spec:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
           runAsUser: 1000
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - ALL

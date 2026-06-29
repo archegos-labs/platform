@@ -43,15 +43,26 @@ spec:
           value: {{ .Values.jupyter_web_app.secure_cookies | quote }}
         - name: METRICS
           value: {{ .Values.jupyter_web_app.enable_metrics | quote }}
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
         volumeMounts:
         - mountPath: /etc/config
           name: config-volume
         - mountPath: /src/apps/default/static/assets/logos
           name: logos-volume
+        - mountPath: /tmp
+          name: tmp
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
           runAsUser: 1000
+          # Root fs is read-only; the app only needs a writable /tmp (emptyDir below).
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - ALL
@@ -62,3 +73,5 @@ spec:
       - name: logos-volume
         configMap:
           name: jupyter-web-app-logos
+      - name: tmp
+        emptyDir: {}
