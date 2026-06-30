@@ -24,10 +24,10 @@ admin_email: ""
 # optional `contributors` list of authenticated emails granted L7 access at the namespace's
 # waypoint (rendered into ns-owner-access-waypoint alongside the owner). Example:
 #   profiles:
-#   - namespace: kubeflow-admin
-#     owner: admin@example.com
-#     contributors:
-#     - user@example.com
+#     - namespace: kubeflow-admin
+#       owner: admin@example.com
+#       contributors:
+#         - user@example.com
 profiles: []
 
 ingress:
