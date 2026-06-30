@@ -461,9 +461,10 @@ resource "helm_release" "kubeflow_hub" {
     })
   ]
 
-  # Hub owns its own dedicated kubeflow-hub-gateway listener + ClusterIP, so it only needs
-  # the shared istio-ingressgateway (Envoy pods + selector) to exist.
-  depends_on = [helm_release.istio_ingress]
+  # The registry server + datastore are deployed per profile namespace, so those namespaces
+  # (created by the profiles release) must exist first. kubeflow_profiles transitively depends
+  # on istio_ingress (the shared gateway the Hub UI listener selects).
+  depends_on = [helm_release.kubeflow_profiles]
 }
 
 module "acm_dashboard" {

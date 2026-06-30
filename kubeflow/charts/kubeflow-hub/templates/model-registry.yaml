@@ -1,0 +1,267 @@
+{{- /*
+Per-profile Model Registry: the UI (central, in {{ .Values.namespace }}) discovers registries
+by listing Services labeled component=model-registry in the user's SELECTED (profile) namespace,
+so the registry server + its MySQL datastore are deployed once PER profile namespace.
+
+Ambient note: profile namespaces route service traffic through their owner-isolation waypoint,
+which does not allow the model-registry-ui SA. The registry/db Services are labeled
+istio.io/use-waypoint=none so the central UI BFF reaches them via ztunnel (L4); access is gated
+by the per-namespace AuthorizationPolicy below. Owner isolation is still enforced by the BFF
+(SubjectAccessReview) and this policy's principal allow-list.
+*/}}
+{{- range $ns := .Values.profile_namespaces }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: model-registry-server
+  namespace: {{ $ns }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: model-registry-configmap
+  namespace: {{ $ns }}
+  labels:
+    component: model-registry-server
+data:
+  MODEL_REGISTRY_REST_SERVICE_HOST: "model-registry-service"
+  MODEL_REGISTRY_REST_SERVICE_PORT: "8080"
+  MODEL_REGISTRY_DATA_STORE_TYPE: "embedmd"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: model-registry-db-parameters
+  namespace: {{ $ns }}
+  labels:
+    component: model-registry-server
+data:
+  MYSQL_DATABASE: {{ $.Values.registry.db.database | quote }}
+  MYSQL_PORT: {{ $.Values.registry.db.port | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: model-registry-db-secrets
+  namespace: {{ $ns }}
+  labels:
+    component: model-registry-server
+type: Opaque
+stringData:
+  MYSQL_USER_NAME: {{ $.Values.registry.db.user | quote }}
+  MYSQL_ROOT_PASSWORD: {{ required "registry.db.password is required" $.Values.registry.db.password | quote }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-registry-deployment
+  namespace: {{ $ns }}
+  labels:
+    component: model-registry-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: model-registry-server
+  template:
+    metadata:
+      labels:
+        component: model-registry-server
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+      containers:
+        - name: rest-container
+          image: {{ $.Values.registry.image }}:{{ $.Values.registry.tag }}
+          command:
+            - /model-registry
+            - proxy
+          args:
+            - --hostname=0.0.0.0
+            - --port=$(MODEL_REGISTRY_REST_SERVICE_PORT)
+            - --datastore-type=$(MODEL_REGISTRY_DATA_STORE_TYPE)
+            - --embedmd-database-dsn=$(MYSQL_USER_NAME):$(MYSQL_ROOT_PASSWORD)@tcp(model-registry-db:$(MYSQL_PORT))/$(MYSQL_DATABASE)?charset=utf8mb4
+          envFrom:
+            - configMapRef:
+                name: model-registry-configmap
+            - secretRef:
+                name: model-registry-db-secrets
+            - configMapRef:
+                name: model-registry-db-parameters
+          ports:
+            - name: http-api
+              containerPort: 8080
+          livenessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            httpGet:
+              path: /readyz/isDirty
+              port: http-api
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            httpGet:
+              path: /readyz/isDirty
+              port: http-api
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            httpGet:
+              path: /readyz/health
+              port: http-api
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      serviceAccountName: model-registry-server
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: model-registry-service
+  namespace: {{ $ns }}
+  labels:
+    app: model-registry-service
+    app.kubernetes.io/component: model-registry
+    app.kubernetes.io/instance: model-registry-service
+    app.kubernetes.io/name: model-registry-service
+    app.kubernetes.io/part-of: model-registry
+    component: model-registry
+    # Bypass the profile's owner-isolation waypoint so the central UI BFF (in
+    # {{ $.Values.namespace }}) can reach this registry; access is gated by the AuthorizationPolicy below.
+    istio.io/use-waypoint: none
+  annotations:
+    displayName: Kubeflow Model Registry
+    description: Kubeflow Model Registry
+spec:
+  selector:
+    component: model-registry-server
+  type: ClusterIP
+  ports:
+  - port: 8080
+    protocol: TCP
+    appProtocol: http
+    name: http-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-registry-db
+  namespace: {{ $ns }}
+  labels:
+    component: db
+spec:
+  selector:
+    matchLabels:
+      component: db
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      name: db
+      labels:
+        component: db
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        fsGroup: 999
+      containers:
+      - name: db-container
+        image: {{ $.Values.registry.db.image }}:{{ $.Values.registry.db.tag }}
+        args:
+        - --datadir
+        - /var/lib/mysql/datadir
+        envFrom:
+        - configMapRef:
+            name: model-registry-db-parameters
+        - secretRef:
+            name: model-registry-db-secrets
+        ports:
+        - name: dbapi
+          containerPort: 3306
+        readinessProbe:
+          exec:
+            command:
+            - "/bin/sh"
+            - "-c"
+            - "mysql -h 127.0.0.1 -D $MYSQL_DATABASE -u$MYSQL_USER_NAME -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1'"
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          timeoutSeconds: 1
+        volumeMounts:
+        - name: model-registry-mysql
+          mountPath: /var/lib/mysql
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 999
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+      volumes:
+      - name: model-registry-mysql
+        persistentVolumeClaim:
+          claimName: model-registry-mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: model-registry-db
+  namespace: {{ $ns }}
+  labels:
+    component: db
+    istio.io/use-waypoint: none
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+      protocol: TCP
+      name: dbapi
+  selector:
+    component: db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-registry-mysql
+  namespace: {{ $ns }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $.Values.registry.db.storage }}
+---
+# ztunnel L4 authz: the central UI BFF and in-namespace SDK workloads may reach the registry.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: model-registry-service
+  namespace: {{ $ns }}
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      component: model-registry-server
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/{{ $.Values.namespace }}/sa/oauth2-proxy
+        - cluster.local/ns/{{ $.Values.namespace }}/sa/model-registry-ui
+        - cluster.local/ns/{{ $.Values.ingress.namespace }}/sa/{{ $.Values.ingress.service_account }}
+        - cluster.local/ns/{{ $ns }}/sa/default-editor
+{{- end }}

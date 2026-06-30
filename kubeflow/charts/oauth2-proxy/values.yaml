@@ -40,7 +40,8 @@ upstreams:
   # fan-out through the profile waypoint). Not exposed on the public NLB.
   notebook_gateway: istio-ingressgateway-notebooks.ingress.svc.cluster.local:8090
   # Internal ClusterIP fronting the Hub's dedicated listener (kubeflow/kubeflow-hub-gateway).
-  # Fronts /model-registry/ (UI) and /api/model_registry/ + /api/model_catalog/ (APIs), routed
-  # by VirtualServices bound to kubeflow-hub-gateway. Not exposed on the public NLB.
+  # Fronts /model-registry/ (UI) and /api/model_catalog/ (catalog API), routed by VirtualServices
+  # bound to kubeflow-hub-gateway. The registry REST API is per-profile and reached in-cluster by
+  # the UI BFF, so it is not exposed here. Not on the public NLB.
   hub_gateway: istio-ingressgateway-hub.ingress.svc.cluster.local:8091
   dashboard_service: dashboard.kubeflow.svc.cluster.local:80

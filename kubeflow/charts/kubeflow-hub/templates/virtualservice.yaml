@@ -30,27 +30,6 @@ spec:
         host: model-registry-ui-service.{{ .Values.namespace }}.svc.cluster.local
         port:
           number: 80
----
-# Direct REST API access to the registry server.
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: model-registry
-  namespace: {{ .Values.namespace }}
-spec:
-  gateways:
-  - {{ .Values.namespace }}/{{ .Values.gateway.name }}
-  hosts:
-  - '*'
-  http:
-  - match:
-    - uri:
-        prefix: /api/model_registry/
-    route:
-    - destination:
-        host: model-registry-service.{{ .Values.namespace }}.svc.cluster.local
-        port:
-          number: 8080
 {{- if .Values.catalog.enabled }}
 ---
 apiVersion: networking.istio.io/v1beta1
