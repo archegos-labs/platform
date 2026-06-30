@@ -19,33 +19,6 @@ spec:
         principals:
         - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
         - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/{{ .Values.ingress.service_account }}
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: model-registry-service
-  namespace: {{ .Values.namespace }}
-spec:
-  action: ALLOW
-  selector:
-    matchLabels:
-      component: model-registry-server
-  rules:
-  - from:
-    - source:
-        principals:
-        - cluster.local/ns/{{ .Values.namespace }}/sa/oauth2-proxy
-        - cluster.local/ns/{{ .Values.namespace }}/sa/model-registry-ui
-        - cluster.local/ns/{{ .Values.ingress.namespace }}/sa/{{ .Values.ingress.service_account }}
-{{- if .Values.profile_namespaces }}
-  # In-cluster SDK access from profile workloads (notebooks/pipelines run as default-editor).
-  - from:
-    - source:
-        principals:
-        {{- range .Values.profile_namespaces }}
-        - cluster.local/ns/{{ . }}/sa/default-editor
-        {{- end }}
-{{- end }}
 {{- if .Values.catalog.enabled }}
 ---
 apiVersion: security.istio.io/v1beta1
