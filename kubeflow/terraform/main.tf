@@ -6,8 +6,16 @@ locals {
   # ml-pipeline / minio / metadata-grpc AuthorizationPolicies to each namespace's
   # default-editor — ztunnel needs exact principals, no wildcards). Add a profile by
   # appending { namespace, owner } here (platform-lyl).
+  #
+  # `contributors` (optional) lists additional authenticated emails granted L7 access to
+  # the namespace's workloads at the waypoint. Dashboard-added contributors get a kfam
+  # RoleBinding + a namespace-wide AuthorizationPolicy, but that policy has no waypoint
+  # targetRef so ztunnel drops its HTTP rule — leaving the contributor without mesh access
+  # (notebooks/registry 403). Listing them here renders their email into
+  # ns-owner-access-waypoint so the waypoint enforces it. RBAC (kubeflow-edit RoleBinding)
+  # still comes from the dashboard add-contributor flow.
   profiles = [
-    { namespace = "kubeflow-admin", owner = var.admin_email },
+    { namespace = "kubeflow-admin", owner = var.admin_email, contributors = ["padpatil@uw.edu"] },
   ]
 }
 
@@ -367,7 +375,7 @@ resource "helm_release" "kubeflow_profiles" {
       image_tag     = "v2.0.0"
       admin_email   = var.admin_email
       profiles      = local.profiles
-      userid_header = "X-Forwarded-Email"
+      userid_header = "x-forwarded-email"
     })
   ]
 
@@ -390,7 +398,7 @@ resource "helm_release" "kubeflow_dashboard" {
         repository = "ghcr.io/kubeflow/dashboard/dashboard"
         tag        = "v2.0.0"
       }
-      userid_header     = "X-Forwarded-Email"
+      userid_header     = "x-forwarded-email"
       registration_flow = "false"
       logout_url        = "/oauth2/sign_out"
     })
@@ -414,7 +422,7 @@ resource "helm_release" "kubeflow_notebooks" {
   values = [
     yamlencode({
       namespace     = kubernetes_namespace.kubeflow.metadata[0].name
-      userid_header = "X-Forwarded-Email"
+      userid_header = "x-forwarded-email"
       ingress = {
         namespace = "ingress"
       }
@@ -441,7 +449,7 @@ resource "helm_release" "kubeflow_hub" {
   values = [
     yamlencode({
       namespace     = kubernetes_namespace.kubeflow.metadata[0].name
-      userid_header = "X-Forwarded-Email"
+      userid_header = "x-forwarded-email"
       # Same source of truth as the other releases: profile workloads (default-editor) may
       # reach the registry server in-cluster via the SDK.
       profile_namespaces = [for p in local.profiles : p.namespace]

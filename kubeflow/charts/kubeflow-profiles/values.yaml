@@ -20,10 +20,14 @@ admin_email: ""
 # drives both from one local.profiles list (platform-lyl).
 #
 # Defaults to empty (a profile with an empty owner renders an invalid Profile). Terraform
-# supplies the real list via local.profiles. Each entry: { namespace, owner }. Example:
+# supplies the real list via local.profiles. Each entry: { namespace, owner } plus an
+# optional `contributors` list of authenticated emails granted L7 access at the namespace's
+# waypoint (rendered into ns-owner-access-waypoint alongside the owner). Example:
 #   profiles:
-#   - namespace: kubeflow-admin
-#     owner: admin@example.com
+#     - namespace: kubeflow-admin
+#       owner: admin@example.com
+#       contributors:
+#         - user@example.com
 profiles: []
 
 ingress:

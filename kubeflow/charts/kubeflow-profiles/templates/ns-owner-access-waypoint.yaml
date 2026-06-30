@@ -37,7 +37,7 @@ spec:
         - cluster.local/ns/{{ $.Values.namespace }}/sa/ml-pipeline-ui
     when:
     # userid_header is configured per-deployment (chart default "kubeflow-userid";
-    # this deployment's terraform sets it to "X-Forwarded-Email" — the header
+    # this deployment's terraform sets it to "x-forwarded-email" — the header
     # oauth2-proxy actually emits upstream in reverse-proxy mode (pass_user_headers),
     # matching the profile-controller's USERID_HEADER and the KFP components).
     # Lowercased: Envoy normalizes header names to lowercase and Istio matches this
@@ -45,6 +45,11 @@ spec:
     - key: request.headers[{{ $.Values.userid_header | lower }}]
       values:
       - {{ printf "%s%s" $.Values.userid_prefix $profile.owner | quote }}
+      {{- range $contributor := ($profile.contributors | default list) }}
+      # Contributor (kubeflow-edit). kfam's per-user policy lands on ztunnel (HTTP rule
+      # dropped), so the waypoint grant must be enumerated here. See local.profiles.
+      - {{ printf "%s%s" $.Values.userid_prefix $contributor | quote }}
+      {{- end }}
   # Workloads in the same namespace can reach each other.
   - when:
     - key: source.namespace
