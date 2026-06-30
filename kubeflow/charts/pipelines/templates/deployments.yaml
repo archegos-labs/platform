@@ -131,7 +131,6 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/inject: 'false'
         checksum/config: {{ include (print $.Template.BasePath "/config_maps.yaml") . | sha256sum }}
       labels:
         app: kubeflow-pipelines-profile-controller
@@ -237,8 +236,6 @@ spec:
       component: metadata-envoy
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: 'false'
       labels:
         application-crd-id: kubeflow-pipelines
         component: metadata-envoy
