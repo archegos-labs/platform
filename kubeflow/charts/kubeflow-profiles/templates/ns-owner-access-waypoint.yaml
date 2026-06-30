@@ -45,6 +45,11 @@ spec:
     - key: request.headers[{{ $.Values.userid_header | lower }}]
       values:
       - {{ printf "%s%s" $.Values.userid_prefix $profile.owner | quote }}
+      {{- range $contributor := ($profile.contributors | default list) }}
+      # Contributor (kubeflow-edit). kfam's per-user policy lands on ztunnel (HTTP rule
+      # dropped), so the waypoint grant must be enumerated here. See local.profiles.
+      - {{ printf "%s%s" $.Values.userid_prefix $contributor | quote }}
+      {{- end }}
   # Workloads in the same namespace can reach each other.
   - when:
     - key: source.namespace
