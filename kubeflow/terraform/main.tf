@@ -109,6 +109,13 @@ resource "random_password" "hub_catalog_pg_password" {
   special = false
 }
 
+# MySQL root password for the bundled katib-mysql datastore. Replaces the upstream
+# root/test default; wired into katib-mysql-secrets MYSQL_ROOT_PASSWORD.
+resource "random_password" "katib_mysql_password" {
+  length  = 32
+  special = false
+}
+
 resource "helm_release" "istio_ingress" {
   name             = "istio-ingress"
   chart            = "../charts/istio-ingress"
@@ -472,6 +479,36 @@ resource "helm_release" "kubeflow_hub" {
   # The registry server + datastore are deployed per profile namespace, so those namespaces
   # (created by the profiles release) must exist first. kubeflow_profiles transitively depends
   # on istio_ingress (the shared gateway the Hub UI listener selects).
+  depends_on = [helm_release.kubeflow_profiles]
+}
+
+resource "helm_release" "katib" {
+  name      = "katib"
+  chart     = "../charts/katib"
+  namespace = kubernetes_namespace.kubeflow.metadata[0].name
+
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 600
+
+  values = [
+    yamlencode({
+      kubeflow = {
+        namespace = kubernetes_namespace.kubeflow.metadata[0].name
+      }
+      mysql = {
+        password = random_password.katib_mysql_password.result
+      }
+      # katib-ui reads the authenticated identity from the header oauth2-proxy forwards,
+      # matching the dashboard/profiles/hub releases. prefix is left at the chart default ("").
+      userid = {
+        header = "X-Forwarded-Email"
+      }
+    })
+  ]
+
+  # The aggregation ClusterRoles and per-user UI authz land after profiles exist; cert-manager
+  # (webhook cert) is already a terragrunt-level dependency of this module.
   depends_on = [helm_release.kubeflow_profiles]
 }
 

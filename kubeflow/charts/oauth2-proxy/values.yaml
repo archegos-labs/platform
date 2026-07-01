@@ -44,4 +44,5 @@ upstreams:
   # bound to kubeflow-hub-gateway. The registry REST API is per-profile and reached in-cluster by
   # the UI BFF, so it is not exposed here. Not on the public NLB.
   hub_gateway: istio-ingressgateway-hub.ingress.svc.cluster.local:8091
+  katib_service: katib-ui.kubeflow.svc.cluster.local:80
   dashboard_service: dashboard.kubeflow.svc.cluster.local:80

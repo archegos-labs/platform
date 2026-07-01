@@ -1,0 +1,12 @@
+Katib {{ .Chart.AppVersion }} installed in namespace "{{ .Values.kubeflow.namespace }}".
+
+UI:  reachable at /katib/ from the central dashboard sidebar ("Experiments (AutoML)"),
+     proxied through oauth2-proxy with the authenticated identity.
+
+IMPORTANT — run Experiments in a PROFILE namespace (e.g. kubeflow-admin), NOT in the
+"{{ .Values.kubeflow.namespace }}" namespace. The Katib metrics-collector is injected by a
+mutating webhook that only fires in namespaces labeled
+  katib.kubeflow.org/metrics-collector-injection=enabled
+The profile-controller applies that label to profile namespaces. The
+"{{ .Values.kubeflow.namespace }}" namespace does not carry it, so Trials created there will
+run but never report an objective metric and the Experiment will sit Running indefinitely.

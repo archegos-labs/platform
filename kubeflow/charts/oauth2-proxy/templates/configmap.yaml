@@ -54,5 +54,6 @@ data:
       "http://{{ .Values.upstreams.notebook_gateway }}/notebook/",
       "http://{{ .Values.upstreams.hub_gateway }}/model-registry/",
       "http://{{ .Values.upstreams.hub_gateway }}/api/model_catalog/",
+      "http://{{ .Values.upstreams.katib_service }}/katib/",
       "http://{{ .Values.upstreams.dashboard_service }}/",
     ]
