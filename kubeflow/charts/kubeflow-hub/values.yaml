@@ -25,8 +25,8 @@ registry:
 
 ui:
   # Custom build of the v0.3.10 UI (kubeflow mode) that un-gates the Model Catalog route and
-  # pins catalog lookups to the central `kubeflow` namespace. Source patch lives in the upstream
-  # hub repo; rebuild + push this tag before applying. Stock image hides the catalog in kubeflow mode.
+  # pins catalog lookups to the central `kubeflow` namespace. See beads issue platform-3b0
+  # for the patch/build steps and image provenance.
   image: 541898866282.dkr.ecr.us-east-1.amazonaws.com/kubeflow/hub/ui
   tag: v0.3.10-catalog
   prefix: /model-registry
