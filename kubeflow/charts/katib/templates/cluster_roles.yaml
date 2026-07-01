@@ -49,16 +49,6 @@ rules:
   verbs:
   - get
 - apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
-  - patch
-  - update
-- apiGroups:
   - apps
   resources:
   - deployments
@@ -134,17 +124,6 @@ rules:
   - suggestions/finalizers
   verbs:
   - '*'
-- apiGroups:
-  - admissionregistration.k8s.io
-  resources:
-  - validatingwebhookconfigurations
-  - mutatingwebhookconfigurations
-  verbs:
-  - get
-  - watch
-  - list
-  - patch
-  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

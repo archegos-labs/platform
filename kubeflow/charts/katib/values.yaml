@@ -1,14 +1,21 @@
 kubeflow:
   namespace: kubeflow
 
+# All katib images share this registry and tag (the chart appVersion). Bump tag on a
+# version upgrade instead of editing individual deployment/config templates.
+image:
+  registry: ghcr.io/kubeflow/katib
+  tag: v0.19.0
+
 # MySQL root password for the bundled katib-mysql. Supplied by terraform
 # (random_password.katib_mysql_password); the chart fails to render if unset.
 mysql:
   password:
 
-# Identity header the katib-ui backend reads for per-user authz (SubjectAccessReview).
-# This platform authenticates via oauth2-proxy which forwards X-Forwarded-Email;
-# upstream katib-ui defaults to kubeflow-userid, so it must be overridden here.
+# Identity the katib-ui backend reads for per-user authz (SubjectAccessReview).
+# header defaults to the upstream katib-ui default; terraform overrides it to the
+# header oauth2-proxy forwards (X-Forwarded-Email). prefix "" is required because the
+# container default (":") would wrongly strip a leading colon this platform never sends.
 userid:
-  header: X-Forwarded-Email
+  header: kubeflow-userid
   prefix: ""

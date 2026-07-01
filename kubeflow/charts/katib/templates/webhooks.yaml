@@ -31,6 +31,10 @@ webhooks:
       name: katib-controller
       namespace: {{ .Values.kubeflow.namespace }}
       path: /mutate-pod
+  # Metrics-collector injection is best-effort. Fail-open so that katib-controller
+  # downtime does not block pod creation across every profile namespace (all of which
+  # carry the metrics-collector-injection label).
+  failurePolicy: Ignore
   matchConditions:
   - expression: request.userInfo.username != "system:serviceaccount:{{ .Values.kubeflow.namespace }}:katib-controller"
     name: exclude-katib-controller

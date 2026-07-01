@@ -5,4 +5,4 @@ name: katib
 type: application
 # Bump this version on every change to the chart or its templates so the
 # terraform helm provider re-applies it.
-version: 1.0.0
+version: 1.0.3

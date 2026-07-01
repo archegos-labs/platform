@@ -54,3 +54,25 @@ misconfigurations:
       - "**/notebook-controller-configmap.yaml"
       - "**/jupyter-web-app-configmap.yaml"
     statement: "false positive: tunables / spawner-config comment lines, no secrets."
+
+  # The katib-controller creates a Service per Suggestion (the algorithm's gRPC endpoint).
+  # Service names are dynamic (one per Suggestion CR), so resourceNames scoping is impossible.
+  # (secrets/webhookconfiguration write access was removed in code - cert-manager handles the cert.)
+  - id: KSV-0056
+    paths:
+      - "**/katib/templates/cluster_roles.yaml"
+    statement: "katib-controller must create/manage a Service per Suggestion; names are dynamic."
+
+  # The katib-controller creates the Deployment backing each Suggestion and the Job/TrainJob
+  # workloads backing each Trial (pods access is read-only). Names are dynamic per CR.
+  - id: KSV-0048
+    paths:
+      - "**/katib/templates/cluster_roles.yaml"
+    statement: "katib-controller must create/manage the Deployment per Suggestion and Trial workload Jobs."
+
+  # The katib-ui trial-template management feature stores templates in configmaps, so the UI
+  # backend must create/update them on behalf of the authenticated user (authz via SubjectAccessReview).
+  - id: KSV-0049
+    paths:
+      - "**/katib/templates/cluster_roles.yaml"
+    statement: "katib-ui manages trial-template configmaps; writes are gated by per-user SubjectAccessReview."

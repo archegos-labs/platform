@@ -492,10 +492,9 @@ resource "helm_release" "katib" {
         password = random_password.katib_mysql_password.result
       }
       # katib-ui reads the authenticated identity from the header oauth2-proxy forwards,
-      # matching the dashboard/profiles/hub releases.
+      # matching the dashboard/profiles/hub releases. prefix is left at the chart default ("").
       userid = {
         header = "X-Forwarded-Email"
-        prefix = ""
       }
     })
   ]

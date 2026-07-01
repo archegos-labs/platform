@@ -29,7 +29,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: ghcr.io/kubeflow/katib/katib-controller:v0.19.0
+        image: {{ .Values.image.registry }}/katib-controller:{{ .Values.image.tag }}
         livenessProbe:
           httpGet:
             path: /healthz
@@ -49,6 +49,12 @@ spec:
           httpGet:
             path: /readyz
             port: healthz
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -105,7 +111,7 @@ spec:
             secretKeyRef:
               key: MYSQL_ROOT_PASSWORD
               name: katib-mysql-secrets
-        image: ghcr.io/kubeflow/katib/katib-db-manager:v0.19.0
+        image: {{ .Values.image.registry }}/katib-db-manager:{{ .Values.image.tag }}
         livenessProbe:
           failureThreshold: 5
           grpc:
@@ -116,6 +122,12 @@ spec:
         ports:
         - containerPort: 6789
           name: api
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -156,8 +168,6 @@ spec:
             secretKeyRef:
               key: MYSQL_ROOT_PASSWORD
               name: katib-mysql-secrets
-        - name: MYSQL_ALLOW_EMPTY_PASSWORD
-          value: "true"
         - name: MYSQL_DATABASE
           value: katib
         image: mysql:8.0.29
@@ -184,6 +194,12 @@ spec:
           failureThreshold: 10
           initialDelaySeconds: 10
           periodSeconds: 5
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -247,11 +263,17 @@ spec:
           value: {{ .Values.userid.header | quote }}
         - name: USERID_PREFIX
           value: {{ .Values.userid.prefix | quote }}
-        image: ghcr.io/kubeflow/katib/katib-ui:v0.19.0
+        image: {{ .Values.image.registry }}/katib-ui:{{ .Values.image.tag }}
         name: katib-ui
         ports:
         - containerPort: 8080
           name: ui
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
