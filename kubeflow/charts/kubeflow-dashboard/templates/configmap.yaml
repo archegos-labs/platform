@@ -35,7 +35,8 @@ data:
         {
           "icon": "assignment",
           "items": [
-            {"link": "/model-registry/", "text": "Model Registry", "type": "item"}
+            {"link": "/model-registry/",              "text": "Model Registry", "type": "item"},
+            {"link": "/model-registry/model-catalog", "text": "Model Catalog",  "type": "item"}
           ],
           "text": "Model Registry",
           "type": "section"

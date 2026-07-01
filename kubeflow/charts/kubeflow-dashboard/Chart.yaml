@@ -3,4 +3,4 @@ appVersion: v2.0.0
 description: Kubeflow Central Dashboard
 name: kubeflow-dashboard
 type: application
-version: 1.0.4
+version: 1.0.5

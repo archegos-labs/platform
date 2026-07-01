@@ -24,8 +24,12 @@ registry:
     storage: 10Gi
 
 ui:
-  image: ghcr.io/kubeflow/hub/ui
-  tag: v0.3.10
+  # Custom build of the v0.3.10 UI (kubeflow mode) that un-gates the Model Catalog route, pins
+  # catalog lookups to the central `kubeflow` namespace, and mounts the catalog under /model-registry.
+  # Patch + rebuild steps (hub repo clients/ui/frontend) are tracked in beads issue platform-3rm.
+  # Pinned by digest for reproducibility (the tag is mutable); bump the digest AND Chart version on rebuild.
+  image: 541898866282.dkr.ecr.us-east-1.amazonaws.com/kubeflow/hub/ui
+  tag: v0.3.10-catalog@sha256:bf1c3657ef6781f1aa26530f139211b4c809fea50f415e08b5f2f58e3b83cee0
   prefix: /model-registry
 
 catalog:
