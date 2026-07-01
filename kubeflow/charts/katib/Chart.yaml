@@ -1,0 +1,8 @@
+apiVersion: v2
+appVersion: v0.19.0
+description: A Helm chart for Kubeflow Katib (hyperparameter tuning / AutoML / NAS)
+name: katib
+type: application
+# Bump this version on every change to the chart or its templates so the
+# terraform helm provider re-applies it.
+version: 1.0.0

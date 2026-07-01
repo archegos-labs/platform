@@ -39,6 +39,14 @@ data:
           ],
           "text": "Model Registry",
           "type": "section"
+        },
+        {
+          "icon": "kubeflow:katib",
+          "items": [
+            {"link": "/katib/", "text": "Experiments (AutoML)", "type": "item"}
+          ],
+          "text": "Experiments (AutoML)",
+          "type": "section"
         }
       ],
       "externalLinks": [],

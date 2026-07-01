@@ -1,0 +1,14 @@
+kubeflow:
+  namespace: kubeflow
+
+# MySQL root password for the bundled katib-mysql. Supplied by terraform
+# (random_password.katib_mysql_password); the chart fails to render if unset.
+mysql:
+  password:
+
+# Identity header the katib-ui backend reads for per-user authz (SubjectAccessReview).
+# This platform authenticates via oauth2-proxy which forwards X-Forwarded-Email;
+# upstream katib-ui defaults to kubeflow-userid, so it must be overridden here.
+userid:
+  header: X-Forwarded-Email
+  prefix: ""

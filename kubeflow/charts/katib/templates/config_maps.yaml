@@ -1,0 +1,142 @@
+apiVersion: v1
+data:
+  katib-config.yaml: |
+    ---
+    apiVersion: config.kubeflow.org/v1beta1
+    kind: KatibConfig
+    init:
+      controller:
+        webhookPort: 8443
+        trialResources:
+          - TrainJob.v1alpha1.trainer.kubeflow.org
+          - Job.v1.batch
+          - TFJob.v1.kubeflow.org
+          - PyTorchJob.v1.kubeflow.org
+          - MPIJob.v1.kubeflow.org
+          - XGBoostJob.v1.kubeflow.org
+    runtime:
+      metricsCollectors:
+        - kind: StdOut
+          image: ghcr.io/kubeflow/katib/file-metrics-collector:v0.19.0
+        - kind: File
+          image: ghcr.io/kubeflow/katib/file-metrics-collector:v0.19.0
+        - kind: TensorFlowEvent
+          image: ghcr.io/kubeflow/katib/tfevent-metrics-collector:v0.19.0
+          resources:
+            limits:
+              memory: 1Gi
+      suggestions:
+        - algorithmName: random
+          image: ghcr.io/kubeflow/katib/suggestion-hyperopt:v0.19.0
+        - algorithmName: tpe
+          image: ghcr.io/kubeflow/katib/suggestion-hyperopt:v0.19.0
+        - algorithmName: grid
+          image: ghcr.io/kubeflow/katib/suggestion-optuna:v0.19.0
+        - algorithmName: hyperband
+          image: ghcr.io/kubeflow/katib/suggestion-hyperband:v0.19.0
+        - algorithmName: bayesianoptimization
+          image: ghcr.io/kubeflow/katib/suggestion-skopt:v0.19.0
+        - algorithmName: cmaes
+          image: ghcr.io/kubeflow/katib/suggestion-goptuna:v0.19.0
+        - algorithmName: sobol
+          image: ghcr.io/kubeflow/katib/suggestion-goptuna:v0.19.0
+        - algorithmName: multivariate-tpe
+          image: ghcr.io/kubeflow/katib/suggestion-optuna:v0.19.0
+        - algorithmName: enas
+          image: ghcr.io/kubeflow/katib/suggestion-enas:v0.19.0
+          resources:
+            limits:
+              memory: 400Mi
+        - algorithmName: darts
+          image: ghcr.io/kubeflow/katib/suggestion-darts:v0.19.0
+        - algorithmName: pbt
+          image: ghcr.io/kubeflow/katib/suggestion-pbt:v0.19.0
+          persistentVolumeClaimSpec:
+            accessModes:
+              - ReadWriteMany
+            resources:
+              requests:
+                storage: 5Gi
+      earlyStoppings:
+        - algorithmName: medianstop
+          image: ghcr.io/kubeflow/katib/earlystopping-medianstop:v0.19.0
+kind: ConfigMap
+metadata:
+  name: katib-config
+  namespace: {{ .Values.kubeflow.namespace }}
+---
+apiVersion: v1
+data:
+  defaultTrialTemplate.yaml: |-
+    apiVersion: batch/v1
+    kind: Job
+    spec:
+      template:
+        spec:
+          containers:
+            - name: training-container
+              image: ghcr.io/kubeflow/katib/pytorch-mnist-cpu:v0.19.0
+              command:
+                - "python3"
+                - "/opt/pytorch-mnist/mnist.py"
+                - "--epochs=1"
+                - "--batch-size=16"
+                - "--lr=${trialParameters.learningRate}"
+                - "--momentum=${trialParameters.momentum}"
+          restartPolicy: Never
+  enasCPUTemplate: |-
+    apiVersion: batch/v1
+    kind: Job
+    spec:
+      template:
+        spec:
+          containers:
+            - name: training-container
+              image: ghcr.io/kubeflow/katib/enas-cnn-cifar10-cpu:v0.19.0
+              command:
+                - python3
+                - -u
+                - RunTrial.py
+                - --num_epochs=1
+                - "--architecture=\"${trialParameters.neuralNetworkArchitecture}\""
+                - "--nn_config=\"${trialParameters.neuralNetworkConfig}\""
+          restartPolicy: Never
+  pytorchJobTemplate: |-
+    apiVersion: kubeflow.org/v1
+    kind: PyTorchJob
+    spec:
+      pytorchReplicaSpecs:
+        Master:
+          replicas: 1
+          restartPolicy: OnFailure
+          template:
+            spec:
+              containers:
+                - name: pytorch
+                  image: ghcr.io/kubeflow/katib/pytorch-mnist-cpu:v0.19.0
+                  command:
+                    - "python3"
+                    - "/opt/pytorch-mnist/mnist.py"
+                    - "--epochs=1"
+                    - "--lr=${trialParameters.learningRate}"
+                    - "--momentum=${trialParameters.momentum}"
+        Worker:
+          replicas: 2
+          restartPolicy: OnFailure
+          template:
+            spec:
+              containers:
+                - name: pytorch
+                  image: ghcr.io/kubeflow/katib/pytorch-mnist-cpu:v0.19.0
+                  command:
+                    - "python3"
+                    - "/opt/pytorch-mnist/mnist.py"
+                    - "--epochs=1"
+                    - "--lr=${trialParameters.learningRate}"
+                    - "--momentum=${trialParameters.momentum}"
+kind: ConfigMap
+metadata:
+  labels:
+    katib.kubeflow.org/component: trial-templates
+  name: trial-templates
+  namespace: {{ .Values.kubeflow.namespace }}
