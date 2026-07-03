@@ -14,6 +14,8 @@ spec:
       kustomize.component: jupyter-web-app
   template:
     metadata:
+      annotations:
+        checksum/spawner-config: {{ .Files.Get "files/spawner_ui_config.yaml" | sha256sum }}
       labels:
         app: jupyter-web-app
         kustomize.component: jupyter-web-app

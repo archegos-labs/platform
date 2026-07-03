@@ -159,12 +159,15 @@ spawnerFormDefaults:
           # "{notebook-name}" is replaced with the Notebook name
           name: "{notebook-name}-workspace"
         spec:
-          #storageClassName: my-storage-class
+          # EFS-backed so the workspace is not AZ-pinned and can re-attach to a
+          # GPU spot node in any zone. RWX avoids multi-attach conflicts when a
+          # replacement pod starts before the interrupted one fully terminates.
+          storageClassName: efs-sc
           resources:
             requests:
               storage: 5Gi
           accessModes:
-          - ReadWriteOnce
+          - ReadWriteMany
 
   ################################################################
   # Data Volumes

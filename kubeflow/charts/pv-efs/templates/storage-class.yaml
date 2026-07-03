@@ -1,0 +1,17 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ .Values.storageClassName }}
+provisioner: efs.csi.aws.com
+# EFS has no zonal topology, so binding is Immediate and the resulting PV carries
+# no node affinity — workspaces re-attach to a GPU spot node in any AZ.
+volumeBindingMode: Immediate
+reclaimPolicy: Delete
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: {{ .Values.fs_id }}
+  directoryPerms: {{ .Values.directoryPerms | quote }}
+  uid: {{ .Values.uid | quote }}
+  gid: {{ .Values.gid | quote }}
+  basePath: {{ .Values.basePath | quote }}
+  ensureUniqueDirectory: "true"

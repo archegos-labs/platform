@@ -282,6 +282,73 @@ resource "helm_release" "kubeflow_trainer_runtimes" {
 # }
 
 #######################################
+# EFS for notebook workspaces
+#######################################
+# Notebook workspaces live on EFS (not EBS) so they carry no zonal node affinity.
+# GPU capacity runs on spot across all AZs; when a spot node is reclaimed and
+# replacement capacity comes back in a different AZ, an EBS workspace could not
+# follow (PV node-affinity mismatch -> Pending forever). EFS is reachable from
+# every AZ, so the workspace re-mounts wherever the new GPU node lands.
+
+resource "aws_security_group" "efs" {
+  name        = "${var.cluster_name}-efs-sg"
+  description = "Allow NFS from cluster nodes to the notebooks EFS filesystem"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description = "NFS from within the VPC"
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Cluster = var.cluster_name
+  }
+}
+
+resource "aws_efs_file_system" "notebooks" {
+  creation_token = "${var.cluster_name}-notebooks"
+  encrypted      = true
+
+  tags = {
+    Name    = "${var.cluster_name}-notebooks"
+    Cluster = var.cluster_name
+  }
+}
+
+# One mount target per private subnet (i.e. per AZ) so the filesystem is
+# reachable from a GPU node in any zone.
+resource "aws_efs_mount_target" "notebooks" {
+  count           = length(var.private_subnets)
+  file_system_id  = aws_efs_file_system.notebooks.id
+  subnet_id       = var.private_subnets[count.index]
+  security_groups = [aws_security_group.efs.id]
+}
+
+resource "helm_release" "pv_efs" {
+  chart     = "../charts/pv-efs"
+  name      = "pv-efs"
+  version   = "1.0.0"
+  namespace = kubernetes_namespace.kubeflow.metadata[0].name
+
+  set {
+    name  = "fs_id"
+    value = aws_efs_file_system.notebooks.id
+  }
+
+  depends_on = [aws_efs_mount_target.notebooks]
+}
+
+#######################################
 # Kubeflow Pipelines
 #######################################
 resource "helm_release" "kubeflow_pipelines" {
