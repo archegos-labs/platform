@@ -1,0 +1,4 @@
+# Placeholder so the chart renders a realistic StorageClass in CI (helm-validate).
+# The real value is injected by terraform (aws_efs_file_system.notebooks.id) at
+# deploy time; this dummy purely exercises template rendering + kubeconform.
+fs_id: fs-0123456789abcdef0

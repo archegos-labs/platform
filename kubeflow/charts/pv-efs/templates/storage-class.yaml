@@ -9,7 +9,7 @@ volumeBindingMode: Immediate
 reclaimPolicy: Delete
 parameters:
   provisioningMode: efs-ap
-  fileSystemId: {{ .Values.fs_id }}
+  fileSystemId: {{ required "fs_id must be set (injected by terraform)" .Values.fs_id }}
   directoryPerms: {{ .Values.directoryPerms | quote }}
   uid: {{ .Values.uid | quote }}
   gid: {{ .Values.gid | quote }}
