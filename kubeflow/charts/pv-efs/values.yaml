@@ -1,0 +1,10 @@
+storageClassName: efs-sc
+# EFS filesystem id, injected by terraform (aws_efs_file_system.notebooks.id)
+fs_id: ""
+# POSIX identity for dynamically provisioned access points. Kubeflow notebook
+# images run as jovyan (uid 1000, gid 100); the access point squashes all I/O to
+# this identity so the notebook can read/write its workspace.
+uid: 1000
+gid: 100
+directoryPerms: "700"
+basePath: "/dynamic_provisioning"
