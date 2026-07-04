@@ -319,6 +319,10 @@ resource "aws_efs_file_system" "notebooks" {
   creation_token = "${var.cluster_name}-notebooks"
   encrypted      = true
 
+  # Elastic throughput scales with demand instead of accruing burst credits,
+  # which a near-empty filesystem would exhaust under concurrent notebook I/O.
+  throughput_mode = "elastic"
+
   tags = {
     Name    = "${var.cluster_name}-notebooks"
     Cluster = var.cluster_name
