@@ -316,9 +316,29 @@ resource "aws_security_group" "efs" {
   }
 }
 
+# Dedicated CMK for EFS encryption at rest. Encrypting with an explicit,
+# terraform-managed key avoids depending on the AWS-managed aws/elasticfilesystem
+# key, which does not exist in an account/region until its first use and cannot
+# be auto-resolved by the deploy role (CreateFileSystem -> KMS NotFoundException).
+resource "aws_kms_key" "efs" {
+  description             = "${var.cluster_name} EFS notebook workspace encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = {
+    Cluster = var.cluster_name
+  }
+}
+
+resource "aws_kms_alias" "efs" {
+  name          = "alias/${var.cluster_name}-efs"
+  target_key_id = aws_kms_key.efs.key_id
+}
+
 resource "aws_efs_file_system" "notebooks" {
   creation_token = "${var.cluster_name}-notebooks"
   encrypted      = true
+  kms_key_id     = aws_kms_key.efs.arn
 
   # Elastic throughput scales with demand instead of accruing burst credits,
   # which a near-empty filesystem would exhaust under concurrent notebook I/O.
